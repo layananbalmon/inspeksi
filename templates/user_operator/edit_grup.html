@@ -1,0 +1,959 @@
+{% extends "user_operator/base.html" %}
+
+{% block title %}Edit Grup - {{ station.stasiun_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+    --gradient-primary: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    --border-radius-lg: 16px;
+    --border-radius-md: 12px;
+}
+
+.edit-container { max-width: 1200px; margin: 0 auto; }
+
+/* ===== HEADER ===== */
+.edit-header {
+    background: var(--gradient-primary);
+    color: white;
+    padding: 1.5rem;
+    border-radius: var(--border-radius-lg);
+    margin-bottom: 1.5rem;
+}
+
+/* ===== GROUP INFO ===== */
+.group-info-card {
+    background: var(--gradient-primary);
+    color: white;
+    border-radius: var(--border-radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+/* ===== SECTION CARD ===== */
+.section-card {
+    background: white;
+    border-radius: var(--border-radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid #eef2f6;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+.section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+/* ===== IMAGE GRID ===== */
+.current-images-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.current-image-card {
+    border: 1px solid #eef2f6;
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+    background: white;
+    position: relative;
+    transition: all 0.3s;
+}
+
+.current-image-card:hover {
+    border-color: #2a5298;
+    box-shadow: 0 10px 20px rgba(42, 82, 152, 0.1);
+}
+
+.current-image-card img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    cursor: pointer;
+}
+
+.current-image-info {
+    padding: 0.75rem;
+}
+
+.current-image-name {
+    font-size: 0.85rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ===== DELETE BUTTON ===== */
+.delete-btn {
+    position: absolute !important;
+    top: 10px !important;
+    right: 10px !important;
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 50% !important;
+    background: #dc3545 !important;
+    color: white !important;
+    border: 2px solid white !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    z-index: 9999 !important;
+    font-size: 18px !important;
+    padding: 0 !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2) !important;
+}
+
+.delete-btn:hover {
+    background: #c82333 !important;
+    transform: scale(1.1);
+}
+
+.delete-btn.active {
+    background: #bd2130 !important;
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.5);
+}
+
+/* ===== UPLOAD AREA ===== */
+.upload-area {
+    border: 2px dashed #e2e8f0;
+    border-radius: var(--border-radius-md);
+    padding: 2.5rem;
+    text-align: center;
+    background: #f8fafc;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.upload-area:hover {
+    border-color: #2a5298;
+    background: #f0f7ff;
+}
+
+.upload-area i {
+    font-size: 3rem;
+    color: #94a3b8;
+}
+
+/* ===== NEW IMAGES PREVIEW ===== */
+.new-images-preview {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.new-image-preview {
+    border: 1px solid #eef2f6;
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+    position: relative;
+    background: white;
+}
+
+.new-image-preview img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+}
+
+.remove-new-image {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(220, 53, 69, 0.9);
+    color: white;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+/* ===== OPPONENT STATUS CARD ===== */
+.opponent-status-card {
+    background: #f8fafc;
+    border-radius: var(--border-radius-md);
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    border: 1px solid #eef2f6;
+}
+
+.opponent-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.opponent-name {
+    font-weight: 600;
+    margin-right: 1rem;
+}
+
+.opponent-status-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 100px;
+    font-weight: 600;
+}
+
+.opponent-status-badge.status-aktif {
+    background: rgba(25, 135, 84, 0.1);
+    color: #198754;
+}
+
+.opponent-status-badge.status-tidak_aktif {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+}
+
+.opponent-status-badge.status-tidak_berizin {
+    background: rgba(255, 193, 7, 0.1);
+    color: #856404;
+}
+
+.opponent-status-badge.status-tidak_sesuai {
+    background: rgba(13, 110, 253, 0.1);
+    color: #0d6efd;
+}
+
+.opponent-status-row {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.status-select-wrapper {
+    flex: 1;
+    min-width: 200px;
+}
+
+.catatan-wrapper {
+    flex: 2;
+    min-width: 250px;
+}
+
+.status-select,
+.catatan-input {
+    width: 100%;
+    padding: 0.6rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    background: white;
+}
+
+/* ===== OPPONENTS LIST ===== */
+.opponents-list {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-top: 1rem;
+}
+
+.opponent-item {
+    display: flex;
+    align-items: center;
+    padding: 0.85rem 1rem;
+    margin-bottom: 0.5rem;
+    background: #f8fafc;
+    border-radius: 10px;
+}
+
+.opponent-number {
+    width: 28px;
+    height: 28px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+/* ===== ACTION BUTTONS ===== */
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #eef2f6;
+}
+
+/* ===== PROGRESS MODAL ===== */
+.progress-modal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 2rem;
+    border-radius: var(--border-radius-lg);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    z-index: 9999;
+    text-align: center;
+    min-width: 320px;
+}
+
+.progress-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 9998;
+}
+
+/* ===== IMAGE PREVIEW MODAL - FIX ===== */
+.preview-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 99999;
+    cursor: pointer;
+}
+
+.preview-modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 90%;
+    max-height: 90%;
+}
+
+.preview-modal-content img {
+    max-width: 100%;
+    max-height: 90vh;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+.close-preview {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    color: white;
+    font-size: 40px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 100000;
+}
+
+.close-preview:hover {
+    color: #dc3545;
+}
+
+/* ===== HIDDEN CHECKBOX ===== */
+.delete-checkbox {
+    display: none !important;
+}
+
+/* ===== DELETED IMAGE STYLE ===== */
+.current-image-card.deleted {
+    display: none !important;
+}
+
+/* ===== FREKUENSI BADGE ===== */
+.freq-badge {
+    background: #e3f2fd;
+    color: #0d47a1;
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.freq-badge i {
+    font-size: 0.6rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="edit-container">
+    <!-- HEADER -->
+    <div class="edit-header">
+        <div class="d-flex justify-content-between align-items-start align-items-md-center flex-column flex-md-row">
+            <div>
+                <h4 class="mb-2 fw-bold">
+                    <i class="bi bi-pencil-square me-2"></i>Edit Grup
+                </h4>
+                <p class="mb-0 opacity-75">
+                    <i class="bi bi-broadcast me-1"></i>Stasiun: <strong>{{ station.stasiun_name }}</strong> • 
+                    <span class="badge bg-white text-primary px-3 py-1 rounded-pill">{{ group_label }}</span>
+                </p>
+            </div>
+            <div class="mt-3 mt-md-0">
+                <a href="{{ url_for('user_operator_detail_stasiun', station_id=station.id) }}" 
+                   class="btn btn-light btn-sm px-4 rounded-pill">
+                    <i class="bi bi-arrow-left me-1"></i> Kembali
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- GROUP INFO -->
+    <div class="group-info-card">
+        <div class="row">
+            <div class="col-md-3 col-6 mb-2 mb-md-0">
+                <h6 class="opacity-75 small mb-1">STASIUN</h6>
+                <p class="fw-bold mb-0">{{ station.stasiun_name }}</p>
+            </div>
+            <div class="col-md-3 col-6 mb-2 mb-md-0">
+                <h6 class="opacity-75 small mb-1">KOTA</h6>
+                <p class="fw-bold mb-0">{{ station.kota|title }}</p>
+            </div>
+            <div class="col-md-3 col-6">
+                <h6 class="opacity-75 small mb-1">NAMA GRUP</h6>
+                <p class="fw-bold mb-0">{{ group_label }}</p>
+            </div>
+            <div class="col-md-3 col-6">
+                <h6 class="opacity-75 small mb-1">STASIUN LAWAN</h6>
+                <p class="fw-bold mb-0">{{ opponents|length }} Stasiun</p>
+            </div>
+        </div>
+    </div>
+
+    <form method="POST" action="{{ url_for('user_operator_edit_grup', station_id=station.id, group_key=group_key) }}" 
+          enctype="multipart/form-data" id="editForm">
+        
+        <!-- ============ SECTION 1: GAMBAR SAAT INI ============ -->
+        <div class="section-card">
+            <div class="section-title">
+                <i class="bi bi-images text-primary"></i>
+                Gambar Saat Ini
+                <span class="badge bg-primary ms-2 rounded-pill" id="imageCount">{{ current_uploads|length }}</span>
+            </div>
+            
+            {% if current_uploads %}
+            <div class="current-images-grid" id="imageGrid">
+                {% for upload in current_uploads %}
+                <div class="current-image-card" id="card_{{ upload.id }}" data-upload-id="{{ upload.id }}">
+                    <!-- DELETE BUTTON - LANGSUNG HILANG -->
+                    <button type="button" 
+                            class="delete-btn" 
+                            onclick="deleteSingleImage({{ upload.id }}, this)"
+                            title="Hapus gambar">
+                        <i class="bi bi-trash3"></i>
+                    </button>
+                    <input type="checkbox" 
+                           name="delete_files[]" 
+                           value="{{ upload.id }}" 
+                           id="chk_{{ upload.id }}" 
+                           class="delete-checkbox">
+                    
+                    <!-- GAMBAR DARI CLOUDINARY -->
+                    <img src="{{ upload.public_id | cloudinary_thumbnail(200, 150) }}" 
+                         alt="{{ upload.original_filename }}"
+                         onclick="showPreview('{{ upload.cloudinary_url }}')">
+                    
+                    <div class="current-image-info">
+                        <div class="current-image-name" title="{{ upload.original_filename }}">
+                            {{ upload.original_filename|truncate(20) }}
+                        </div>
+                        <small class="text-muted">
+                            <i class="bi bi-calendar3 me-1"></i>
+                            {{ upload.uploaded_at.strftime('%d/%m/%Y') }}
+                        </small>
+                        <small class="text-muted d-block">
+                            {{ upload.bytes_size | filesizeformat }}
+                        </small>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="d-flex align-items-center justify-content-between mt-3 pt-3 border-top">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="selectAllCheckbox">
+                    <label class="form-check-label small" for="selectAllCheckbox">
+                        <i class="bi bi-check2-square me-1"></i>Pilih semua untuk dihapus
+                    </label>
+                </div>
+                <button type="button" class="btn btn-sm btn-danger" onclick="deleteAllImages()">
+                    <i class="bi bi-trash3 me-1"></i>Hapus Semua
+                </button>
+            </div>
+            {% else %}
+            <div class="alert alert-info bg-light border-0 rounded-3 py-3 mb-0">
+                <i class="bi bi-info-circle-fill me-2"></i>
+                <span class="fw-semibold">Belum ada gambar</span> di grup ini. 
+                Upload gambar baru melalui form di bawah.
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- ============ SECTION 2: TAMBAH GAMBAR BARU ============ -->
+        <div class="section-card">
+            <div class="section-title">
+                <i class="bi bi-cloud-arrow-up text-success"></i>
+                Tambah Gambar Baru
+            </div>
+            
+            <div class="upload-area" id="dropzone">
+                <i class="bi bi-cloud-arrow-up-fill"></i>
+                <h5 class="mt-2">Drag & Drop atau Klik untuk Upload</h5>
+                <div class="mt-2">
+                    <span class="badge bg-success rounded-pill px-3 py-2 me-1">MULTIPLE FILES</span>
+                    <span class="badge bg-info rounded-pill px-3 py-2">MAX 5MB</span>
+                </div>
+                <p class="small text-muted mt-2 mb-0">
+                    Format: JPG, PNG, GIF, WEBP
+                </p>
+                <input type="file" 
+                       id="fileInput"
+                       name="new_files[]"
+                       accept=".png,.jpg,.jpeg,.gif,.webp"
+                       multiple
+                       style="display: none;">
+            </div>
+            
+            <div id="imagePreviewContainer" class="new-images-preview"></div>
+            
+            <div class="mt-3 small text-muted">
+                <i class="bi bi-info-circle me-1"></i>
+                Gambar baru akan ditambahkan ke <strong>SEMUA {{ opponents|length }} stasiun lawan</strong> dalam grup ini.
+            </div>
+        </div>
+
+        <!-- ============ SECTION 3: STATUS PER STASIUN LAWAN ============ -->
+        <div class="section-card">
+            <div class="section-title">
+                <i class="bi bi-tags text-warning"></i>
+                Status Stasiun Lawan
+                <span class="badge bg-warning text-dark ms-2 rounded-pill">PER STASIUN</span>
+            </div>
+            
+            {% for opponent in opponents %}
+            <div class="opponent-status-card">
+                <div class="opponent-header">
+                    <div class="opponent-icon bg-white rounded-circle p-2 me-2">
+                        <i class="bi bi-building"></i>
+                    </div>
+                    <span class="opponent-name">{{ opponent.nama }}</span>
+                    
+                    <!-- FREKUENSI -->
+                    {% if opponent.freq_tx or opponent.freq_rx %}
+                        {% if opponent.freq_tx %}
+                        <span class="freq-badge">
+                            <i class="bi bi-arrow-up"></i> {{ opponent.freq_tx }}
+                        </span>
+                        {% endif %}
+                        {% if opponent.freq_rx %}
+                        <span class="freq-badge">
+                            <i class="bi bi-arrow-down"></i> {{ opponent.freq_rx }}
+                        </span>
+                        {% endif %}
+                    {% endif %}
+                    
+                    {% if opponent.current_status %}
+                    <span class="opponent-status-badge status-{{ opponent.current_status }}">
+                        {{ opponent.status_display }}
+                    </span>
+                    {% else %}
+                    <span class="opponent-status-badge bg-secondary text-white">
+                        Belum Ada Status
+                    </span>
+                    {% endif %}
+                </div>
+                
+                <div class="opponent-status-row">
+                    <div class="status-select-wrapper">
+                        <label class="form-label small fw-bold text-muted mb-1">
+                            <i class="bi bi-tag me-1"></i>Status
+                        </label>
+                        <select name="status_{{ opponent.id }}" class="status-select">
+                            <option value="">-- Pilih Status --</option>
+                            <option value="aktif" {% if opponent.current_status == 'aktif' %}selected{% endif %}>Aktif</option>
+                            <option value="tidak_aktif" {% if opponent.current_status == 'tidak_aktif' %}selected{% endif %}>Tidak Aktif</option>
+                            <option value="tidak_berizin" {% if opponent.current_status == 'tidak_berizin' %}selected{% endif %}>Tidak Berizin</option>
+                            <option value="tidak_sesuai" {% if opponent.current_status == 'tidak_sesuai' %}selected{% endif %}>Tidak Sesuai Parameter</option>
+                        </select>
+                    </div>
+                    
+                    <div class="catatan-wrapper">
+                        <label class="form-label small fw-bold text-muted mb-1">
+                            <i class="bi bi-chat-left-text me-1"></i>Catatan
+                        </label>
+                        <textarea name="catatan_{{ opponent.id }}" 
+                                  class="catatan-input" 
+                                  rows="2" 
+                                  placeholder="Tambahkan catatan...">{{ opponent.catatan or '' }}</textarea>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- ============ SECTION 4: DAFTAR STASIUN LAWAN ============ -->
+        <div class="section-card">
+            <div class="section-title">
+                <i class="bi bi-people-fill text-info"></i>
+                Stasiun Lawan dalam Grup
+                <span class="badge bg-primary ms-2 rounded-pill">{{ opponents|length }}</span>
+            </div>
+            
+            <div class="opponents-list">
+                {% for opponent in opponents %}
+                <div class="opponent-item">
+                    <span class="opponent-number">{{ loop.index }}</span>
+                    <span class="opponent-name flex-grow-1">{{ opponent.nama }}</span>
+                    
+                    <!-- FREKUENSI -->
+                    {% if opponent.freq_tx %}
+                    <span class="freq-badge me-2">{{ opponent.freq_tx }}</span>
+                    {% endif %}
+                    {% if opponent.freq_rx %}
+                    <span class="freq-badge me-2">{{ opponent.freq_rx }}</span>
+                    {% endif %}
+                    
+                    {% if opponent.current_status %}
+                        {% if opponent.current_status == 'aktif' %}
+                        <span class="badge bg-success">{{ opponent.status_display }}</span>
+                        {% elif opponent.current_status == 'tidak_aktif' %}
+                        <span class="badge bg-danger">{{ opponent.status_display }}</span>
+                        {% elif opponent.current_status == 'tidak_berizin' %}
+                        <span class="badge bg-warning text-dark">{{ opponent.status_display }}</span>
+                        {% elif opponent.current_status == 'tidak_sesuai' %}
+                        <span class="badge bg-info">{{ opponent.status_display }}</span>
+                        {% endif %}
+                    {% else %}
+                    <span class="badge bg-secondary">Belum Ada Status</span>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- ============ SECTION 5: ACTION BUTTONS ============ -->
+        <div class="action-buttons">
+            <a href="{{ url_for('user_operator_detail_stasiun', station_id=station.id) }}" 
+               class="btn btn-outline-secondary rounded-3 px-4">
+                <i class="bi bi-x-lg me-1"></i> Batal
+            </a>
+            <div>
+                <button type="button" 
+                        class="btn btn-outline-danger rounded-3 px-4 me-2" 
+                        onclick="deleteAllImages()" 
+                        {% if not current_uploads %}disabled{% endif %}>
+                    <i class="bi bi-trash3 me-1"></i> Hapus Semua
+                </button>
+                <button type="submit" class="btn btn-primary rounded-3 px-4" id="submitBtn">
+                    <i class="bi bi-check-lg me-1"></i> Simpan Perubahan
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- PROGRESS MODAL -->
+<div class="progress-overlay" id="progressOverlay"></div>
+<div class="progress-modal" id="progressModal">
+    <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;"></div>
+    <h5 class="fw-semibold">Menyimpan Perubahan...</h5>
+    <p class="text-muted small">Harap tunggu sebentar</p>
+</div>
+
+<!-- IMAGE PREVIEW MODAL -->
+<div class="preview-modal" id="previewModal" onclick="hidePreview()">
+    <span class="close-preview" onclick="hidePreview()">&times;</span>
+    <div class="preview-modal-content">
+        <img id="previewImage" src="" alt="Preview">
+    </div>
+</div>
+
+<script>
+// ============ SCRIPT UNTUK EDIT GRUP ============
+
+// VARIABEL GLOBAL
+let selectedFiles = [];
+let deletedCount = 0;
+
+// ============ 1. HAPUS SATU GAMBAR - LANGSUNG HILANG ============
+function deleteSingleImage(uploadId, button) {
+    if (!confirm('🗑️ Hapus gambar ini?')) {
+        return;
+    }
+    
+    const checkbox = document.getElementById(`chk_${uploadId}`);
+    const card = document.getElementById(`card_${uploadId}`);
+    
+    if (checkbox && card) {
+        // Check checkbox
+        checkbox.checked = true;
+        
+        // LANGSUNG HILANGKAN CARD DARI TAMPILAN
+        card.style.display = 'none';
+        card.classList.add('deleted');
+        
+        // Update counter
+        deletedCount++;
+        updateImageCount();
+        
+        console.log(`✅ Image ${uploadId} deleted from view`);
+    }
+}
+
+// ============ 2. HAPUS SEMUA GAMBAR - LANGSUNG HILANG ============
+function deleteAllImages() {
+    if (!confirm('⚠️ YAKIN HAPUS SEMUA GAMBAR?\n\nSemua gambar akan langsung hilang dari tampilan!')) {
+        return;
+    }
+    
+    // Check semua checkbox dan hilangkan semua card
+    document.querySelectorAll('.current-image-card').forEach(card => {
+        const checkbox = card.querySelector('input[name="delete_files[]"]');
+        if (checkbox) {
+            checkbox.checked = true;
+        }
+        
+        // LANGSUNG HILANGKAN
+        card.style.display = 'none';
+        card.classList.add('deleted');
+    });
+    
+    // Check select all
+    const selectAll = document.getElementById('selectAllCheckbox');
+    if (selectAll) selectAll.checked = true;
+    
+    // Update counter
+    const totalCards = document.querySelectorAll('.current-image-card').length;
+    deletedCount = totalCards;
+    updateImageCount();
+    
+    alert('✅ Semua gambar telah dihapus dari tampilan');
+}
+
+// ============ 3. UPDATE JUMLAH GAMBAR ============
+function updateImageCount() {
+    const visibleCards = document.querySelectorAll('.current-image-card:not([style*="display: none"])').length;
+    const counter = document.getElementById('imageCount');
+    if (counter) {
+        counter.textContent = visibleCards;
+    }
+}
+
+// ============ 4. PREVIEW GAMBAR ============
+function showPreview(imageSrc) {
+    const modal = document.getElementById('previewModal');
+    const previewImg = document.getElementById('previewImage');
+    
+    previewImg.src = imageSrc;
+    modal.style.display = 'block';
+    
+    // Prevent body scrolling
+    document.body.style.overflow = 'hidden';
+}
+
+function hidePreview() {
+    const modal = document.getElementById('previewModal');
+    modal.style.display = 'none';
+    
+    // Restore body scrolling
+    document.body.style.overflow = 'auto';
+}
+
+// ============ 5. SETUP UPLOAD GAMBAR ============
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Edit grup loaded - CLOUDINARY VERSION');
+    
+    // ===== SELECT ALL CHECKBOX =====
+    const selectAll = document.getElementById('selectAllCheckbox');
+    if (selectAll) {
+        selectAll.addEventListener('change', function() {
+            const cards = document.querySelectorAll('.current-image-card');
+            const checkboxes = document.querySelectorAll('input[name="delete_files[]"]');
+            
+            checkboxes.forEach((cb, index) => {
+                cb.checked = this.checked;
+                
+                // Preview mode only, tidak hilangkan
+                if (cards[index]) {
+                    if (this.checked) {
+                        cards[index].style.borderColor = '#dc3545';
+                        cards[index].style.boxShadow = '0 0 0 2px rgba(220,53,69,0.3)';
+                    } else {
+                        cards[index].style.borderColor = '#eef2f6';
+                        cards[index].style.boxShadow = 'none';
+                    }
+                }
+            });
+        });
+    }
+    
+    // ===== FILE UPLOAD SETUP =====
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('fileInput');
+    
+    if (dropzone && fileInput) {
+        // KLIK UNTUK UPLOAD
+        dropzone.onclick = function() {
+            fileInput.click();
+        };
+        
+        // DRAG OVER
+        dropzone.ondragover = function(e) {
+            e.preventDefault();
+            this.style.borderColor = '#2a5298';
+            this.style.background = '#f0f7ff';
+        };
+        
+        // DRAG LEAVE
+        dropzone.ondragleave = function(e) {
+            e.preventDefault();
+            this.style.borderColor = '#e2e8f0';
+            this.style.background = '#f8fafc';
+        };
+        
+        // DROP
+        dropzone.ondrop = function(e) {
+            e.preventDefault();
+            this.style.borderColor = '#e2e8f0';
+            this.style.background = '#f8fafc';
+            
+            if (e.dataTransfer.files.length) {
+                handleFiles(e.dataTransfer.files);
+            }
+        };
+        
+        // FILE INPUT CHANGE
+        fileInput.onchange = function(e) {
+            if (this.files.length) {
+                handleFiles(this.files);
+                this.value = ''; // Reset biar bisa pilih file yang sama lagi
+            }
+        };
+    }
+    
+    // ===== FORM SUBMIT =====
+    const form = document.getElementById('editForm');
+    if (form) {
+        form.onsubmit = function() {
+            // Cek apakah ada file yang dipilih untuk dihapus
+            const deleteChecked = document.querySelectorAll('input[name="delete_files[]"]:checked').length;
+            console.log(`Submitting with ${deleteChecked} images to delete`);
+            
+            document.getElementById('progressOverlay').style.display = 'block';
+            document.getElementById('progressModal').style.display = 'block';
+            return true;
+        };
+    }
+});
+
+// ============ 6. HANDLE FILES UPLOAD ============
+function handleFiles(files) {
+    console.log(`Processing ${files.length} files...`);
+    
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        
+        // Validasi ukuran
+        if (file.size > 5 * 1024 * 1024) {
+            alert(`File "${file.name}" terlalu besar (maks 5MB)`);
+            continue;
+        }
+        
+        // Validasi format
+        const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp'];
+        if (!validTypes.includes(file.type)) {
+            alert(`File "${file.name}" format tidak didukung`);
+            continue;
+        }
+        
+        // Cek duplikat
+        if (selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
+            alert(`File "${file.name}" sudah dipilih`);
+            continue;
+        }
+        
+        // Tambah ke array
+        selectedFiles.push(file);
+        
+        // Preview
+        addImagePreview(file);
+    }
+    
+    console.log(`Total files ready to upload: ${selectedFiles.length}`);
+}
+
+// ============ 7. ADD IMAGE PREVIEW ============
+function addImagePreview(file) {
+    const reader = new FileReader();
+    
+    reader.onload = function(e) {
+        const container = document.getElementById('imagePreviewContainer');
+        if (!container) return;
+        
+        const previewId = 'preview_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+        
+        const previewDiv = document.createElement('div');
+        previewDiv.className = 'new-image-preview';
+        previewDiv.id = previewId;
+        
+        previewDiv.innerHTML = `
+            <img src="${e.target.result}" alt="${file.name}">
+            <button type="button" class="remove-new-image" onclick="removeFile('${previewId}', '${file.name}')">
+                <i class="bi bi-x"></i>
+            </button>
+            <div style="padding: 0.5rem;">
+                <div style="font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${file.name}">
+                    ${file.name.length > 15 ? file.name.substring(0,12) + '...' : file.name}
+                </div>
+                <div style="font-size: 0.65rem; color: #64748b;">
+                    ${(file.size / 1024).toFixed(1)} KB
+                </div>
+            </div>
+        `;
+        
+        container.appendChild(previewDiv);
+    };
+    
+    reader.readAsDataURL(file);
+}
+
+// ============ 8. REMOVE FILE ============
+function removeFile(previewId, fileName) {
+    // Hapus preview
+    const preview = document.getElementById(previewId);
+    if (preview) preview.remove();
+    
+    // Hapus dari array
+    selectedFiles = selectedFiles.filter(f => f.name !== fileName);
+}
+
+// ============ 9. ESC KEY UNTUK TUTUP PREVIEW ============
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        // Tutup preview
+        hidePreview();
+        
+        // Tutup progress modal
+        document.getElementById('progressModal').style.display = 'none';
+        document.getElementById('progressOverlay').style.display = 'none';
+    }
+});
+</script>
+{% endblock %}

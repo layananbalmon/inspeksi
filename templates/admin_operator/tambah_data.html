@@ -1,0 +1,197 @@
+{% extends "admin_operator/base.html" %}
+
+{% block title %}Tambah Data Stasiun{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="mb-0">
+        <i class="bi bi-plus-circle"></i> Tambah Data Stasiun Baru
+    </h3>
+    <a href="{{ url_for('admin_operator_daftar_stasiun') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Kembali
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-wifi"></i> Form Tambah Stasiun untuk {{ operator|upper }}</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('admin_operator_tambah_data') }}" id="stasiunForm">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="stasiun_name" class="form-label">Nama Stasiun <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="stasiun_name" name="stasiun_name" required>
+                        <div class="form-text">Masukkan nama stasiun dengan jelas</div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="kota" class="form-label">Kota/Kabupaten <span class="text-danger">*</span></label>
+                        <select class="form-select" id="kota" name="kota" required>
+                            <option value="">Pilih Kota/Kab</option>
+                            {% for kota in kota_list %}
+                            <option value="{{ kota }}">{{ kota|title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stasiun Lawan Section dengan 3 KOLOM: Nama, Freq Tx, Freq Rx -->
+            <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5><i class="bi bi-diagram-3"></i> Stasiun Lawan</h5>
+                    <button type="button" class="btn btn-sm btn-success" onclick="addOpponentField()">
+                        <i class="bi bi-plus-circle"></i> Tambah Baris
+                    </button>
+                </div>
+                
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> 
+                    <strong>Petunjuk:</strong> Isi nama stasiun lawan, Frekuensi Tx (Transmit), dan Frekuensi Rx (Receive).
+                </div>
+                
+                <!-- Header kolom - 3 KOLOM -->
+                <div class="row mb-2 fw-bold">
+                    <div class="col-md-4">Nama Stasiun Lawan</div>
+                    <div class="col-md-3">Freq Tx (contoh: 1800 MHz)</div>
+                    <div class="col-md-3">Freq Rx (contoh: 1800 MHz)</div>
+                    <div class="col-md-2">Aksi</div>
+                </div>
+                
+                <div id="opponent-container">
+                    <!-- Baris pertama dengan 3 kolom input -->
+                    <div class="row mb-2 opponent-row">
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" name="stasiun_lawan[]" 
+                                   placeholder="Nama Stasiun Lawan" required>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="text" class="form-control" name="freq_tx[]" 
+                                   placeholder="Freq Tx (contoh: 1800 MHz)">
+                        </div>
+                        <div class="col-md-3">
+                            <input type="text" class="form-control" name="freq_rx[]" 
+                                   placeholder="Freq Rx (contoh: 1800 MHz)">
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-outline-danger w-100" onclick="removeField(this)" disabled>
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-3">
+                    <small class="text-muted">
+                        <i class="bi bi-lightbulb"></i> Frekuensi Tx dan Rx bersifat opsional, bisa diisi nanti.
+                    </small>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <a href="{{ url_for('admin_operator_daftar_stasiun') }}" class="btn btn-secondary">
+                    <i class="bi bi-x-circle"></i> Batal
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save"></i> Simpan Data
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    let opponentCounter = 1;
+
+    function addOpponentField() {
+        opponentCounter++;
+        const container = document.getElementById('opponent-container');
+        const div = document.createElement('div');
+        div.className = 'row mb-2 opponent-row';
+        div.innerHTML = `
+            <div class="col-md-4">
+                <input type="text" class="form-control" name="stasiun_lawan[]" 
+                       placeholder="Nama Stasiun Lawan">
+            </div>
+            <div class="col-md-3">
+                <input type="text" class="form-control" name="freq_tx[]" 
+                       placeholder="Freq Tx (contoh: 1800 MHz)">
+            </div>
+            <div class="col-md-3">
+                <input type="text" class="form-control" name="freq_rx[]" 
+                       placeholder="Freq Rx (contoh: 1800 MHz)">
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="btn btn-outline-danger w-100" onclick="removeField(this)">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        `;
+        container.appendChild(div);
+        
+        if (opponentCounter > 1) {
+            const firstDeleteBtn = container.querySelector('.opponent-row:first-child .btn-outline-danger');
+            if (firstDeleteBtn) {
+                firstDeleteBtn.disabled = false;
+            }
+        }
+    }
+
+    function removeField(button) {
+        const row = button.closest('.opponent-row');
+        if (row && opponentCounter > 1) {
+            row.remove();
+            opponentCounter--;
+            
+            if (opponentCounter === 1) {
+                const firstDeleteBtn = document.querySelector('.opponent-row:first-child .btn-outline-danger');
+                if (firstDeleteBtn) {
+                    firstDeleteBtn.disabled = true;
+                }
+            }
+        }
+    }
+
+    // Validasi form sebelum submit
+    document.getElementById('stasiunForm').addEventListener('submit', function(e) {
+        const stasiunName = document.getElementById('stasiun_name').value.trim();
+        const kota = document.getElementById('kota').value;
+        
+        if (!stasiunName || !kota) {
+            e.preventDefault();
+            alert('Harap lengkapi semua field yang wajib diisi!');
+            return false;
+        }
+        
+        const opponentInputs = document.querySelectorAll('input[name="stasiun_lawan[]"]');
+        let hasOpponent = false;
+        opponentInputs.forEach(input => {
+            if (input.value.trim()) {
+                hasOpponent = true;
+            }
+        });
+        
+        if (!hasOpponent) {
+            e.preventDefault();
+            alert('Minimal harus ada 1 stasiun lawan!');
+            return false;
+        }
+    });
+</script>
+
+<style>
+.btn-operator {
+    background-color: var(--operator-color, #0d6efd);
+    border-color: var(--operator-color, #0d6efd);
+    color: white;
+}
+.btn-operator:hover {
+    background-color: var(--operator-hover, #0b5ed7);
+    border-color: var(--operator-hover, #0a58ca);
+}
+</style>
+{% endblock %}

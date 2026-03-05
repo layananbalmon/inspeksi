@@ -1,0 +1,639 @@
+{% extends "admin_master/base.html" %}
+
+{% block title %}Daftar Stasiun{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="mb-0">
+        <i class="bi bi-table"></i> Daftar Stasiun
+    </h3>
+    <a href="{{ url_for('admin_master_tambah_data') }}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> Tambah Baru
+    </a>
+</div>
+
+<!-- Filter Section -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-funnel"></i> Filter & Pencarian Data</h5>
+    </div>
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('admin_master_daftar_stasiun') }}" class="row g-3" id="filterForm">
+            <!-- Field Pencarian Nama Stasiun -->
+            <div class="col-md-3">
+                <label for="search_stasiun" class="form-label">
+                    <i class="bi bi-search"></i> Nama Stasiun
+                </label>
+                <input type="text" 
+                       class="form-control" 
+                       id="search_stasiun" 
+                       name="search_stasiun" 
+                       value="{{ request.args.get('search_stasiun', '') }}"
+                       placeholder="Cari nama stasiun...">
+            </div>
+            
+            <!-- Filter Operator -->
+            <div class="col-md-3">
+                <label for="operator" class="form-label">
+                    <i class="bi bi-building"></i> Operator
+                </label>
+                <select class="form-select" id="operator" name="operator">
+                    <option value="all" {% if selected_operator == 'all' %}selected{% endif %}>Semua Operator</option>
+                    {% for operator in operators %}
+                    <option value="{{ operator }}" {% if selected_operator == operator %}selected{% endif %}>
+                        {{ operator|upper }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- Filter Kota -->
+            <div class="col-md-3">
+                <label for="kota" class="form-label">
+                    <i class="bi bi-geo-alt"></i> Kota/Kabupaten
+                </label>
+                <select class="form-select" id="kota" name="kota">
+                    <option value="all" {% if selected_kota == 'all' %}selected{% endif %}>Semua Kota/Kab</option>
+                    {% for kota in kota_list %}
+                    <option value="{{ kota }}" {% if selected_kota == kota %}selected{% endif %}>
+                        {{ kota|title }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- Filter Per Page -->
+            <div class="col-md-3">
+                <label for="per_page" class="form-label">
+                    <i class="bi bi-list"></i> Tampilkan
+                </label>
+                <select class="form-select" id="per_page" name="per_page">
+                    <option value="10" {% if request.args.get('per_page', '20') == '10' %}selected{% endif %}>10</option>
+                    <option value="20" {% if request.args.get('per_page', '20') == '20' %}selected{% endif %}>20</option>
+                    <option value="50" {% if request.args.get('per_page', '20') == '50' %}selected{% endif %}>50</option>
+                    <option value="100" {% if request.args.get('per_page', '20') == '100' %}selected{% endif %}>100</option>
+                </select>
+            </div>
+            
+            <!-- Tombol Aksi -->
+            <div class="col-12 d-flex justify-content-end gap-2 mt-3">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-filter"></i> Filter
+                </button>
+                <a href="{{ url_for('admin_master_daftar_stasiun') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-clockwise"></i> Reset
+                </a>
+            </div>
+        </form>
+        
+        <!-- Info Pencarian Aktif -->
+        {% if request.args.get('search_stasiun') or (request.args.get('operator') and request.args.get('operator') != 'all') or (request.args.get('kota') and request.args.get('kota') != 'all') %}
+        <div class="alert alert-info mt-3 mb-0 py-2">
+            <i class="bi bi-info-circle"></i> 
+            <strong>Filter aktif:</strong>
+            {% if request.args.get('search_stasiun') %}
+                <span class="badge bg-info me-2">Nama: "{{ request.args.get('search_stasiun') }}"</span>
+            {% endif %}
+            {% if request.args.get('operator') and request.args.get('operator') != 'all' %}
+                <span class="badge bg-info me-2">Operator: {{ request.args.get('operator')|upper }}</span>
+            {% endif %}
+            {% if request.args.get('kota') and request.args.get('kota') != 'all' %}
+                <span class="badge bg-info me-2">Kota: {{ request.args.get('kota')|title }}</span>
+            {% endif %}
+            <span class="badge bg-secondary">Menampilkan {{ pagination.total }} data</span>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Data Table -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="bi bi-list-ul"></i> Data Stasiun
+            <span class="badge bg-primary ms-2">{{ pagination.total }} data</span>
+        </h5>
+    </div>
+
+    <div class="card-body">
+        {% if stations %}
+        <div class="table-responsive">
+            <table class="table table-hover" id="stasiunTable">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Nama Stasiun</th>
+                        <th>Operator</th>
+                        <th>Kota/Kab</th>
+                        <th>Stasiun Lawan & Status</th>
+                        <th>Freq Tx</th>  <!-- UBAH: dari Freq menjadi Freq Tx -->
+                        <th>Freq Rx</th>  <!-- TAMBAH: kolom baru Freq Rx -->
+                        <th>Tanggal</th>
+                        <th class="text-center">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+    {% for station in stations %}
+    <tr>
+        <td>{{ loop.index + (pagination.page - 1) * pagination.per_page }}</td>
+        <td>
+            <strong>{{ station.stasiun_name }}</strong>
+        </td>
+        <td>
+            {% if station.operator == 'telkom' %}
+            <span class="badge" style="background-color: #E1251B; color: white;">
+                <i class="bi bi-telephone"></i> Telkom
+            </span>
+            {% elif station.operator == 'telkomsel' %}
+            <span class="badge" style="background-color: #E1251B; color: white;">
+                <i class="bi bi-phone"></i> Telkomsel
+            </span>
+            {% elif station.operator == 'indosat' %}
+            <span class="badge" style="background-color: #FF6600; color: white;">
+                <i class="bi bi-phone"></i> Indosat
+            </span>
+            {% elif station.operator == 'xl' %}
+            <span class="badge" style="background-color: #7F3F98; color: white;">
+                <i class="bi bi-phone-vibrate"></i> XL
+            </span>
+            {% endif %}
+        </td>
+        <td>{{ station.kota|title }}</td>
+        
+        <!-- KOLOM 5: STASIUN LAWAN & STATUS -->
+        <td>
+            {% if station.stasiun_lawan_list %}
+                <div class="mb-2">
+                    <span class="badge bg-secondary mb-2">
+                        {{ station.stasiun_lawan_list|length }} stasiun lawan
+                    </span>
+                    
+                    <div class="mt-1">
+                        {% set stasiun_lawan_grouped = {} %}
+                        
+                        {% for lawan in station.stasiun_lawan_list %}
+                            {% set group_key = lawan.group_id if lawan.group_id else 'no_group' %}
+                            {% if group_key not in stasiun_lawan_grouped %}
+                                {% set _ = stasiun_lawan_grouped.update({group_key: []}) %}
+                            {% endif %}
+                            {% set _ = stasiun_lawan_grouped[group_key].append(lawan) %}
+                        {% endfor %}
+                        
+                        <!-- Loop melalui setiap grup -->
+                        {% for group_key, lawan_list in stasiun_lawan_grouped.items() %}
+                            {% if group_key != 'no_group' %}
+<div class="border-start border-3 border-info ps-2 mb-2">
+    <small class="text-info fw-bold d-block mb-1">
+        <i class="bi bi-collection"></i> 
+        {% set grup_nama = namespace(name=None) %}
+        {% for g in station.grup_list %}
+            {% if g.id == group_key|int %}
+                {% set grup_nama.name = g.nama_grup %}
+            {% endif %}
+        {% endfor %}
+        {% if grup_nama.name %}
+            {{ grup_nama.name }}
+        {% else %}
+            Grup {{ group_key }}
+        {% endif %}
+    </small>
+{% endif %}
+                                            
+                                            <!-- List stasiun lawan dalam grup -->
+                                            {% for lawan in lawan_list %}
+                                                <div class="d-flex justify-content-between align-items-center border-bottom pb-1 mb-1">
+                                                    <div style="max-width: 70%;">
+                                                        <small class="text-muted" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                                            {{ lawan.nama_stasiun_lawan }}
+                                                        </small>
+                                                    </div>
+                                                    <div>
+                                                        {% set latest_status = None %}
+                                                        {% if lawan.status_updates %}
+                                                            {% set latest_status = lawan.status_updates|sort(attribute='updated_at', reverse=true)|first %}
+                                                        {% endif %}
+                                                        
+                                                        {% if latest_status %}
+                                                            {% if latest_status.status == 'aktif' %}
+                                                                <span class="badge bg-success" style="padding: 2px 5px; font-size: 10px;">Aktif</span>
+                                                            {% elif latest_status.status == 'tidak_aktif' %}
+                                                                <span class="badge bg-danger" style="padding: 2px 5px; font-size: 10px;">Tidak Aktif</span>
+                                                            {% elif latest_status.status == 'tidak_berizin' %}
+                                                                <span class="badge bg-warning" style="padding: 2px 5px; font-size: 10px;">Tidak Berizin</span>
+                                                            {% elif latest_status.status == 'tidak_sesuai' %}
+                                                                <span class="badge bg-info" style="padding: 2px 5px; font-size: 10px;">Tidak Sesuai</span>
+                                                            {% else %}
+                                                                <span class="badge bg-secondary" style="padding: 2px 5px; font-size: 10px;">{{ latest_status.status }}</span>
+                                                            {% endif %}
+                                                        {% else %}
+                                                            <span class="badge bg-light text-dark" style="padding: 2px 5px; font-size: 10px;">Belum</span>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                            
+                                            {% if group_key != 'no_group' %}
+                                            </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% else %}
+                                <span class="badge bg-light text-dark">Tidak ada stasiun lawan</span>
+                            {% endif %}
+        </td>
+        
+        <!-- KOLOM 6: FREKUENSI TX (BARU) -->
+        <td>
+            {% if station.stasiun_lawan_list %}
+                <!-- Spacer untuk badge jumlah -->
+                <div class="mb-2">
+                    <span class="badge bg-secondary mb-2" style="visibility: hidden; opacity: 0;">
+                        {{ station.stasiun_lawan_list|length }} placeholder
+                    </span>
+                </div>
+                
+                <div class="mt-1">
+                    {% set stasiun_lawan_grouped = {} %}
+                    
+                    {% for lawan in station.stasiun_lawan_list %}
+                        {% set group_key = lawan.group_id if lawan.group_id else 'no_group' %}
+                        {% if group_key not in stasiun_lawan_grouped %}
+                            {% set _ = stasiun_lawan_grouped.update({group_key: []}) %}
+                        {% endif %}
+                        {% set _ = stasiun_lawan_grouped[group_key].append(lawan) %}
+                    {% endfor %}
+                    
+                    <!-- Loop melalui setiap grup -->
+                    {% for group_key, lawan_list in stasiun_lawan_grouped.items() %}
+                        {% if group_key != 'no_group' %}
+                            <div class="border-start border-3 border-info ps-2 mb-2" style="border-color: transparent !important;">
+                                <!-- Spacer untuk judul grup -->
+                                <div class="mb-1" style="height: 20px;"></div>
+                        {% endif %}
+                                                        
+                        <!-- List frekuensi Tx untuk setiap stasiun lawan -->
+                        {% for lawan in lawan_list %}
+                            <div class="d-flex align-items-center border-bottom pb-1 mb-1" style="min-height: 28px;">
+                                {% if lawan.freq_tx and lawan.freq_tx|trim %}
+                                    <span class="badge bg-info">{{ lawan.freq_tx }}</span>
+                                {% else %}
+                                    <span class="badge bg-light text-dark">-</span>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                                                        
+                        {% if group_key != 'no_group' %}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% else %}
+                <span class="badge bg-light text-dark">-</span>
+            {% endif %}
+        </td>
+        
+        <!-- KOLOM 7: FREKUENSI RX (BARU) -->
+        <td>
+            {% if station.stasiun_lawan_list %}
+                <!-- Spacer untuk badge jumlah -->
+                <div class="mb-2">
+                    <span class="badge bg-secondary mb-2" style="visibility: hidden; opacity: 0;">
+                        {{ station.stasiun_lawan_list|length }} placeholder
+                    </span>
+                </div>
+                
+                <div class="mt-1">
+                    {% set stasiun_lawan_grouped = {} %}
+                    
+                    {% for lawan in station.stasiun_lawan_list %}
+                        {% set group_key = lawan.group_id if lawan.group_id else 'no_group' %}
+                        {% if group_key not in stasiun_lawan_grouped %}
+                            {% set _ = stasiun_lawan_grouped.update({group_key: []}) %}
+                        {% endif %}
+                        {% set _ = stasiun_lawan_grouped[group_key].append(lawan) %}
+                    {% endfor %}
+                    
+                    <!-- Loop melalui setiap grup -->
+                    {% for group_key, lawan_list in stasiun_lawan_grouped.items() %}
+                        {% if group_key != 'no_group' %}
+                            <div class="border-start border-3 border-info ps-2 mb-2" style="border-color: transparent !important;">
+                                <!-- Spacer untuk judul grup -->
+                                <div class="mb-1" style="height: 20px;"></div>
+                        {% endif %}
+                                                        
+                        <!-- List frekuensi Rx untuk setiap stasiun lawan -->
+                        {% for lawan in lawan_list %}
+                            <div class="d-flex align-items-center border-bottom pb-1 mb-1" style="min-height: 28px;">
+                                {% if lawan.freq_rx and lawan.freq_rx|trim %}
+                                    <span class="badge bg-success">{{ lawan.freq_rx }}</span>
+                                {% else %}
+                                    <span class="badge bg-light text-dark">-</span>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                                                        
+                        {% if group_key != 'no_group' %}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% else %}
+                <span class="badge bg-light text-dark">-</span>
+            {% endif %}
+        </td>
+        
+        <td>
+            <small class="text-muted">
+                {{ station.created_at.strftime('%d/%m/%Y') }}
+            </small>
+        </td>
+        <td class="text-center">
+            <div class="btn-group btn-group-sm" role="group">
+                <a href="{{ url_for('admin_master_detail_stasiun', station_id=station.id) }}"
+                    class="btn btn-outline-info" title="Detail">
+                    <i class="bi bi-eye"></i>
+                </a>
+                <a href="{{ url_for('admin_master_edit_stasiun', station_id=station.id) }}"
+                    class="btn btn-outline-warning" title="Edit">
+                    <i class="bi bi-pencil"></i>
+                </a>
+                <button type="button" class="btn btn-outline-danger"
+                        onclick="confirmDelete(`{{ station.id }}`, `{{ station.stasiun_name }}`)"
+                        title="Hapus">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        </td>
+    </tr>
+    {% endfor %}
+</tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if pagination.pages > 1 %}
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                <!-- First page -->
+                {% if pagination.page > 1 %}
+                <li class="page-item">
+                    <a class="page-link" 
+                       href="{{ url_for('admin_master_daftar_stasiun', 
+                                        page=1, 
+                                        operator=request.args.get('operator'),
+                                        kota=request.args.get('kota'),
+                                        search_stasiun=request.args.get('search_stasiun', ''),
+                                        per_page=pagination.per_page) }}">
+                        <i class="bi bi-chevron-double-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+                
+                <!-- Previous page -->
+                {% if pagination.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" 
+                       href="{{ url_for('admin_master_daftar_stasiun', 
+                                        page=pagination.prev_num, 
+                                        operator=request.args.get('operator'),
+                                        kota=request.args.get('kota'),
+                                        search_stasiun=request.args.get('search_stasiun', ''),
+                                        per_page=pagination.per_page) }}">
+                        <i class="bi bi-chevron-left"></i> Sebelumnya
+                    </a>
+                </li>
+                {% endif %}
+
+                <!-- Page numbers -->
+                {% for page_num in pagination.iter_pages(left_edge=1, left_current=2, right_current=2, right_edge=1) %}
+                    {% if page_num %}
+                        {% if page_num == pagination.page %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                        {% else %}
+                        <li class="page-item">
+                            <a class="page-link" 
+                               href="{{ url_for('admin_master_daftar_stasiun', 
+                                                page=page_num, 
+                                                operator=request.args.get('operator'),
+                                                kota=request.args.get('kota'),
+                                                search_stasiun=request.args.get('search_stasiun', ''),
+                                                per_page=pagination.per_page) }}">
+                                {{ page_num }}
+                            </a>
+                        </li>
+                        {% endif %}
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                <!-- Next page -->
+                {% if pagination.has_next %}
+                <li class="page-item">
+                    <a class="page-link" 
+                       href="{{ url_for('admin_master_daftar_stasiun', 
+                                        page=pagination.next_num, 
+                                        operator=request.args.get('operator'),
+                                        kota=request.args.get('kota'),
+                                        search_stasiun=request.args.get('search_stasiun', ''),
+                                        per_page=pagination.per_page) }}">
+                        Selanjutnya <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+                
+                <!-- Last page -->
+                {% if pagination.page < pagination.pages %}
+                <li class="page-item">
+                    <a class="page-link" 
+                       href="{{ url_for('admin_master_daftar_stasiun', 
+                                        page=pagination.pages, 
+                                        operator=request.args.get('operator'),
+                                        kota=request.args.get('kota'),
+                                        search_stasiun=request.args.get('search_stasiun', ''),
+                                        per_page=pagination.per_page) }}">
+                        <i class="bi bi-chevron-double-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+            
+            <!-- Info Pagination -->
+            <div class="text-center text-muted small mt-2">
+                Menampilkan halaman <strong>{{ pagination.page }}</strong> dari <strong>{{ pagination.pages }}</strong> 
+                | Total <strong>{{ pagination.total }}</strong> data
+                | Per halaman <strong>{{ pagination.per_page }}</strong>
+            </div>
+        </nav>
+        {% endif %}
+
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-inbox" style="font-size: 64px; color: #dee2e6;"></i>
+            <h5 class="text-muted mt-3">Tidak ada data stasiun</h5>
+            <p class="text-muted">
+                {% if request.args.get('search_stasiun') or (request.args.get('operator') and request.args.get('operator') != 'all') or (request.args.get('kota') and request.args.get('kota') != 'all') %}
+                Tidak ada hasil untuk pencarian 
+                {% if request.args.get('search_stasiun') %}"{{ request.args.get('search_stasiun') }}"{% endif %}
+                {% if request.args.get('operator') and request.args.get('operator') != 'all' %}dengan operator {{ request.args.get('operator')|upper }}{% endif %}
+                {% if request.args.get('kota') and request.args.get('kota') != 'all' %}di kota {{ request.args.get('kota')|title }}{% endif %}.
+                <br>
+                <a href="{{ url_for('admin_master_daftar_stasiun') }}" class="btn btn-sm btn-outline-primary mt-2">
+                    <i class="bi bi-arrow-clockwise"></i> Reset Filter
+                </a>
+                {% else %}
+                <a href="{{ url_for('admin_master_tambah_data') }}">tambahkan stasiun baru</a>.
+                {% endif %}
+            </p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- CSS untuk styling -->
+<style>
+.badge {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 4px;
+}
+
+.btn-group-sm .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
+
+.table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+.border-info {
+    border-color: #0dcaf0 !important;
+}
+
+/* Style untuk input pencarian */
+#search_stasiun {
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    padding: 0.5rem 1rem;
+    transition: all 0.3s ease;
+}
+
+#search_stasiun:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+    outline: none;
+}
+
+/* Style untuk info filter */
+.alert-info {
+    background-color: #eef2ff;
+    border: none;
+    color: var(--primary-color);
+    border-radius: 8px;
+}
+
+.alert-info .badge {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+}
+
+/* Pagination styling */
+.pagination {
+    gap: 5px;
+}
+
+.page-link {
+    border-radius: 8px;
+    color: var(--primary-color);
+    border: 1px solid #e9ecef;
+    padding: 0.5rem 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.page-link:hover {
+    background-color: #eef2ff;
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+}
+
+.page-item.active .page-link {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+.page-item.disabled .page-link {
+    background-color: #f8fafc;
+    color: #94a3b8;
+}
+</style>
+
+<script>
+    function confirmDelete(stationId, stationName) {
+        if (confirm(`Apakah Anda yakin ingin menghapus stasiun "${stationName}"?\n\nData yang dihapus tidak dapat dikembalikan!`)) {
+            window.location.href = `/admin-master/hapus-stasiun/${stationId}`;
+        }
+    }
+
+    function exportToExcel() {
+        // Simple export to CSV
+        let csv = [];
+        let rows = document.querySelectorAll("#stasiunTable tr");
+
+        for (let i = 0; i < rows.length; i++) {
+            let row = [], cols = rows[i].querySelectorAll("td, th");
+
+            for (let j = 0; j < cols.length; j++) {
+                // Skip action column
+                if (j === 8) continue;
+
+                // Clean text
+                let text = cols[j].innerText.replace(/\n/g, " ").replace(/\s+/g, " ").trim();
+                row.push(text);
+            }
+
+            csv.push(row.join(","));
+        }
+
+        // Download CSV file
+        let csvContent = "data:text/csv;charset=utf-8," + csv.join("\n");
+        let encodedUri = encodeURI(csvContent);
+        let link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "daftar_stasiun.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    // Auto submit form ketika per_page berubah
+    document.addEventListener('DOMContentLoaded', function() {
+        const perPageSelect = document.getElementById('per_page');
+        if (perPageSelect) {
+            perPageSelect.addEventListener('change', function() {
+                document.getElementById('filterForm').submit();
+            });
+        }
+        
+        // Search dengan tombol Enter
+        const searchInput = document.getElementById('search_stasiun');
+        if (searchInput) {
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    document.getElementById('filterForm').submit();
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

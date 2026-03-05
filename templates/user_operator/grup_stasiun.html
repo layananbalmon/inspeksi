@@ -1,0 +1,1203 @@
+{% extends "user_operator/base.html" %}
+
+{% block title %} Buat Grup IDU Stasiun Lawan - {{ station.stasiun_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Modern Variables */
+    :root {
+        --primary: #4361ee;
+        --primary-dark: #3a0ca3;
+        --success: #2ecc71;
+        --warning: #f39c12;
+        --danger: #e63946;
+        --info: #00b4d8;
+        --gray-100: #f8f9fa;
+        --gray-200: #e9ecef;
+        --gray-300: #dee2e6;
+        --gray-600: #6c757d;
+        --gray-900: #212529;
+        --shadow-sm: 0 2px 8px rgba(0,0,0,0.05);
+        --shadow-md: 0 4px 15px rgba(0,0,0,0.08);
+        --shadow-lg: 0 10px 30px rgba(0,0,0,0.12);
+        --radius-sm: 8px;
+        --radius-md: 12px;
+        --radius-lg: 20px;
+        --transition: all 0.2s ease;
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(145deg, #4361ee, #3a0ca3);
+        color: white;
+        padding: 20px 25px;
+        border-radius: var(--radius-lg);
+        margin-bottom: 20px;
+        box-shadow: var(--shadow-md);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::after {
+        content: '';
+        position: absolute;
+        top: -30%;
+        right: -10%;
+        width: 200px;
+        height: 200px;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        border-radius: 50%;
+    }
+
+    /* ===== MINI WORKFLOW GUIDE - HORIZONTAL ===== */
+    .workflow-guide-mini {
+        background: white;
+        border-radius: var(--radius-lg);
+        padding: 16px 25px;
+        margin-bottom: 20px;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--gray-200);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .guide-steps-horizontal {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        flex: 1;
+    }
+
+    .step-item-mini {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 6px 12px;
+        border-radius: 30px;
+        background: var(--gray-100);
+        transition: var(--transition);
+        flex: 0 1 auto;
+    }
+
+    .step-item-mini.active {
+        background: linear-gradient(145deg, #e3f2fd, #e6f7ff);
+        border: 1px solid var(--primary);
+        box-shadow: 0 2px 8px rgba(67, 97, 238, 0.15);
+    }
+
+    .step-number-mini {
+        width: 28px;
+        height: 28px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.85rem;
+        color: var(--primary);
+        border: 1px solid var(--primary);
+        flex-shrink: 0;
+    }
+
+    .step-item-mini.active .step-number-mini {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+    }
+
+    .step-content-mini {
+        display: flex;
+        flex-direction: column;
+        white-space: nowrap;
+    }
+
+    .step-content-mini strong {
+        font-size: 0.8rem;
+        color: var(--gray-900);
+        line-height: 1.2;
+    }
+
+    .step-content-mini p {
+        font-size: 0.7rem;
+        color: var(--gray-600);
+        margin: 0;
+        line-height: 1.2;
+    }
+
+    .guide-connector {
+        color: var(--gray-300);
+        font-size: 1.2rem;
+        font-weight: 300;
+    }
+
+    /* Layout - Side by Side */
+    .main-layout {
+        display: flex;
+        gap: 25px;
+        margin-top: 10px;
+    }
+
+    .left-sidebar {
+        flex: 0 0 320px;
+        position: sticky;
+        top: 20px;
+        height: fit-content;
+    }
+
+    .right-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    /* Form Card */
+    .form-card-modern {
+        background: white;
+        border-radius: var(--radius-lg);
+        padding: 0;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--gray-200);
+        overflow: hidden;
+    }
+
+    .form-header {
+        background: linear-gradient(145deg, #1e3c72, #2a5298);
+        color: white;
+        padding: 16px 20px;
+        border-bottom: none;
+    }
+
+    .form-header h6 {
+        margin: 0;
+        font-size: 0.95rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .form-body {
+        padding: 20px;
+    }
+
+    /* Opponent List Container */
+    .opponent-list-mini {
+        max-height: 280px;
+        overflow-y: auto;
+        background: var(--gray-100);
+        border-radius: var(--radius-md);
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .form-check-mini {
+        padding: 10px 12px;
+        background: white;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        margin: 0;
+    }
+
+    .form-check-mini:hover {
+        border-color: var(--primary);
+        background: white;
+        transform: translateX(3px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .form-check-mini .form-check-input {
+        width: 18px;
+        height: 18px;
+        margin-right: 12px;
+        cursor: pointer;
+        border-radius: 5px;
+        border: 2px solid var(--gray-300);
+    }
+
+    .form-check-mini .form-check-input:checked {
+        background-color: var(--primary);
+        border-color: var(--primary);
+    }
+
+    .form-check-mini .form-check-label {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--gray-900);
+        cursor: pointer;
+        flex: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Group Cards */
+    .group-card-modern {
+        background: white;
+        border-radius: var(--radius-lg);
+        margin-bottom: 20px;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--gray-200);
+        overflow: hidden;
+        transition: var(--transition);
+    }
+
+    .group-card-modern:hover {
+        box-shadow: var(--shadow-md);
+        transform: translateY(-2px);
+    }
+
+    .group-header-modern {
+        padding: 16px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .group-header-modern.grouped {
+        background: linear-gradient(145deg, #f0fdf4, #ffffff);
+    }
+
+    .group-header-modern.ungrouped {
+        background: linear-gradient(145deg, #fffbeb, #ffffff);
+    }
+
+    .group-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .group-icon-small {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(145deg, #4361ee, #3a0ca3);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.2rem;
+    }
+
+    .group-icon-small.ungrouped {
+        background: linear-gradient(145deg, #f39c12, #e67e22);
+    }
+
+    .group-details h5 {
+        margin: 0 0 4px 0;
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--gray-900);
+    }
+
+    .badge-mini {
+        padding: 4px 10px;
+        border-radius: 30px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+    }
+
+    .badge-group-mini {
+        background: #17a2b8;
+        color: white;
+    }
+
+    .badge-ungrouped-mini {
+        background: #ffc107;
+        color: #212529;
+    }
+
+    /* Action Buttons */
+    .action-buttons-mini {
+        display: flex;
+        gap: 6px;
+    }
+
+    .btn-icon-mini {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: var(--transition);
+    }
+
+    .btn-edit-mini {
+        background: #6f42c1;
+        color: white;
+    }
+
+    .btn-edit-mini:hover {
+        background: #5a32a3;
+        transform: translateY(-2px);
+        box-shadow: 0 3px 8px rgba(106, 66, 193, 0.3);
+    }
+
+    .btn-delete-mini {
+        background: #dc3545;
+        color: white;
+    }
+
+    .btn-delete-mini:hover {
+        background: #bb2d3b;
+        transform: translateY(-2px);
+        box-shadow: 0 3px 8px rgba(187, 45, 59, 0.3);
+    }
+
+    .btn-primary-mini {
+        background: var(--primary);
+        color: white;
+    }
+
+    .btn-outline-mini {
+        background: white;
+        border: 1px solid var(--gray-300);
+        color: var(--gray-600);
+    }
+
+    .btn-outline-mini:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+        background: #f8fafd;
+    }
+
+    /* Frekuensi badges */
+    .freq-tx-badge {
+        display: inline-flex;
+        align-items: center;
+        background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+        color: #0d47a1;
+        padding: 4px 10px;
+        border-radius: 16px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        border: 1px solid rgba(13, 71, 161, 0.2);
+        white-space: nowrap;
+    }
+
+    .freq-tx-badge i {
+        font-size: 0.65rem;
+        margin-right: 4px;
+        color: #1976d2;
+    }
+
+    .freq-rx-badge {
+        display: inline-flex;
+        align-items: center;
+        background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+        color: #1b5e20;
+        padding: 4px 10px;
+        border-radius: 16px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        border: 1px solid rgba(27, 94, 32, 0.2);
+        white-space: nowrap;
+    }
+
+    .freq-rx-badge i {
+        font-size: 0.65rem;
+        margin-right: 4px;
+        color: #2e7d32;
+    }
+
+    .freq-container {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-top: 5px;
+    }
+
+    /* Opponent Items - TANPA IKON SINYAL */
+    .opponent-grid-mini {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 12px;
+        padding: 16px;
+    }
+
+    .opponent-item-mini {
+        background: white;
+        border-radius: 12px;
+        padding: 12px 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+        min-height: 70px;
+        gap: 8px;
+    }
+
+    .opponent-item-mini:hover {
+        border-color: var(--primary);
+        box-shadow: var(--shadow-sm);
+        transform: translateX(3px);
+    }
+
+    .opponent-info-mini {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .opponent-info-mini strong {
+        color: var(--gray-900) !important;
+        font-size: 0.9rem !important;
+        font-weight: 600 !important;
+        display: block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        cursor: help;
+    }
+
+    /* Table Mini - TANPA IKON SINYAL */
+    .table-mini {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 8px;
+    }
+
+    .table-mini thead th {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--gray-600);
+        padding: 8px 16px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .table-mini tbody tr {
+        background: white;
+        border-radius: 12px;
+        transition: var(--transition);
+    }
+
+    .table-mini tbody tr:hover {
+        background: #f8fafd;
+    }
+
+    .table-mini td {
+        padding: 12px 16px;
+        border: none;
+        vertical-align: middle;
+    }
+
+    .table-mini td:first-child {
+        border-radius: 12px 0 0 12px;
+    }
+
+    .table-mini td:last-child {
+        border-radius: 0 12px 12px 0;
+    }
+
+    .opponent-name-only {
+        font-weight: 600;
+        color: var(--gray-900);
+        font-size: 0.9rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 250px;
+        cursor: help;
+    }
+
+    /* Empty State */
+    .empty-state-mini {
+        text-align: center;
+        padding: 40px 20px;
+        background: white;
+        border-radius: var(--radius-lg);
+        border: 1px dashed var(--gray-300);
+    }
+
+    .empty-state-icon-mini {
+        width: 70px;
+        height: 70px;
+        background: #f1f5f9;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        color: var(--gray-600);
+        font-size: 2rem;
+    }
+
+    /* ===== MODAL ===== */
+    .modal {
+        z-index: 1060 !important;
+    }
+    
+    .modal-backdrop {
+        z-index: 1055 !important;
+        background-color: rgba(0, 0, 0, 0.7) !important;
+    }
+
+    .modal-dialog {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        margin: 0 auto;
+        pointer-events: none;
+    }
+
+    .modal-content {
+        pointer-events: auto;
+        border: none;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        border-radius: 20px !important;
+        width: 100%;
+        max-width: 500px;
+        margin: 1.75rem auto;
+    }
+
+    .modal-body {
+        padding: 1.5rem !important;
+        max-height: calc(100vh - 150px);
+        overflow-y: auto;
+    }
+
+    .modal-header {
+        padding: 1.25rem 1.5rem !important;
+        border-bottom: 1px solid var(--gray-200);
+        border-top-left-radius: 20px !important;
+        border-top-right-radius: 20px !important;
+    }
+
+    .modal-header .modal-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+    }
+
+    .modal .form-control,
+    .modal .form-select {
+        padding: 0.6rem 1rem;
+        font-size: 0.95rem;
+        border-radius: 12px;
+        border: 1px solid var(--gray-300);
+    }
+
+    .modal .form-control:focus,
+    .modal .form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 0.2rem rgba(67, 97, 238, 0.25);
+    }
+
+    .modal .btn {
+        border-radius: 30px !important;
+        padding: 0.5rem 1.5rem !important;
+    }
+
+    /* Responsive */
+    @media (max-width: 992px) {
+        .main-layout {
+            flex-direction: column;
+        }
+        
+        .left-sidebar {
+            flex: auto;
+            position: static;
+            width: 100%;
+        }
+        
+        .workflow-guide-mini {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 15px;
+        }
+        
+        .guide-steps-horizontal {
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .step-item-mini {
+            flex: 1 1 auto;
+        }
+        
+        .step-content-mini {
+            white-space: normal;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .group-header-modern {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        
+        .action-buttons-mini {
+            width: 100%;
+            justify-content: flex-start;
+        }
+        
+        .opponent-grid-mini {
+            grid-template-columns: 1fr;
+        }
+        
+        .modal-content {
+            max-width: 95%;
+        }
+    }
+
+    /* Scrollbar */
+    .opponent-list-mini::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .opponent-list-mini::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 10px;
+    }
+
+    .opponent-list-mini::-webkit-scrollbar-thumb {
+        background: #94a3b8;
+        border-radius: 10px;
+    }
+
+    .opponent-list-mini::-webkit-scrollbar-thumb:hover {
+        background: #64748b;
+    }
+
+    .fs-7 { font-size: 0.85rem !important; }
+    .fs-8 { font-size: 0.7rem !important; }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+        <div>
+            <h1 class="h4 mb-1 fw-bold">
+                <i class="bi bi-diagram-3 me-2"></i>Buat Grup IDU Stasiun Lawan
+            </h1>
+            <div class="d-flex align-items-center gap-2 mt-1">
+                <span class="badge bg-white text-dark px-3 py-1.5 rounded-pill fs-7">
+                    <i class="bi bi-broadcast me-1"></i> {{ station.stasiun_name }}
+                </span>
+                <span class="badge bg-white text-dark px-3 py-1.5 rounded-pill fs-7">
+                    <i class="bi bi-person me-1"></i> {{ station.operator|upper }}
+                </span>
+            </div>
+        </div>
+        <div class="mt-2 mt-md-0">
+            <a href="{{ url_for('user_operator_detail_stasiun', station_id=station.id) }}" class="btn btn-light btn-sm rounded-pill px-4">
+                <i class="bi bi-arrow-left me-1"></i> Kembali
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- MINI WORKFLOW GUIDE - HORIZONTAL 1 2 3 -->
+<div class="workflow-guide-mini">
+    <div class="guide-steps-horizontal">
+        <div class="step-item-mini active">
+            <div class="step-number-mini">1</div>
+            <div class="step-content-mini">
+                <strong>Grup IDU</strong>
+                <p>Buat Grup Pada semua Stasiun Lawan</p>
+            </div>
+        </div>
+        <span class="guide-connector"><i class="bi bi-chevron-right"></i></span>
+        <div class="step-item-mini">
+            <div class="step-number-mini">2</div>
+            <div class="step-content-mini">
+                <strong>Upload Gambar</strong>
+                <p>Upload Gambar per grup</p>
+            </div>
+        </div>
+        <span class="guide-connector"><i class="bi bi-chevron-right"></i></span>
+        <div class="step-item-mini">
+            <div class="step-number-mini">3</div>
+            <div class="step-content-mini">
+                <strong>Kelola Status</strong>
+                <p>Buat Status tiap Stasiun Lawan</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Layout - Side by Side -->
+<div class="main-layout">
+    <!-- LEFT SIDEBAR - Create Group Form -->
+    <div class="left-sidebar">
+        <div class="form-card-modern">
+            <div class="form-header">
+                <h6>
+                    <i class="bi bi-plus-circle"></i> Buat Merk Perangkat
+                </h6>
+            </div>
+            <div class="form-body">
+                <form method="POST" action="{{ url_for('user_operator_grup_stasiun', station_id=station.id) }}" id="createGroupForm">
+                    <input type="hidden" name="action" value="create_group">
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small text-secondary mb-1">
+                            <i class="bi bi-tag me-1"></i> Nama Merk Perangkat
+                        </label>
+                        <input type="text" class="form-control form-control-sm" name="group_name" 
+                               placeholder="Contoh: NEC.Pasolink, Ceragon" required
+                               id="groupNameInput" style="border-radius: 10px;">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small text-secondary mb-1">
+                            <i class="bi bi-diagram-3 me-1"></i> Pilih Stasiun Lawan
+                            {% if ungrouped_lawans %}
+                                <span class="badge bg-secondary bg-opacity-10 text-dark ms-2 rounded-pill">{{ ungrouped_lawans|length }}</span>
+                            {% endif %}
+                        </label>
+                        <div class="opponent-list-mini" id="opponentList">
+                            {% if ungrouped_lawans %}
+                                {% for lawan in ungrouped_lawans %}
+                                <div class="form-check-mini">
+                                    <input class="form-check-input opponent-checkbox" type="checkbox" 
+                                           name="selected_opponents[]" value="{{ lawan.id }}" 
+                                           id="opp_{{ lawan.id }}">
+                                    <label class="form-check-label" for="opp_{{ lawan.id }}" title="{{ lawan.nama_stasiun_lawan }}">
+                                        {{ lawan.nama_stasiun_lawan }}
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="alert alert-warning py-2 mb-0 small">
+                                    <i class="bi bi-exclamation-triangle me-1"></i> Semua lawan sudah dalam grup
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success btn-sm py-2" id="createGroupBtn" style="border-radius: 30px;">
+                            <i class="bi bi-check-circle me-1"></i> Buat Grup Baru
+                        </button>
+                        
+                        {% if ungrouped_lawans and ungrouped_lawans|length > 0 %}
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="selectAllUngrouped()" style="border-radius: 30px;">
+                            <i class="bi bi-check2-all me-1"></i> Pilih Semua ({{ ungrouped_lawans|length }})
+                        </button>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT CONTENT - Groups List -->
+    <div class="right-content">
+        {% if groups %}
+            <!-- Existing Groups -->
+            {% for group_key, group_data in groups.items() %}
+                {% if group_key != 'ungrouped' %}
+                <div class="group-card-modern">
+                    <div class="group-header-modern grouped">
+                        <div class="group-info">
+                            <div class="group-icon-small">
+                                <i class="bi bi-collection"></i>
+                            </div>
+                            <div class="group-details">
+                                <h5 title="{{ group_data.nama }}">{{ group_data.nama }}</h5>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="badge-mini badge-group-mini">
+                                        <i class="bi bi-people me-1"></i>{{ group_data.lawans|length }} lawan
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="action-buttons-mini">
+                            <form method="POST" action="{{ url_for('user_operator_grup_stasiun', station_id=station.id) }}" 
+                                  class="d-inline" onsubmit="return confirm('Hapus grup ini? Semua anggota akan dipindahkan ke Tanpa Grup.')">
+                                <input type="hidden" name="action" value="delete_group">
+                                <input type="hidden" name="group_id" value="{{ group_key }}">
+                                <button type="submit" class="btn-icon-mini btn-delete-mini">
+                                    <i class="bi bi-folder-x"></i> Hapus
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <div class="opponent-grid-mini">
+                        {% for lawan in group_data.lawans %}
+                        <div class="opponent-item-mini">
+                            <div class="opponent-info-mini">
+                                <strong title="{{ lawan.nama_stasiun_lawan }}">{{ lawan.nama_stasiun_lawan }}</strong>
+                                <div class="freq-container">
+                                    {% if lawan.freq_tx %}
+                                        <span class="freq-tx-badge" title="Frekuensi Transmit">
+                                            <i class="bi bi-arrow-up-short"></i> {{ lawan.freq_tx }}
+                                        </span>
+                                    {% endif %}
+                                    {% if lawan.freq_rx %}
+                                        <span class="freq-rx-badge" title="Frekuensi Receive">
+                                            <i class="bi bi-arrow-down-short"></i> {{ lawan.freq_rx }}
+                                        </span>
+                                    {% endif %}
+                                    {% if not lawan.freq_tx and not lawan.freq_rx %}
+                                        <span class="badge bg-light text-muted">-</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="d-flex gap-1">
+                                <button type="button" class="btn btn-sm btn-outline-primary rounded-circle p-1" 
+                                        style="width: 28px; height: 28px;" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#editLawanModal{{ lawan.id }}"
+                                        title="Edit Lawan">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <form method="POST" action="{{ url_for('user_operator_grup_stasiun', station_id=station.id) }}" 
+                                      class="d-inline" onsubmit="return confirm('Keluarkan {{ lawan.nama_stasiun_lawan }} dari grup?')">
+                                    <input type="hidden" name="action" value="remove_from_group">
+                                    <input type="hidden" name="opponent_id" value="{{ lawan.id }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-warning rounded-circle p-1" 
+                                            style="width: 28px; height: 28px;" title="Keluarkan dari grup">
+                                        <i class="bi bi-x"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="p-3 bg-light bg-opacity-50 border-top d-flex justify-content-center gap-2">
+                        <a href="{{ url_for('user_operator_upload', station_id=station.id) }}" 
+                           class="btn-icon-mini btn-primary-mini">
+                            <i class="bi bi-upload"></i> Upload Gambar
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            {% endfor %}
+            
+            <!-- Ungrouped Opponents -->
+            {% if 'ungrouped' in groups and groups.ungrouped.lawans|length > 0 %}
+            <div class="group-card-modern">
+                <div class="group-header-modern ungrouped">
+                    <div class="group-info">
+                        <div class="group-icon-small ungrouped">
+                            <i class="bi bi-circle"></i>
+                        </div>
+                        <div class="group-details">
+                            <h5 class="text-warning">{{ groups.ungrouped.nama }}</h5>
+                            <span class="badge-mini badge-ungrouped-mini">
+                                <i class="bi bi-exclamation-triangle me-1"></i>{{ groups.ungrouped.lawans|length }} lawan
+                            </span>
+                        </div>
+                    </div>
+                    <div>
+                        <button type="button" class="btn-icon-mini btn-outline-mini" onclick="selectAllUngrouped()">
+                            <i class="bi bi-check2-all"></i> Pilih Semua
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="p-3">
+                    <div class="table-responsive">
+                        <table class="table-mini">
+                            <thead>
+                                <tr>
+                                    <th width="50">No</th>
+                                    <th>Nama Stasiun Lawan</th>
+                                    <th width="150">Freq Tx</th>
+                                    <th width="150">Freq Rx</th>
+                                    <th width="80">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for lawan in groups.ungrouped.lawans %}
+                                <tr>
+                                    <td class="text-center">
+                                        <span class="badge bg-light text-dark rounded-circle p-2" style="width: 30px; height: 30px;">
+                                            {{ loop.index }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="opponent-name-only" title="{{ lawan.nama_stasiun_lawan }}">
+                                            {{ lawan.nama_stasiun_lawan }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if lawan.freq_tx %}
+                                            <span class="freq-tx-badge">{{ lawan.freq_tx }}</span>
+                                        {% else %}
+                                            <span class="badge bg-light text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if lawan.freq_rx %}
+                                            <span class="freq-rx-badge">{{ lawan.freq_rx }}</span>
+                                        {% else %}
+                                            <span class="badge bg-light text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="d-flex gap-1 justify-content-end">
+                                            <button type="button" class="btn-icon-mini" 
+                                                    style="background: #6f42c1; color: white; border: none; border-radius: 20px; padding: 6px 14px; font-size: 0.75rem;"
+                                                    data-bs-toggle="modal" data-bs-target="#editLawanModal{{ lawan.id }}">
+                                                <i class="bi bi-pencil me-1"></i> Edit
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        
+        {% else %}
+        <!-- Empty State -->
+        <div class="empty-state-mini">
+            <div class="empty-state-icon-mini">
+                <i class="bi bi-diagram-3"></i>
+            </div>
+            <h5 class="mb-2 fw-bold">Belum Ada Grup</h5>
+            <p class="text-muted small mb-3" style="max-width: 300px; margin: 0 auto;">
+                Mulai dengan membuat grup baru menggunakan panel di sebelah kiri.
+            </p>
+            <button type="button" class="btn btn-primary btn-sm rounded-pill px-4 py-2" 
+                    onclick="document.querySelector('.left-sidebar').scrollIntoView({behavior: 'smooth'})">
+                <i class="bi bi-plus-circle me-1"></i> Buat Grup Pertama
+            </button>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- EDIT LAWAN MODALS - UNTUK SEMUA LAWAN DENGAN FREKUENSI -->
+{% if stasiun_lawan %}
+    {% for lawan in stasiun_lawan %}
+    <div class="modal fade" id="editLawanModal{{ lawan.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow-lg" style="max-width: 500px;">
+                <div class="modal-header bg-light border-0 py-3">
+                    <h5 class="modal-title fw-bold">
+                        <i class="bi bi-pencil-square me-2 text-warning"></i> Edit Stasiun Lawan
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form method="POST" action="{{ url_for('user_operator_edit_lawan_single', station_id=station.id) }}">
+                        <input type="hidden" name="lawan_id" value="{{ lawan.id }}">
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-broadcast me-1"></i> Nama Stasiun Lawan
+                            </label>
+                            <input type="text" class="form-control" name="nama_lawan" 
+                                   value="{{ lawan.nama_stasiun_lawan }}" required
+                                   placeholder="Masukkan nama stasiun lawan">
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    <i class="bi bi-arrow-up-short me-1"></i> Frekuensi Tx
+                                </label>
+                                <input type="text" class="form-control" name="freq_tx" 
+                                       value="{{ lawan.freq_tx or '' }}" 
+                                       placeholder="Contoh: 1800 MHz">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    <i class="bi bi-arrow-down-short me-1"></i> Frekuensi Rx
+                                </label>
+                                <input type="text" class="form-control" name="freq_rx" 
+                                       value="{{ lawan.freq_rx or '' }}" 
+                                       placeholder="Contoh: 1800 MHz">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-diagram-3 me-1"></i> Pindahkan ke Grup
+                            </label>
+                            <select class="form-select" name="new_group_id">
+                                <option value="">— Tetap tanpa grup —</option>
+                                {% for group_key, group_data in groups.items() %}
+                                    {% if group_key != 'ungrouped' %}
+                                    <option value="{{ group_key }}" {% if lawan.group_id == group_key|int %}selected{% endif %}>
+                                        {{ group_data.nama }}
+                                    </option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+                            <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">
+                                Batal
+                            </button>
+                            <button type="submit" class="btn btn-primary rounded-pill px-4">
+                                <i class="bi bi-check-circle me-1"></i> Simpan
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+{% endif %}
+
+<!-- Toast Container -->
+<div id="toastContainer" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1080;"></div>
+
+<!-- JavaScript -->
+<script>
+// Fungsi select all
+function selectAllUngrouped() {
+    const checkboxes = document.querySelectorAll('.opponent-checkbox');
+    if (checkboxes.length === 0) {
+        showToast('Tidak ada lawan yang dapat dipilih', 'info');
+        return;
+    }
+    
+    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+    
+    checkboxes.forEach(cb => {
+        cb.checked = !allChecked;
+        
+        if (!allChecked) {
+            const formCheck = cb.closest('.form-check-mini');
+            if (formCheck) {
+                formCheck.style.background = '#e3f2fd';
+                formCheck.style.borderColor = '#4361ee';
+                setTimeout(() => {
+                    formCheck.style.background = '';
+                    formCheck.style.borderColor = '';
+                }, 1000);
+            }
+        }
+    });
+    
+    showToast(allChecked ? 'Pilihan dibatalkan' : 'Semua lawan dipilih', allChecked ? 'info' : 'success');
+}
+
+// Fungsi toast notification
+function showToast(message, type = 'success') {
+    let toastContainer = document.getElementById('toastContainer');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toastContainer';
+        toastContainer.className = 'position-fixed bottom-0 end-0 p-3';
+        toastContainer.style.zIndex = '1080';
+        document.body.appendChild(toastContainer);
+    }
+    
+    const toastId = 'toast-' + Date.now();
+    const toast = document.createElement('div');
+    toast.id = toastId;
+    toast.className = `toast align-items-center text-bg-${type} border-0`;
+    toast.setAttribute('role', 'alert');
+    toast.setAttribute('aria-live', 'assertive');
+    toast.setAttribute('aria-atomic', 'true');
+    toast.style.borderRadius = '30px';
+    toast.style.fontSize = '0.85rem';
+    
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body small">
+                <i class="bi ${type === 'success' ? 'bi-check-circle' : 'bi-info-circle'} me-2"></i>
+                ${message}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+    
+    toastContainer.appendChild(toast);
+    const bsToast = new bootstrap.Toast(toast, { delay: 2000 });
+    bsToast.show();
+    toast.addEventListener('hidden.bs.toast', function() { 
+        toast.remove(); 
+    });
+}
+
+// Document ready
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('=== GRUP STASIUN PAGE LOADED ===');
+    console.log('Station ID: {{ station.id }}');
+    console.log('Station Name: {{ station.stasiun_name }}');
+    
+    // Auto-focus pada input nama grup
+    const groupNameInput = document.getElementById('groupNameInput');
+    if (groupNameInput) {
+        setTimeout(() => groupNameInput.focus(), 500);
+    }
+    
+    // Form validation
+    const createGroupForm = document.getElementById('createGroupForm');
+    if (createGroupForm) {
+        createGroupForm.addEventListener('submit', function(e) {
+            const checkboxes = this.querySelectorAll('.opponent-checkbox:checked');
+            const groupName = document.getElementById('groupNameInput').value.trim();
+            
+            if (!groupName) {
+                e.preventDefault();
+                showToast('Nama grup harus diisi!', 'warning');
+                document.getElementById('groupNameInput').focus();
+                return;
+            }
+            
+            if (checkboxes.length === 0) {
+                e.preventDefault();
+                showToast('Pilih minimal 1 stasiun lawan!', 'warning');
+                return;
+            }
+            
+            const submitBtn = document.getElementById('createGroupBtn');
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Membuat...';
+            submitBtn.disabled = true;
+        });
+    }
+    
+    // Tooltips
+    const tooltipTriggerList = document.querySelectorAll('[title]');
+    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+        new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+
+// Debug tambahan: event listener untuk semua tombol edit
+document.addEventListener('click', function(e) {
+    const editButton = e.target.closest('[data-bs-toggle="modal"]');
+    if (editButton) {
+        const target = editButton.getAttribute('data-bs-target');
+        const modal = document.querySelector(target);
+        console.log(`Tombol edit diklik: target=${target}, modal exists=${!!modal}`);
+        
+        if (!modal) {
+            e.preventDefault();
+            alert(`ERROR: Modal dengan ID ${target} tidak ditemukan di halaman!`);
+        }
+    }
+}, true);
+</script>
+
+<!-- DEBUG INFO - HAPUS SETELAH SELESAI -->
+<div style="display: none;" id="debugInfo" 
+     data-stasiun-lawan-count="{{ stasiun_lawan|length if stasiun_lawan else 0 }}"
+     data-ungrouped-count="{{ ungrouped_lawans|length if ungrouped_lawans else 0 }}"
+     data-groups-count="{{ groups|length if groups else 0 }}">
+</div>
+{% endblock %}

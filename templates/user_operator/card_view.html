@@ -1,0 +1,636 @@
+{% extends "user_operator/base.html" %}
+
+{% block title %}Card View - {{ operator_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-3 px-md-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="mb-1">
+                <i class="bi bi-grid-3x3-gap"></i> Card View - {{ operator_name }}
+            </h3>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{{ url_for('user_operator_dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Card View</li>
+                </ol>
+            </nav>
+        </div>
+        
+        <div class="d-flex gap-2">
+            <!-- Filter Kota -->
+            <div class="dropdown">
+                <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="bi bi-geo-alt"></i> 
+                    {% if selected_kota != 'all' %}
+                        {{ selected_kota|title }}
+                    {% else %}
+                        Semua Kota
+                    {% endif %}
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="{{ url_for('user_operator_card_view') }}">Semua Kota</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    {% for kota in kota_list %}
+                    <li>
+                        <a class="dropdown-item" href="{{ url_for('user_operator_card_view', kota=kota) }}">
+                            <i class="bi bi-geo-alt"></i> {{ kota|title }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            
+            <!-- Toggle View Mode -->
+            <button class="btn btn-outline-secondary" id="toggleViewBtn">
+                <i class="bi bi-list-ul" id="viewIcon"></i>
+                <span id="viewText">List View</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="card stat-card bg-primary bg-opacity-10 border-primary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Total Stasiun</h6>
+                            <h3 class="mb-0">{{ cards|length }}</h3>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="bi bi-building text-primary" style="font-size: 2.5rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="card stat-card bg-success bg-opacity-10 border-success">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Sudah Upload</h6>
+                            <h3 class="mb-0">
+                                {% set with_image = cards|selectattr('image_count', '>', 0)|list|length %}
+                                {{ with_image }}
+                            </h3>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="bi bi-check-circle text-success" style="font-size: 2.5rem;"></i>
+                        </div>
+                    </div>
+                    <small class="text-muted">{{ ((with_image / cards|length * 100) if cards|length > 0 else 0)|round(1) }}% stasiun</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="card stat-card bg-info bg-opacity-10 border-info">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Total Gambar</h6>
+                            <h3 class="mb-0">
+                                {% set total_images = cards|sum(attribute='image_count') %}
+                                {{ total_images }}
+                            </h3>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="bi bi-images text-info" style="font-size: 2.5rem;"></i>
+                        </div>
+                    </div>
+                    <small class="text-muted">
+                        {% set avg_images = (total_images / cards|length) if cards|length > 0 else 0 %}
+                        Rata-rata {{ avg_images|round(1) }} gambar/stasiun
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="card stat-card bg-warning bg-opacity-10 border-warning">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Stasiun Lawan</h6>
+                            <h3 class="mb-0">
+                                {% set total_opponents = cards|sum(attribute='opponent_count') %}
+                                {{ total_opponents }}
+                            </h3>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="bi bi-diagram-3 text-warning" style="font-size: 2.5rem;"></i>
+                        </div>
+                    </div>
+                    <small class="text-muted">
+                        {% set unique_kota = cards|map(attribute='kota')|unique|list|length %}
+                        {{ unique_kota }} kota/kabupaten
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    {% if cards %}
+    <!-- Card View -->
+    <div class="row" id="cardView">
+        {% for card in cards %}
+        <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+            <div class="card station-card h-100 shadow-sm">
+                <!-- Image Slider -->
+                <div class="position-relative">
+                    <div id="slider-{{ card.id }}" class="carousel slide" data-bs-ride="carousel">
+                        <div class="carousel-inner">
+                            {% if card.images %}
+                                {% for image in card.images %}
+                                <div class="carousel-item {% if loop.first %}active{% endif %}">
+                                    <img src="{{ image.url }}" 
+                                         alt="Gambar {{ loop.index }}"
+                                         class="d-block w-100 slider-image"
+                                         onerror="this.src='https://via.placeholder.com/400x225?text=Gambar+Error'">
+                                    
+                                    <!-- Status Badge -->
+                                    {% if image.status %}
+                                    <div class="position-absolute top-0 end-0 m-2">
+                                        <span class="badge {% if image.status == 'aktif' %}bg-success
+                                                          {% elif image.status == 'tidak_aktif' %}bg-danger
+                                                          {% elif image.status == 'tidak_berizin' %}bg-warning
+                                                          {% elif image.status == 'tidak_sesuai' %}bg-secondary
+                                                          {% else %}bg-info{% endif %}">
+                                            {{ image.status|replace('_', ' ')|title }}
+                                        </span>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <!-- Image Counter -->
+                                    <div class="position-absolute bottom-0 end-0 m-2">
+                                        <span class="badge bg-dark bg-opacity-75">
+                                            {{ loop.index }}/{{ card.images|length }}
+                                        </span>
+                                    </div>
+                                    
+                                    <!-- Opponent Info -->
+                                    {% if image.opponent %}
+                                    <div class="position-absolute bottom-0 start-0 m-2">
+                                        <span class="badge bg-info bg-opacity-75 text-truncate" style="max-width: 150px;">
+                                            {{ image.opponent }}
+                                        </span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="carousel-item active">
+                                    <div class="no-image d-flex flex-column align-items-center justify-content-center h-100 bg-light">
+                                        <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                                        <p class="mt-2 text-muted">Belum ada gambar</p>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        {% if card.images and card.images|length > 1 %}
+                        <button class="carousel-control-prev" type="button" data-bs-target="#slider-{{ card.id }}" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon"></span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#slider-{{ card.id }}" data-bs-slide="next">
+                            <span class="carousel-control-next-icon"></span>
+                        </button>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Quick Actions -->
+                    <div class="position-absolute top-0 start-0 m-2">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-sm btn-light shadow-sm view-fullscreen" 
+                                    data-station-id="{{ card.id }}"
+                                    data-bs-toggle="tooltip" title="Lihat Fullscreen">
+                                <i class="bi bi-arrows-fullscreen"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Card Body -->
+                <div class="card-body">
+                    <h5 class="card-title mb-2 text-truncate" title="{{ card.name }}">
+                        <i class="bi bi-building me-1"></i> {{ card.name }}
+                    </h5>
+                    
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="bi bi-geo-alt text-muted me-1"></i>
+                        <span class="text-muted">{{ card.kota|title }}</span>
+                        <span class="badge bg-light text-dark ms-2 border">
+                            <i class="bi bi-calendar3"></i> {{ card.updated_at|default(card.created_at)|format_datetime }}
+                        </span>
+                    </div>
+                    
+                    <!-- Opponents -->
+                    {% if card.opponents %}
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-1">
+                            <i class="bi bi-diagram-3"></i> Stasiun Lawan:
+                        </small>
+                        <div class="d-flex flex-wrap gap-1">
+                            {% for opponent in card.opponents[:3] %}
+                            <span class="badge bg-secondary bg-opacity-25 text-dark">{{ opponent }}</span>
+                            {% endfor %}
+                            {% if card.opponents|length > 3 %}
+                            <span class="badge bg-light text-dark border">+{{ card.opponents|length - 3 }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Stats -->
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-primary bg-opacity-10 rounded p-2 me-2">
+                                    <i class="bi bi-images text-primary"></i>
+                                </div>
+                                <div>
+                                    <div class="h5 mb-0">{{ card.image_count }}</div>
+                                    <small class="text-muted">Gambar</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-success bg-opacity-10 rounded p-2 me-2">
+                                    <i class="bi bi-diagram-3 text-success"></i>
+                                </div>
+                                <div>
+                                    <div class="h5 mb-0">{{ card.opponent_count }}</div>
+                                    <small class="text-muted">Lawan</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Card Footer -->
+                <div class="card-footer bg-transparent border-top">
+                    <div class="row g-2">
+                        <div class="col-4">
+                            <a href="{{ url_for('user_operator_detail_stasiun', station_id=card.id) }}" 
+                               class="btn btn-sm btn-outline-info w-100"
+                               data-bs-toggle="tooltip" title="Detail">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </div>
+                        <div class="col-4">
+                            <a href="{{ url_for('user_operator_upload_gambar', station_id=card.id) }}" 
+                               class="btn btn-sm btn-outline-primary w-100"
+                               data-bs-toggle="tooltip" title="Upload">
+                                <i class="bi bi-upload"></i>
+                            </a>
+                        </div>
+                        <div class="col-4">
+                            <a href="{{ url_for('user_operator_manage_uploads', station_id=card.id) }}" 
+                               class="btn btn-sm btn-outline-warning w-100"
+                               data-bs-toggle="tooltip" title="Manage">
+                                <i class="bi bi-gear"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Pagination (jika ada) -->
+    {% if total_pages > 1 %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            <li class="page-item {% if page == 1 %}disabled{% endif %}">
+                <a class="page-link" href="?page={{ page-1 }}{% if selected_kota != 'all' %}&kota={{ selected_kota }}{% endif %}">
+                    &laquo;
+                </a>
+            </li>
+            
+            {% for p in range(1, total_pages+1) %}
+            <li class="page-item {% if p == page %}active{% endif %}">
+                <a class="page-link" href="?page={{ p }}{% if selected_kota != 'all' %}&kota={{ selected_kota }}{% endif %}">
+                    {{ p }}
+                </a>
+            </li>
+            {% endfor %}
+            
+            <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+                <a class="page-link" href="?page={{ page+1 }}{% if selected_kota != 'all' %}&kota={{ selected_kota }}{% endif %}">
+                    &raquo;
+                </a>
+            </li>
+        </ul>
+    </nav>
+    {% endif %}
+
+    <!-- No Data Message -->
+    {% else %}
+    <div class="text-center py-5">
+        <div class="empty-state">
+            <i class="bi bi-grid-3x3-gap text-muted" style="font-size: 5rem;"></i>
+            <h3 class="text-muted mt-4">Tidak ada data stasiun</h3>
+            <p class="text-muted">
+                {% if selected_kota != 'all' %}
+                    Tidak ada stasiun di kota {{ selected_kota|title }}.
+                    <a href="{{ url_for('user_operator_card_view') }}" class="text-decoration-none">Lihat semua kota/Kab</a>
+                {% else %}
+                    Admin belum menambahkan stasiun untuk operator {{ operator_name }}.
+                {% endif %}
+            </p>
+            <a href="{{ url_for('user_operator_dashboard') }}" class="btn btn-operator mt-3">
+                <i class="bi bi-arrow-left"></i> Kembali ke Dashboard
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Fullscreen Slider Modal -->
+<div class="modal fade" id="fullscreenSliderModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content bg-dark">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title text-white" id="modalTitle">
+                    <i class="bi bi-images me-2"></i> Galeri Gambar
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div id="fullscreenCarousel" class="carousel slide h-100" data-bs-interval="false">
+                    <div class="carousel-inner h-100" id="carouselInner">
+                        <!-- Images loaded by JavaScript -->
+                    </div>
+                    
+                    <button class="carousel-control-prev" type="button" data-bs-target="#fullscreenCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon"></span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#fullscreenCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon"></span>
+                    </button>
+                    
+                    <!-- Image Info Panel -->
+                    <div class="position-absolute bottom-0 start-0 end-0 bg-dark bg-opacity-75 text-white p-3">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <h6 id="imageTitle">Loading...</h6>
+                                <small id="imageInfo" class="text-white-50">-</small>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-sm btn-outline-light" id="prevBtn">
+                                        <i class="bi bi-chevron-left"></i> Sebelumnya
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-light" id="nextBtn">
+                                        Selanjutnya <i class="bi bi-chevron-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize tooltips
+    const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    tooltips.forEach(tooltip => new bootstrap.Tooltip(tooltip));
+    
+    // Toggle View Mode
+    const toggleViewBtn = document.getElementById('toggleViewBtn');
+    const viewIcon = document.getElementById('viewIcon');
+    const viewText = document.getElementById('viewText');
+    const cardView = document.getElementById('cardView');
+    
+    let isListView = false;
+    
+    toggleViewBtn.addEventListener('click', function() {
+        isListView = !isListView;
+        
+        if (isListView) {
+            // Switch to List View (simplified for now)
+            alert('List View akan datang dalam versi berikutnya');
+            viewIcon.className = 'bi bi-grid-3x3-gap';
+            viewText.textContent = 'Card View';
+            isListView = false;
+        } else {
+            viewIcon.className = 'bi bi-list-ul';
+            viewText.textContent = 'List View';
+        }
+    });
+    
+    // Fullscreen Slider
+    const viewFullscreenButtons = document.querySelectorAll('.view-fullscreen');
+    let currentImages = [];
+    let currentIndex = 0;
+    
+    viewFullscreenButtons.forEach(button => {
+        button.addEventListener('click', async function(e) {
+            e.stopPropagation();
+            const stationId = this.dataset.stationId;
+            
+            try {
+                const response = await fetch(`/api/stasiun/${stationId}/uploads-detail`);
+                const images = await response.json();
+                
+                if (images.length === 0) {
+                    alert('Tidak ada gambar untuk stasiun ini');
+                    return;
+                }
+                
+                currentImages = images;
+                currentIndex = 0;
+                
+                // Update modal title
+                document.getElementById('modalTitle').innerHTML = `
+                    <i class="bi bi-images me-2"></i> 
+                    ${this.closest('.station-card').querySelector('.card-title').textContent.trim()}
+                `;
+                
+                // Clear and populate carousel
+                const carouselInner = document.getElementById('carouselInner');
+                carouselInner.innerHTML = '';
+                
+                images.forEach((image, index) => {
+                    const item = document.createElement('div');
+                    item.className = `carousel-item ${index === 0 ? 'active' : ''}`;
+                    item.innerHTML = `
+                        <div class="d-flex align-items-center justify-content-center h-100">
+                            <img src="${image.url}" 
+                                 class="img-fluid" 
+                                 style="max-height: calc(100vh - 150px); object-fit: contain;"
+                                 alt="${image.filename}"
+                                 onerror="this.src='https://via.placeholder.com/800x600?text=Gambar+Error'">
+                        </div>
+                    `;
+                    carouselInner.appendChild(item);
+                });
+                
+                // Update info for first image
+                updateImageInfo(0);
+                
+                // Show modal
+                const modal = new bootstrap.Modal(document.getElementById('fullscreenSliderModal'));
+                modal.show();
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Gagal memuat gambar');
+            }
+        });
+    });
+    
+    // Update image info
+    function updateImageInfo(index) {
+        if (!currentImages[index]) return;
+        
+        const image = currentImages[index];
+        document.getElementById('imageTitle').textContent = image.filename;
+        document.getElementById('imageInfo').innerHTML = `
+            <div class="row g-2">
+                <div class="col-auto">
+                    <span class="badge ${getStatusBadgeClass(image.status)}">
+                        ${image.status ? image.status.replace('_', ' ').toUpperCase() : 'TANPA STATUS'}
+                    </span>
+                </div>
+                <div class="col-auto">
+                    <i class="bi bi-person-circle"></i> ${image.opponent || 'Stasiun Utama'}
+                </div>
+                <div class="col-auto">
+                    <i class="bi bi-calendar"></i> ${image.date}
+                </div>
+                ${image.catatan ? `
+                <div class="col-12 mt-1">
+                    <small><i class="bi bi-chat-left-text"></i> ${image.catatan}</small>
+                </div>
+                ` : ''}
+            </div>
+        `;
+    }
+    
+    // Get badge class based on status
+    function getStatusBadgeClass(status) {
+        switch(status) {
+            case 'aktif': return 'bg-success';
+            case 'tidak_aktif': return 'bg-danger';
+            case 'tidak_berizin': return 'bg-warning';
+            case 'tidak_sesuai': return 'bg-secondary';
+            default: return 'bg-info';
+        }
+    }
+    
+    // Carousel events
+    const fullscreenCarousel = document.getElementById('fullscreenCarousel');
+    if (fullscreenCarousel) {
+        fullscreenCarousel.addEventListener('slide.bs.carousel', function(event) {
+            currentIndex = event.to;
+            updateImageInfo(currentIndex);
+        });
+    }
+    
+    // Navigation buttons
+    document.getElementById('prevBtn')?.addEventListener('click', function() {
+        const carousel = bootstrap.Carousel.getInstance(fullscreenCarousel);
+        carousel.prev();
+    });
+    
+    document.getElementById('nextBtn')?.addEventListener('click', function() {
+        const carousel = bootstrap.Carousel.getInstance(fullscreenCarousel);
+        carousel.next();
+    });
+    
+    // Keyboard navigation
+    document.addEventListener('keydown', function(e) {
+        if (!document.getElementById('fullscreenSliderModal').classList.contains('show')) return;
+        
+        const carousel = bootstrap.Carousel.getInstance(fullscreenCarousel);
+        if (!carousel) return;
+        
+        if (e.key === 'ArrowLeft') {
+            carousel.prev();
+        } else if (e.key === 'ArrowRight') {
+            carousel.next();
+        } else if (e.key === 'Escape') {
+            bootstrap.Modal.getInstance(document.getElementById('fullscreenSliderModal')).hide();
+        }
+    });
+});
+</script>
+
+<!-- Styles -->
+<style>
+.stat-card {
+    transition: transform 0.3s ease;
+    border-width: 2px;
+}
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+.stat-icon {
+    opacity: 0.7;
+}
+
+.station-card {
+    transition: all 0.3s ease;
+    border: 1px solid #e9ecef;
+    overflow: hidden;
+}
+.station-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    border-color: #007bff;
+}
+.station-card .slider-image {
+    height: 225px;
+    object-fit: cover;
+}
+.station-card .no-image {
+    height: 225px;
+}
+
+.carousel-control-prev,
+.carousel-control-next {
+    width: 40px;
+    height: 40px;
+    background: rgba(0,0,0,0.5);
+    border-radius: 50%;
+    top: 50%;
+    transform: translateY(-50%);
+    margin: 0 10px;
+}
+.carousel-control-prev { left: 0; }
+.carousel-control-next { right: 0; }
+
+.badge {
+    font-weight: 500;
+    padding: 0.35em 0.65em;
+}
+
+.empty-state {
+    padding: 3rem 1rem;
+}
+
+@media (max-width: 768px) {
+    .station-card .slider-image {
+        height: 180px;
+    }
+    .station-card .no-image {
+        height: 180px;
+    }
+}
+</style>
+
+{% endblock %}

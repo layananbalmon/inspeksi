@@ -1,0 +1,413 @@
+{% extends "admin_master/base.html" %}
+
+{% block title %}Upload Data via Excel - Admin Master{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="mb-0">
+        <i class="bi bi-file-earmark-excel"></i> Upload Data Stasiun via Excel
+    </h3>
+    <a href="{{ url_for('admin_master_daftar_stasiun') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Kembali ke Daftar Stasiun
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-cloud-upload"></i> Upload File Excel</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('admin_master_upload_excel') }}" enctype="multipart/form-data" id="uploadForm">
+                    <div class="mb-4">
+                        <label for="excel_file" class="form-label">
+                            <i class="bi bi-file-earmark-spreadsheet"></i> Pilih File Excel 
+                            <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group">
+                            <input type="file" class="form-control" id="excel_file" name="excel_file" 
+                                   accept=".xlsx,.xls" required onchange="previewFileName()">
+                            <button type="button" class="btn btn-outline-secondary" onclick="clearFile()">
+                                <i class="bi bi-x-circle"></i>
+                            </button>
+                        </div>
+                        <div class="form-text">
+                            Format: .xlsx atau .xls (maksimal 10MB)
+                        </div>
+                        <div id="filePreview" class="mt-2"></div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="kota_default" class="form-label">
+                            <i class="bi bi-geo-alt"></i> Kota Default untuk Semua Stasiun
+                        </label>
+                        <select class="form-select" id="kota_default" name="kota_default">
+                            <option value="">-- Pilih Kota Default (Opsional) --</option>
+                            {% for kota in kota_list %}
+                            <option value="{{ kota }}">{{ kota|title }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">
+                            Jika diisi, semua stasiun akan menggunakan kota ini (kecuali sudah ada di Excel)
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <h6><i class="bi bi-info-circle"></i> Petunjuk Penggunaan:</h6>
+                        <ul class="mb-0">
+                            <li><strong>Download template</strong> terlebih dahulu untuk format yang benar</li>
+                            <li>Pastikan kolom: <code>OPERATOR</code>, <code>STASIUN NAME</code>, <code>STASIUN LAWAN</code>, <code>FREQ TX</code>, <code>FREQ RX</code>, <code>KOTA/KAB</code></li>
+                            <li>Gunakan <strong>merge cell</strong> untuk OPERATOR dan STASIUN NAME yang sama</li>
+                            <li>Kolom KOTA/KAB opsional (jika tidak diisi, akan pakai kota default)</li>
+                            <li>File akan diproses otomatis setelah upload</li>
+                            <li>Data yang sudah ada tidak akan ditimpa</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mt-4">
+                        <div>
+                            <a href="{{ url_for('admin_master_download_template') }}" class="btn btn-success">
+                                <i class="bi bi-download"></i> Download Template
+                            </a>
+                            <a href="{{ url_for('admin_master_tambah_data') }}" class="btn btn-outline-primary ms-2">
+                                <i class="bi bi-plus-circle"></i> Tambah Manual
+                            </a>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
+                            <i class="bi bi-upload"></i> Upload & Proses Data
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Progress Bar -->
+        <div id="progressContainer" class="card mt-4 d-none">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0"><i class="bi bi-hourglass-split"></i> Sedang Memproses...</h6>
+            </div>
+            <div class="card-body">
+                <div class="progress mb-3" style="height: 25px;">
+                    <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" 
+                         role="progressbar" style="width: 0%">0%</div>
+                </div>
+                <div id="progressText" class="text-center"></div>
+            </div>
+        </div>
+    </div>
+    
+<!-- GANTI BAGIAN "Contoh Format Excel" dengan kode di bawah -->
+<div class="col-lg-4">
+    <!-- Contoh Format -->
+    <div class="card mb-4">
+        <div class="card-header bg-secondary text-white">
+            <h5 class="mb-0"><i class="bi bi-table"></i> Contoh Format Excel</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered table-sm mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th class="text-center">OPERATOR</th>
+                            <th class="text-center">STASIUN NAME</th>
+                            <th class="text-center">STASIUN LAWAN</th>
+                            <th class="text-center">FREQ TX</th>  <!-- KOLOM BARU -->
+                            <th class="text-center">FREQ RX</th>  <!-- KOLOM BARU -->
+                            <th class="text-center">KOTA/KAB</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- TELKOM -->
+                        <tr>
+                            <td rowspan="4" class="align-middle text-center" style="background-color: #ffeaea;">
+                                <strong>TELKOM</strong><br>
+                                <small>(Merge Cell)</small>
+                            </td>
+                            <td rowspan="3" class="align-middle text-center" style="background-color: #ffeaea;">
+                                <strong>TELKOM_STN_01</strong><br>
+                                <small>(Merge Cell)</small>
+                            </td>
+                            <td>TELKOM_LAWAN_01</td>
+                            <td>1800 MHz</td>  <!-- FREQ TX -->
+                            <td>1800 MHz</td>  <!-- FREQ RX -->
+                            <td rowspan="3" class="align-middle text-center" style="background-color: #fff3e0;">
+                                <strong>Kota Samarinda</strong><br>
+                                <small>(Merge Cell)</small>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>TELKOM_LAWAN_02</td>
+                            <td>2100 MHz</td>  <!-- FREQ TX -->
+                            <td>2100 MHz</td>  <!-- FREQ RX -->
+                        </tr>
+                        <tr>
+                            <td>TELKOM_LAWAN_03</td>
+                            <td>900 MHz</td>   <!-- FREQ TX -->
+                            <td>900 MHz</td>   <!-- FREQ RX -->
+                        </tr>
+                        <tr>
+                            <td>TELKOM_STN_02</td>
+                            <td>TELKOM_LAWAN_04</td>
+                            <td>1800 MHz</td>  <!-- FREQ TX -->
+                            <td>1800 MHz</td>  <!-- FREQ RX -->
+                            <td>Kota Balikpapan</td>
+                        </tr>
+                        
+                        <!-- TELKOMSEL -->
+                        <tr>
+                            <td rowspan="3" class="align-middle text-center" style="background-color: #ffeaea;">
+                                <strong>TELKOMSEL</strong><br>
+                                <small>(Merge Cell)</small>
+                            </td>
+                            <td rowspan="2" class="align-middle text-center" style="background-color: #ffeaea;">
+                                <strong>TELKOMSEL_STN_01</strong><br>
+                                <small>(Merge Cell)</small>
+                            </td>
+                            <td>TELKOMSEL_LAWAN_01</td>
+                            <td>1800 MHz</td>  <!-- FREQ TX -->
+                            <td>1800 MHz</td>  <!-- FREQ RX -->
+                            <td rowspan="2" class="align-middle text-center" style="background-color: #fff3e0;">
+                                <strong>Samarinda</strong><br>
+                                <small>(Merge Cell)</small>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>TELKOMSEL_LAWAN_02</td>
+                            <td>2100 MHz</td>  <!-- FREQ TX -->
+                            <td>2100 MHz</td>  <!-- FREQ RX -->
+                        </tr>
+                        <tr>
+                            <td>TELKOMSEL_STN_02</td>
+                            <td>TELKOMSEL_LAWAN_03</td>
+                            <td>900 MHz</td>   <!-- FREQ TX -->
+                            <td>900 MHz</td>   <!-- FREQ RX -->
+                            <td>Kota Balikpapan</td>
+                        </tr>
+                        
+                        <!-- INDOSAT -->
+                        <tr>
+                            <td rowspan="3" class="align-middle text-center" style="background-color: #fff3e0;">
+                                <strong>INDOSAT</strong><br>
+                                <small>(Merge Cell)</small>
+                            </td>
+                            <td rowspan="2" class="align-middle text-center" style="background-color: #fff3e0;">
+                                <strong>INDOSAT_STN_01</strong><br>
+                                <small>(Merge Cell)</small>
+                            </td>
+                            <td>INDOSAT_LAWAN_01</td>
+                            <td>1800 MHz</td>  <!-- FREQ TX -->
+                            <td>1800 MHz</td>  <!-- FREQ RX -->
+                            <td rowspan="2" class="align-middle text-center" style="background-color: #fff3e0;">
+                                <strong>Samarinda</strong><br>
+                                <small>(Merge Cell)</small>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>INDOSAT_LAWAN_02</td>
+                            <td>2100 MHz</td>  <!-- FREQ TX -->
+                            <td>2100 MHz</td>  <!-- FREQ RX -->
+                        </tr>
+                        <tr>
+                            <td>INDOSAT_STN_02</td>
+                            <td>INDOSAT_LAWAN_03</td>
+                            <td>900 MHz</td>   <!-- FREQ TX -->
+                            <td>900 MHz</td>   <!-- FREQ RX -->
+                            <td>Kota Balikpapan</td>
+                        </tr>
+                        
+                        <!-- XL -->
+                        <tr>
+                            <td rowspan="4" class="align-middle text-center" style="background-color: #f3e5f5;">
+                                <strong>XL</strong><br>
+                                <small>(Merge Cell)</small>
+                            </td>
+                            <td rowspan="3" class="align-middle text-center" style="background-color: #f3e5f5;">
+                                <strong>XL_STN_01</strong><br>
+                                <small>(Merge Cell)</small>
+                            </td>
+                            <td>XL_LAWAN_01</td>
+                            <td>1800 MHz</td>  <!-- FREQ TX -->
+                            <td>1800 MHz</td>  <!-- FREQ RX -->
+                            <td rowspan="3" class="align-middle text-center" style="background-color: #fff3e0;">
+                                <strong>Samarinda</strong><br>
+                                <small>(Merge Cell)</small>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>XL_LAWAN_02</td>
+                            <td>2100 MHz</td>  <!-- FREQ TX -->
+                            <td>2100 MHz</td>  <!-- FREQ RX -->
+                        </tr>
+                        <tr>
+                            <td>XL_LAWAN_03</td>
+                            <td>900 MHz</td>   <!-- FREQ TX -->
+                            <td>900 MHz</td>   <!-- FREQ RX -->
+                        </tr>
+                        <tr>
+                            <td>XL_STN_02</td>
+                            <td>XL_LAWAN_04</td>
+                            <td>1800 MHz</td>  <!-- FREQ TX -->
+                            <td>1800 MHz</td>  <!-- FREQ RX -->
+                            <td>Kota Balikpapan</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer">
+            <small class="text-muted">
+                <i class="bi bi-lightbulb"></i> 
+                <strong>Tip:</strong> Kolom FREQ TX dan FREQ RX opsional, bisa dikosongkan. Gunakan merge cell untuk OPERATOR dan STASIUN NAME jika memiliki banyak lawan.
+            </small>
+        </div>
+    </div>
+</div>
+        
+        <!-- Statistik -->
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Statistik Data</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6 mb-3">
+                        <div class="p-3 bg-light rounded">
+                            <h3 class="text-primary mb-0">{{ total_stations }}</h3>
+                            <small class="text-muted">Total Stasiun</small>
+                        </div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="p-3 bg-light rounded">
+                            <h3 class="text-success mb-0">{{ total_operators }}</h3>
+                            <small class="text-muted">Operator</small>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="p-3 bg-light rounded">
+                            <h5>Operator Tersedia:</h5>
+                            <div class="d-flex flex-wrap gap-2 mt-2">
+                                <span class="badge" style="background-color: #E1251B;">TELKOM</span>
+                                <span class="badge" style="background-color: #E1251B;">TELKOMSEL</span>
+                                <span class="badge" style="background-color: #FF6600;">INDOSAT</span>
+                                <span class="badge" style="background-color: #7F3F98;">XL</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function previewFileName() {
+    const fileInput = document.getElementById('excel_file');
+    const filePreview = document.getElementById('filePreview');
+    
+    if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        const fileSize = (file.size / (1024 * 1024)).toFixed(2);
+        filePreview.innerHTML = `
+            <div class="alert alert-success p-2">
+                <i class="bi bi-file-earmark-excel text-success"></i>
+                <strong>${file.name}</strong> (${fileSize} MB)
+                <br><small>File siap diupload</small>
+            </div>
+        `;
+    } else {
+        filePreview.innerHTML = '';
+    }
+}
+
+function clearFile() {
+    document.getElementById('excel_file').value = '';
+    document.getElementById('filePreview').innerHTML = '';
+}
+
+document.getElementById('uploadForm').addEventListener('submit', function(e) {
+    const fileInput = document.getElementById('excel_file');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    if (!fileInput.files[0]) {
+        e.preventDefault();
+        showAlert('Pilih file Excel terlebih dahulu!', 'warning');
+        return false;
+    }
+    
+    // Validasi ukuran file
+    const maxSize = 10 * 1024 * 1024;
+    if (fileInput.files[0].size > maxSize) {
+        e.preventDefault();
+        showAlert('Ukuran file terlalu besar! Maksimal 10MB.', 'warning');
+        return false;
+    }
+    
+    // Validasi ekstensi
+    const fileName = fileInput.files[0].name.toLowerCase();
+    if (!fileName.endsWith('.xlsx') && !fileName.endsWith('.xls')) {
+        e.preventDefault();
+        showAlert('Format file tidak didukung! Gunakan .xlsx atau .xls', 'warning');
+        return false;
+    }
+    
+    // Tampilkan progress bar
+    document.getElementById('progressContainer').classList.remove('d-none');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Memproses...';
+    
+    // Simulasi progress
+    let progress = 0;
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+    
+    const interval = setInterval(() => {
+        progress += 10;
+        if (progress > 90) progress = 90;
+        progressBar.style.width = progress + '%';
+        progressBar.textContent = progress + '%';
+        progressText.innerHTML = `<i class="bi bi-database"></i> Memproses data...`;
+        
+        if (progress >= 90) {
+            clearInterval(interval);
+        }
+    }, 500);
+});
+
+function showAlert(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.querySelector('.card-body').prepend(alertDiv);
+    
+    setTimeout(() => {
+        alertDiv.classList.remove('show');
+        setTimeout(() => alertDiv.remove(), 150);
+    }, 5000);
+}
+</script>
+
+<style>
+.table th {
+    font-size: 0.8rem;
+    padding: 0.5rem;
+}
+.table td {
+    font-size: 0.75rem;
+    padding: 0.5rem;
+    vertical-align: middle;
+}
+.progress {
+    border-radius: 10px;
+}
+.badge {
+    font-size: 0.75rem;
+    padding: 0.4em 0.8em;
+    color: white;
+}
+</style>
+{% endblock %}

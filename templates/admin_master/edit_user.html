@@ -1,0 +1,151 @@
+{% extends "admin_master/base.html" %}
+
+{% block title %}Edit User - {{ user.username }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="mb-0">
+        <i class="bi bi-pencil"></i> Edit User: {{ user.username }}
+    </h3>
+    <a href="{{ url_for('admin_master_manage_users') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Kembali
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-person-badge"></i> Form Edit User</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('admin_master_edit_user', user_id=user.id) }}" id="userForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="username" name="username" 
+                               value="{{ user.username }}" required>
+                        <div class="form-text">Username harus unik dan tidak boleh mengandung spasi</div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="password">
+                        <div class="form-text">Kosongkan jika tidak ingin mengubah password</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="role" class="form-label">Role <span class="text-danger">*</span></label>
+                        <select class="form-select" id="role" name="role" required onchange="toggleOperatorType()">
+                            <option value="">Pilih Role</option>
+                            <option value="admin_master" {% if user.role == 'admin_master' %}selected{% endif %}>Admin Master</option>
+                            <option value="admin_operator" {% if user.role == 'admin_operator' %}selected{% endif %}>Admin Operator</option>
+                            <option value="user_operator" {% if user.role == 'user_operator' %}selected{% endif %}>User Operator</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="operator_type" class="form-label">Operator Type</label>
+                        <select class="form-select" id="operator_type" name="operator_type" 
+                                {% if user.role == 'admin_master' %}disabled{% endif %}>
+                            <option value="">Pilih Operator</option>
+                            {% for operator in operators %}
+                            <option value="{{ operator }}" {% if user.operator_type == operator %}selected{% endif %}>
+                                {{ operator|upper }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text" id="operatorHelp">
+                            {% if user.role == 'admin_master' %}
+                                Hanya untuk user operator
+                            {% else %}
+                                Pilih operator untuk user ini
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> 
+                <strong>Informasi User Saat Ini:</strong>
+                <ul class="mb-0 mt-2">
+                    <li><strong>ID:</strong> {{ user.id }}</li>
+                    <li><strong>Dibuat:</strong> {{ user.created_at.strftime('%d/%m/%Y %H:%M') }}</li>
+                    <li><strong>Diupdate:</strong> {{ user.updated_at.strftime('%d/%m/%Y %H:%M') }}</li>
+                </ul>
+            </div>
+            
+            <div class="d-flex justify-content-between">
+                <a href="{{ url_for('admin_master_manage_users') }}" class="btn btn-secondary">
+                    <i class="bi bi-x-circle"></i> Batal
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save"></i> Simpan Perubahan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function toggleOperatorType() {
+    const role = document.getElementById('role').value;
+    const operatorTypeSelect = document.getElementById('operator_type');
+    const operatorHelp = document.getElementById('operatorHelp');
+    
+    if (role === 'admin_operator' || role === 'user_operator') {
+        operatorTypeSelect.disabled = false;
+        operatorTypeSelect.required = true;
+        operatorHelp.textContent = 'Pilih operator untuk user ini';
+    } else {
+        operatorTypeSelect.disabled = true;
+        operatorTypeSelect.required = false;
+        operatorTypeSelect.value = '';
+        operatorHelp.textContent = 'Hanya untuk user operator';
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    toggleOperatorType();
+});
+
+document.getElementById('userForm').addEventListener('submit', function(e) {
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+    const role = document.getElementById('role').value;
+    const operatorType = document.getElementById('operator_type').value;
+    
+    if (!username || !role) {
+        e.preventDefault();
+        alert('Harap lengkapi semua field yang wajib diisi!');
+        return false;
+    }
+    
+    if ((role === 'admin_operator' || role === 'user_operator') && !operatorType) {
+        e.preventDefault();
+        alert('Harap pilih operator type!');
+        return false;
+    }
+    
+    if (password && password.length < 8) {
+        e.preventDefault();
+        alert('Password minimal 8 karakter!');
+        return false;
+    }
+    
+    if (!confirm('Apakah Anda yakin ingin menyimpan perubahan?')) {
+        e.preventDefault();
+        return false;
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,131 @@
+{% extends "admin_master/base.html" %}
+
+{% block title %}Tambah User Baru{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="mb-0">
+        <i class="bi bi-person-plus"></i> Tambah User Baru
+    </h3>
+    <a href="{{ url_for('admin_master_manage_users') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Kembali
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-person-badge"></i> Form Tambah User</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('admin_master_add_user') }}" id="userForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                        <div class="form-text">Username harus unik dan tidak boleh mengandung spasi</div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                        <div class="form-text">Minimal 8 karakter</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="role" class="form-label">Role <span class="text-danger">*</span></label>
+                        <select class="form-select" id="role" name="role" required onchange="toggleOperatorType()">
+                            <option value="">Pilih Role</option>
+                            <option value="admin_master">Admin Master</option>
+                            <option value="admin_operator">Admin Operator</option>
+                            <option value="user_operator">User Operator</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="operator_type" class="form-label">Operator Type</label>
+                        <select class="form-select" id="operator_type" name="operator_type" disabled>
+                            <option value="">Pilih Operator</option>
+                            {% for operator in operators %}
+                            <option value="{{ operator }}">{{ operator|upper }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text" id="operatorHelp">Pilih operator untuk user operator</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> 
+                <strong>Informasi:</strong>
+                <ul class="mb-0 mt-2">
+                    <li><strong>Admin Master</strong>: Akses penuh ke semua fitur dan data</li>
+                    <li><strong>Admin Operator</strong>: Hanya dapat mengelola stasiun untuk operator tertentu</li>
+                    <li><strong>User Operator</strong>: Hanya dapat upload gambar untuk operator tertentu</li>
+                </ul>
+            </div>
+            
+            <div class="d-flex justify-content-between">
+                <a href="{{ url_for('admin_master_manage_users') }}" class="btn btn-secondary">
+                    <i class="bi bi-x-circle"></i> Batal
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save"></i> Simpan User
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function toggleOperatorType() {
+    const role = document.getElementById('role').value;
+    const operatorTypeSelect = document.getElementById('operator_type');
+    const operatorHelp = document.getElementById('operatorHelp');
+    
+    if (role === 'admin_operator' || role === 'user_operator') {
+        operatorTypeSelect.disabled = false;
+        operatorTypeSelect.required = true;
+        operatorHelp.textContent = 'Pilih operator untuk user ini';
+    } else {
+        operatorTypeSelect.disabled = true;
+        operatorTypeSelect.required = false;
+        operatorTypeSelect.value = '';
+        operatorHelp.textContent = 'Hanya untuk user operator';
+    }
+}
+
+document.getElementById('userForm').addEventListener('submit', function(e) {
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+    const role = document.getElementById('role').value;
+    const operatorType = document.getElementById('operator_type').value;
+    
+    if (!username || !password || !role) {
+        e.preventDefault();
+        alert('Harap lengkapi semua field yang wajib diisi!');
+        return false;
+    }
+    
+    if ((role === 'admin_operator' || role === 'user_operator') && !operatorType) {
+        e.preventDefault();
+        alert('Harap pilih operator type!');
+        return false;
+    }
+    
+    if (password.length < 8) {
+        e.preventDefault();
+        alert('Password minimal 8 karakter!');
+        return false;
+    }
+});
+</script>
+{% endblock %}

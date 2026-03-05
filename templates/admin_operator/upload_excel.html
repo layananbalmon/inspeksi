@@ -1,0 +1,304 @@
+{% extends "admin_operator/base.html" %}
+
+{% block title %}Upload Data via Excel - {{ operator|upper }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="mb-0">
+        <i class="bi bi-file-earmark-excel"></i> Upload Data Stasiun via Excel
+    </h3>
+    <a href="{{ url_for('admin_operator_daftar_stasiun') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Kembali ke Daftar Stasiun
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header" style="background-color: var(--operator-color, #0d6efd); color: white;">
+                <h5 class="mb-0"><i class="bi bi-cloud-upload"></i> Upload File Excel - {{ operator|upper }}</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('admin_operator_upload_excel') }}" enctype="multipart/form-data" id="uploadForm">
+                    <div class="alert alert-primary">
+                        <i class="bi bi-person-check"></i> 
+                        <strong>Mode Admin Operator:</strong><br>
+                        Semua data akan otomatis ditambahkan untuk operator <strong>{{ operator|upper }}</strong>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="excel_file" class="form-label">
+                            <i class="bi bi-file-earmark-spreadsheet"></i> Pilih File Excel 
+                            <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group">
+                            <input type="file" class="form-control" id="excel_file" name="excel_file" 
+                                   accept=".xlsx,.xls" required onchange="previewFileName()">
+                            <button type="button" class="btn btn-outline-secondary" onclick="clearFile()">
+                                <i class="bi bi-x-circle"></i>
+                            </button>
+                        </div>
+                        <div class="form-text">
+                            Format: .xlsx atau .xls (maksimal 10MB)
+                        </div>
+                        <div id="filePreview" class="mt-2"></div>
+                    </div>
+                    
+                    <!-- Kota default (opsional) -->
+                    <div class="mb-3">
+                        <label for="kota_default" class="form-label">
+                            <i class="bi bi-geo-alt"></i> Pilih Kota/Kab Default
+                            <span class="text-muted">(Opsional)</span>
+                        </label>
+                        <select class="form-select" id="kota_default" name="kota_default">
+                            <option value="">-- Tidak perlu dipilih jika Excel sudah ada kolom KOTA/KAB --</option>
+                            {% for kota in kota_list %}
+                            <option value="{{ kota }}" {% if kota == 'samarinda' %}selected{% endif %}>{{ kota|title }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">
+                            <strong>Prioritas pengisian kota:</strong>
+                            <ol class="mb-0 mt-1">
+                                <li><strong>Kolom KOTA/KAB di Excel</strong> (jika ada dan terisi)</li>
+                                <li><strong>Pilihan kota di form ini</strong> (jika kolom KOTA/KAB di Excel kosong)</li>
+                                <li><strong>Default: Samarinda</strong> (jika keduanya tidak diisi)</li>
+                            </ol>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <h6><i class="bi bi-info-circle"></i> Format File Excel:</h6>
+                        <p class="mb-1">File Excel harus memiliki <strong>5 kolom</strong>:</p>
+                        <ol class="mb-0">
+                            <li><strong>STASIUN NAME</strong> (wajib)</li>
+                            <li><strong>STASIUN LAWAN</strong> (wajib)</li>
+                            <li><strong>FREQ TX</strong> (opsional)</li>
+                            <li><strong>FREQ RX</strong> (opsional)</li>
+                            <li><strong>KOTA/KAB</strong> (opsional)</li>
+                        </ol>
+                        <p class="mb-0 mt-2">
+                            <i class="bi bi-download"></i> 
+                            <strong>Download template</strong> untuk format yang benar
+                        </p>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <div>
+                            <a href="{{ url_for('admin_operator_download_template') }}" class="btn btn-success">
+                                <i class="bi bi-download"></i> Download Template
+                            </a>
+                            <a href="{{ url_for('admin_operator_tambah_data') }}" class="btn btn-outline-primary ms-2">
+                                <i class="bi bi-plus-circle"></i> Tambah Manual
+                            </a>
+                        </div>
+                        <button type="submit" class="btn btn-operator" id="submitBtn">
+                            <i class="bi bi-upload"></i> Upload & Proses Data
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Progress Bar -->
+        <div id="progressContainer" class="card mt-4 d-none">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0"><i class="bi bi-hourglass-split"></i> Sedang Memproses...</h6>
+            </div>
+            <div class="card-body">
+                <div class="progress mb-3" style="height: 25px;">
+                    <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" 
+                         role="progressbar" style="width: 0%">0%</div>
+                </div>
+                <div id="progressText" class="text-center"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- Contoh Format Excel dengan Kolom FREQ TX dan FREQ RX -->
+        <div class="card mb-4">
+            <div class="card-header" style="background-color: var(--operator-color, #0d6efd); color: white;">
+                <h5 class="mb-0"><i class="bi bi-table"></i> Contoh Format Excel</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th class="text-center">STASIUN NAME</th>
+                                <th class="text-center">STASIUN LAWAN</th>
+                                <th class="text-center">FREQ TX</th>
+                                <th class="text-center">FREQ RX</th>
+                                <th class="text-center">KOTA/KAB</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td rowspan="3" class="align-middle text-center" style="background-color: #e8f4f8;">
+                                    <strong>{{ operator|upper }}_STN_01</strong>
+                                </td>
+                                <td>{{ operator|upper }}_LAWAN_01</td>
+                                <td>1800 MHz</td>
+                                <td>1800 MHz</td>
+                                <td rowspan="3" class="align-middle text-center" style="background-color: #e8f4f8;">
+                                    <strong>Kota Samarinda</strong>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>{{ operator|upper }}_LAWAN_02</td>
+                                <td>2100 MHz</td>
+                                <td>2100 MHz</td>
+                            </tr>
+                            <tr>
+                                <td>{{ operator|upper }}_LAWAN_03</td>
+                                <td>900 MHz</td>
+                                <td>900 MHz</td>
+                            </tr>
+                            <tr>
+                                <td>{{ operator|upper }}_STN_02</td>
+                                <td>{{ operator|upper }}_LAWAN_04</td>
+                                <td>1800 MHz</td>
+                                <td>1800 MHz</td>
+                                <td>Kota Balikpapan</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer">
+                <small class="text-muted">
+                    <i class="bi bi-lightbulb"></i> 
+                    <strong>Tip:</strong> Kolom FREQ TX dan FREQ RX opsional, bisa dikosongkan.
+                </small>
+            </div>
+        </div>
+        
+        <!-- Quick Tips -->
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h6 class="mb-0"><i class="bi bi-lightbulb"></i> Tips Cepat</h6>
+            </div>
+            <div class="card-body">
+                <ul class="mb-0 small">
+                    <li><strong>Download template</strong> untuk format yang benar</li>
+                    <li>Isi kolom FREQ TX dan FREQ RX sesuai kebutuhan</li>
+                    <li>Gunakan merge cell untuk stasiun dengan banyak lawan</li>
+                    <li>Format: .xlsx atau .xls (maks 10MB)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function previewFileName() {
+    const fileInput = document.getElementById('excel_file');
+    const filePreview = document.getElementById('filePreview');
+    
+    if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        const fileSize = (file.size / (1024 * 1024)).toFixed(2);
+        filePreview.innerHTML = `
+            <div class="alert alert-success p-2">
+                <i class="bi bi-file-earmark-excel text-success"></i>
+                <strong>${file.name}</strong> (${fileSize} MB)
+                <br><small>File siap diupload untuk operator {{ operator|upper }}</small>
+            </div>
+        `;
+    } else {
+        filePreview.innerHTML = '';
+    }
+}
+
+function clearFile() {
+    document.getElementById('excel_file').value = '';
+    document.getElementById('filePreview').innerHTML = '';
+}
+
+document.getElementById('uploadForm').addEventListener('submit', function(e) {
+    const fileInput = document.getElementById('excel_file');
+    const kotaSelect = document.getElementById('kota_default');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    if (!fileInput.files[0]) {
+        e.preventDefault();
+        showAlert('Pilih file Excel terlebih dahulu!', 'warning');
+        return false;
+    }
+    
+    const maxSize = 10 * 1024 * 1024;
+    if (fileInput.files[0].size > maxSize) {
+        e.preventDefault();
+        showAlert('Ukuran file terlalu besar! Maksimal 10MB.', 'warning');
+        return false;
+    }
+    
+    const fileName = fileInput.files[0].name.toLowerCase();
+    if (!fileName.endsWith('.xlsx') && !fileName.endsWith('.xls')) {
+        e.preventDefault();
+        showAlert('Format file tidak didukung! Gunakan .xlsx atau .xls', 'warning');
+        return false;
+    }
+    
+    // Tampilkan progress
+    document.getElementById('progressContainer').classList.remove('d-none');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Memproses...';
+    
+    let progress = 0;
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+    
+    const interval = setInterval(() => {
+        progress += 10;
+        if (progress > 90) progress = 90;
+        progressBar.style.width = progress + '%';
+        progressBar.textContent = progress + '%';
+        progressText.innerHTML = `<i class="bi bi-database"></i> Memproses data untuk {{ operator|upper }}...`;
+        
+        if (progress >= 90) {
+            clearInterval(interval);
+        }
+    }, 500);
+});
+
+function showAlert(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.querySelector('.card-body').prepend(alertDiv);
+    
+    setTimeout(() => {
+        alertDiv.classList.remove('show');
+        setTimeout(() => alertDiv.remove(), 150);
+    }, 5000);
+}
+</script>
+
+<style>
+.btn-operator {
+    background-color: var(--operator-color, #0d6efd);
+    border-color: var(--operator-color, #0d6efd);
+    color: white;
+}
+.btn-operator:hover {
+    background-color: var(--operator-hover, #0b5ed7);
+    border-color: var(--operator-hover, #0a58ca);
+}
+.table th {
+    font-size: 0.8rem;
+    padding: 0.5rem;
+}
+.table td {
+    font-size: 0.75rem;
+    padding: 0.5rem;
+}
+.progress {
+    border-radius: 10px;
+}
+</style>
+{% endblock %}

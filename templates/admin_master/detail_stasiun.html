@@ -1,0 +1,1143 @@
+<!-- templates/admin_master/detail_stasiun.html -->
+{% extends "admin_master/base.html" %}
+
+{% block title %}Detail Stasiun - {{ station.stasiun_name }}{% endblock %}
+
+{% block styles %}
+<style>
+/* ===== VARIABLES ===== */
+:root {
+    --gradient-telkom: linear-gradient(135deg, #E1251B 0%, #B71C1C 100%);
+    --gradient-telkomsel: linear-gradient(135deg, #E1251B 0%, #B71C1C 100%);
+    --gradient-indosat: linear-gradient(135deg, #FF6600 0%, #E65100 100%);
+    --gradient-xl: linear-gradient(135deg, #7F3F98 0%, #4A1B6D 100%);
+    --border-radius: 16px;
+    --border-radius-sm: 8px;
+    --shadow: 0 8px 20px rgba(0,0,0,0.08);
+    --shadow-hover: 0 12px 30px rgba(0,0,0,0.15);
+}
+
+/* ===== STATION HEADER ===== */
+.station-header {
+    color: white;
+    padding: 1.5rem 2rem;
+    border-radius: var(--border-radius);
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow);
+}
+
+.station-header.telkom, .station-header.telkomsel { background: var(--gradient-telkom); }
+.station-header.indosat { background: var(--gradient-indosat); }
+.station-header.xl { background: var(--gradient-xl); }
+.station-header.default { background: linear-gradient(135deg, #4361ee, #3a56d4); }
+
+.station-header h2 { font-size: 1.8rem; font-weight: 700; margin-bottom: 0.25rem; }
+
+.station-meta {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255,255,255,0.15);
+    padding: 0.4rem 1rem;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    backdrop-filter: blur(5px);
+}
+
+/* ===== TABS CUSTOM ===== */
+.group-tabs-wrapper {
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.group-tabs-wrapper::-webkit-scrollbar {
+    height: 3px;
+}
+
+.group-tabs-wrapper::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 10px;
+}
+
+.group-tabs-wrapper::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+.group-tabs-wrapper .nav-tabs {
+    display: inline-flex;
+    flex-wrap: nowrap;
+    border-bottom: none;
+    gap: 0.25rem;
+    min-width: 100%;
+    margin-bottom: 0;
+}
+
+.group-tabs-wrapper .nav-tabs .nav-item {
+    display: inline-block;
+    float: none;
+    margin-bottom: 0;
+}
+
+.group-tabs-wrapper .nav-tabs .nav-link {
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: #212529 !important;
+    font-weight: 600;
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    white-space: nowrap;
+    background: transparent;
+    margin-right: 0;
+}
+
+.group-tabs-wrapper .nav-tabs .nav-link i {
+    margin-right: 0.4rem;
+    color: #6c757d;
+}
+
+.group-tabs-wrapper .nav-tabs .nav-link .badge {
+    margin-left: 0.4rem;
+    background: #e9ecef !important;
+    color: #495057 !important;
+    font-size: 0.7rem;
+    padding: 0.2rem 0.4rem;
+}
+
+.group-tabs-wrapper .nav-tabs .nav-link:hover {
+    color: #000000 !important;
+    background-color: #f8f9fa;
+    border-bottom-color: #adb5bd;
+}
+
+.group-tabs-wrapper .nav-tabs .nav-link:hover i {
+    color: #495057;
+}
+
+.group-tabs-wrapper .nav-tabs .nav-link.active {
+    color: #000000 !important;
+    background: transparent;
+    border-bottom-color: #000000 !important;
+}
+
+.group-tabs-wrapper .nav-tabs .nav-link.active i {
+    color: #000000 !important;
+}
+
+/* Hapus styling tabs default */
+.nav-tabs {
+    border-bottom: none;
+}
+
+/* ===== SPLIT LAYOUT ===== */
+.split-container {
+    display: flex;
+    background: white;
+    border-radius: var(--border-radius);
+    border: 1px solid #e9ecef;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    min-height: 550px;
+}
+
+/* LEFT SIDE - GAMBAR */
+.image-side {
+    flex: 1;
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-right: 1px solid #e9ecef;
+    display: flex;
+    flex-direction: column;
+}
+
+.image-main-container {
+    position: relative;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border-radius: var(--border-radius-sm);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    min-height: 350px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.image-main-container:hover {
+    box-shadow: var(--shadow-hover);
+}
+
+.image-main {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    transition: transform 0.3s;
+}
+
+.image-main-container:hover .image-main {
+    transform: scale(1.02);
+}
+
+/* ===== NAVIGASI PANAH ===== */
+.image-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid #e9ecef;
+    color: #212529;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    font-size: 1.2rem;
+    opacity: 0;
+    transition: opacity 0.3s, background 0.2s, transform 0.2s;
+}
+
+.image-main-container:hover .image-nav {
+    opacity: 1;
+}
+
+.image-nav:hover {
+    background: #4361ee;
+    border-color: #4361ee;
+    color: white;
+    transform: translateY(-50%) scale(1.1);
+}
+
+.image-nav.prev { left: 10px; }
+.image-nav.next { right: 10px; }
+
+/* Indikator gambar */
+.image-counter {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+.image-thumbnails {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding: 0.25rem 0;
+    margin-bottom: 0.5rem;
+    scrollbar-width: thin;
+}
+
+.image-thumbnails::-webkit-scrollbar {
+    height: 4px;
+}
+
+.image-thumbnails::-webkit-scrollbar-track {
+    background: #e9ecef;
+    border-radius: 10px;
+}
+
+.image-thumbnails::-webkit-scrollbar-thumb {
+    background: #adb5bd;
+    border-radius: 10px;
+}
+
+.image-thumb {
+    width: 50px;
+    height: 50px;
+    border-radius: var(--border-radius-sm);
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid transparent;
+    flex-shrink: 0;
+    opacity: 0.7;
+    transition: all 0.2s;
+}
+
+.image-thumb:hover { 
+    opacity: 1; 
+    transform: translateY(-2px);
+}
+
+.image-thumb.active { 
+    border-color: #4361ee; 
+    opacity: 1; 
+    box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.3);
+}
+
+.image-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.image-info-footer {
+    padding: 0.75rem;
+    background: white;
+    border-radius: var(--border-radius-sm);
+    border: 1px solid #e9ecef;
+    font-size: 0.85rem;
+}
+
+.image-info-footer strong {
+    font-size: 0.9rem;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 250px;
+}
+
+/* RIGHT SIDE - INFORMASI */
+.info-side {
+    width: 450px;
+    background: white;
+    padding: 1.25rem;
+    overflow-y: auto;
+}
+
+.info-section {
+    margin-bottom: 1.25rem;
+}
+
+.info-section h6 {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #495057;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 2px solid #e9ecef;
+    display: flex;
+    align-items: center;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-section h6 i {
+    margin-right: 0.5rem;
+    color: #4361ee;
+    font-size: 1rem;
+}
+
+.info-grid {
+    display: grid;
+    gap: 0.4rem;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.4rem 0.6rem;
+    background: #f8f9fa;
+    border-radius: 6px;
+    font-size: 0.8rem;
+}
+
+.info-label { color: #6c757d; font-weight: 500; }
+.info-value { font-weight: 600; color: #212529; }
+
+/* ===== FREKUENSI BADGE ===== */
+.freq-tx-badge {
+    display: inline-flex;
+    align-items: center;
+    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+    color: #0d47a1;
+    padding: 4px 10px;
+    border-radius: 16px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border: 1px solid rgba(13, 71, 161, 0.3);
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.freq-tx-badge i {
+    font-size: 0.8rem;
+    margin-right: 4px;
+    color: #1976d2;
+}
+
+.freq-rx-badge {
+    display: inline-flex;
+    align-items: center;
+    background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+    color: #1b5e20;
+    padding: 4px 10px;
+    border-radius: 16px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border: 1px solid rgba(27, 94, 32, 0.3);
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.freq-rx-badge i {
+    font-size: 0.8rem;
+    margin-right: 4px;
+    color: #2e7d32;
+}
+
+/* Layout Vertikal untuk Nama Panjang */
+.opponent-details {
+    flex: 1;
+    min-width: 0;
+    width: 100%;
+}
+
+/* Layout baru: Nama di atas, frekuensi di bawahnya */
+.opponent-name-row {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 8px;
+    width: 100%;
+}
+
+.opponent-name-container {
+    width: 100%;
+    margin-bottom: 6px;
+}
+
+.opponent-name { 
+    font-weight: 600; 
+    font-size: 0.95rem;
+    color: #212529;
+    word-break: break-word;
+    white-space: normal;
+    line-height: 1.4;
+    display: block;
+    cursor: help;
+    padding-right: 5px;
+}
+
+.opponent-name:hover {
+    color: #4361ee;
+}
+
+.opponent-freqs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+/* Baris status */
+.opponent-status-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+}
+
+.opponent-status {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* Status colors */
+.opponent-status.aktif { background: rgba(25,135,84,0.1); color: #198754; }
+.opponent-status.tidak_aktif { background: rgba(220,53,69,0.1); color: #dc3545; }
+.opponent-status.tidak_berizin { background: rgba(255,193,7,0.1); color: #856404; }
+.opponent-status.tidak_sesuai { background: rgba(13,110,253,0.1); color: #4361ee; }
+.opponent-status.belum_ada { background: rgba(108,117,125,0.1); color: #6c757d; }
+
+.opponent-notes {
+    font-size: 0.8rem;
+    color: #6c757d;
+    font-style: italic;
+    margin: 6px 0 4px 0;
+    word-break: break-word;
+    white-space: normal;
+    cursor: help;
+    line-height: 1.4;
+}
+
+.opponent-notes i {
+    margin-right: 4px;
+    color: #6c757d;
+}
+
+.opponent-time {
+    font-size: 0.75rem;
+    color: #adb5bd;
+    margin-top: 4px;
+}
+
+.opponent-time i {
+    font-size: 0.7rem;
+    margin-right: 4px;
+}
+
+/* STATUS STATISTICS */
+.status-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+}
+
+.status-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0.7rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+}
+
+.status-item.aktif { background: rgba(25,135,84,0.1); color: #198754; }
+.status-item.tidak_aktif { background: rgba(220,53,69,0.1); color: #dc3545; }
+.status-item.tidak_berizin { background: rgba(255,193,7,0.1); color: #856404; }
+.status-item.tidak_sesuai { background: rgba(13,110,253,0.1); color: #4361ee; }
+
+.status-count { font-weight: 700; font-size: 1rem; }
+
+/* OPPONENTS LIST */
+.opponents-list {
+    max-height: 350px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.opponents-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.opponents-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.opponents-list::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 10px;
+}
+
+.opponents-list::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+.opponent-item {
+    display: flex;
+    padding: 0.9rem 0.8rem;
+    margin-bottom: 0.6rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 3px solid transparent;
+    transition: all 0.2s;
+}
+
+.opponent-item:hover { 
+    border-left-color: #4361ee; 
+    background: #f1f3f5;
+    transform: translateX(3px);
+}
+
+.opponent-number {
+    width: 26px;
+    height: 26px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-right: 0.8rem;
+    flex-shrink: 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* ACTION BUTTON */
+.action-buttons {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e9ecef;
+}
+
+.btn-edit {
+    background: #ffc107;
+    border: none;
+    color: #212529;
+    font-weight: 600;
+    padding: 0.7rem;
+    border-radius: 8px;
+    transition: all 0.2s;
+    font-size: 0.95rem;
+}
+
+.btn-edit:hover {
+    background: #ffca2c;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255,193,7,0.3);
+}
+
+/* ===== ZOOM MODAL ===== */
+.zoom-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.98);
+    z-index: 99999;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(5px);
+}
+
+.zoom-content {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.zoom-image-container {
+    position: relative;
+    max-width: 95%;
+    max-height: 95%;
+}
+
+.zoom-image {
+    max-width: 100%;
+    max-height: 90vh;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+}
+
+.close-zoom {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    border: 2px solid white;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    transition: all 0.2s;
+    z-index: 100001;
+    backdrop-filter: blur(5px);
+}
+
+.close-zoom:hover {
+    background: #dc3545;
+    border-color: #dc3545;
+    transform: rotate(90deg);
+}
+
+/* EMPTY STATE */
+.empty-state {
+    text-align: center;
+    padding: 2rem;
+    color: #6c757d;
+}
+
+.empty-state i { font-size: 3rem; color: #dee2e6; margin-bottom: 0.75rem; }
+
+/* RESPONSIVE */
+@media (max-width: 1200px) {
+    .info-side {
+        width: 400px;
+    }
+}
+
+@media (max-width: 992px) {
+    .split-container { 
+        flex-direction: column; 
+        min-height: auto;
+    }
+    .info-side { 
+        width: 100%; 
+    }
+    .image-side { 
+        border-right: none; 
+        border-bottom: 1px solid #e9ecef; 
+    }
+    .image-main-container { min-height: 300px; }
+}
+
+@media (max-width: 768px) {
+    .group-tabs-wrapper .nav-tabs .nav-link {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+    }
+    
+    .opponent-freqs {
+        gap: 6px;
+    }
+    
+    .freq-tx-badge, .freq-rx-badge {
+        padding: 3px 8px;
+        font-size: 0.8rem;
+    }
+}
+
+/* Tooltip styling */
+[title] {
+    cursor: help;
+    position: relative;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- STATION HEADER -->
+<div class="station-header 
+    {% if station.operator == 'telkom' or station.operator == 'telkomsel' %}telkom
+    {% elif station.operator == 'indosat' %}indosat
+    {% elif station.operator == 'xl' %}xl
+    {% else %}default{% endif %}">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <h2><i class="bi bi-broadcast me-2"></i>{{ station.stasiun_name }}</h2>
+            <p class="mb-0 opacity-75"><i class="bi bi-building me-1"></i>Operator: <strong>{{ station.operator|upper }}</strong></p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('admin_master_daftar_stasiun') }}" class="btn btn-light btn-sm">
+                <i class="bi bi-arrow-left"></i> Kembali
+            </a>
+            <a href="{{ url_for('admin_master_edit_stasiun', station_id=station.id) }}" class="btn btn-warning btn-sm">
+                <i class="bi bi-pencil"></i> Edit
+            </a>
+        </div>
+    </div>
+    
+    <div class="station-meta">
+        <div class="meta-item"><i class="bi bi-geo-alt"></i> {{ station.kota|title }}</div>
+        <div class="meta-item"><i class="bi bi-people"></i> {{ total_opponents }} Lawan</div>
+        <div class="meta-item"><i class="bi bi-diagram-3"></i> {{ groups|length }} Grup</div>
+        <div class="meta-item"><i class="bi bi-images"></i> {{ all_uploads|length }} Gambar</div>
+    </div>
+</div>
+
+<!-- TABS -->
+{% if groups %}
+<div class="group-tabs-wrapper mb-3">
+    <ul class="nav nav-tabs" id="groupTabs" role="tablist">
+        {% for group_key, group_info in groups.items() %}
+        <li class="nav-item" role="presentation">
+            <button class="nav-link {% if loop.first %}active{% endif %}" 
+                    id="tab-{{ loop.index }}" 
+                    data-bs-toggle="tab" 
+                    data-bs-target="#group-{{ loop.index }}" 
+                    type="button" 
+                    role="tab"
+                    title="{% if group_key != 'ungrouped' and group_info.nama_grup %}{{ group_info.nama_grup }}{% endif %}">
+                <i class="bi {% if group_key == 'ungrouped' %}bi-circle{% else %}bi-collection{% endif %}"></i>
+                {% if group_key == 'ungrouped' %}
+                    Tanpa Grup
+                {% else %}
+                    {% if group_info.nama_grup %}
+                        {{ group_info.nama_grup|truncate(20) }}
+                    {% else %}
+                        Grup {{ group_key }}
+                    {% endif %}
+                {% endif %}
+                <span class="badge bg-secondary ms-1">{{ group_info.uploads|length }}</span>
+            </button>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+
+<div class="tab-content">
+    {% for group_key, group_info in groups.items() %}
+    {% set outer_idx = loop.index0 %}
+    <div class="tab-pane fade {% if loop.first %}show active{% endif %}" id="group-{{ loop.index }}" role="tabpanel">
+        
+        <!-- SPLIT LAYOUT -->
+        <div class="split-container">
+            <!-- LEFT SIDE: GAMBAR DENGAN NAVIGASI PANAH - CLOUDINARY -->
+            <div class="image-side">
+                {% if group_info.uploads %}
+                    <!-- MAIN IMAGE dengan navigasi panah -->
+                    <div class="image-main-container" onclick="zoomImage({{ outer_idx }})">
+                        <img id="mainImage-{{ loop.index }}" 
+                             src="{{ group_info.uploads[0].public_id | cloudinary_optimized(800) }}"
+                             class="image-main"
+                             alt="Gambar grup">
+                        
+                        <!-- TOMBOL NAVIGASI PANAH -->
+                        {% if group_info.uploads|length > 1 %}
+                        <button class="image-nav prev" onclick="event.stopPropagation(); prevImage({{ outer_idx }})">
+                            <i class="bi bi-chevron-left"></i>
+                        </button>
+                        <button class="image-nav next" onclick="event.stopPropagation(); nextImage({{ outer_idx }})">
+                            <i class="bi bi-chevron-right"></i>
+                        </button>
+                        {% endif %}
+                        
+                        <!-- INDIKATOR GAMBAR -->
+                        <span class="image-counter" id="counter-{{ loop.index }}">
+                            1 / {{ group_info.uploads|length }}
+                        </span>
+                    </div>
+                    
+                    <!-- THUMBNAILS -->
+                    {% if group_info.uploads|length > 1 %}
+                    <div class="image-thumbnails" id="thumbnails-{{ loop.index }}">
+                        {% for upload in group_info.uploads %}
+                        <div class="image-thumb {% if loop.first %}active{% endif %}"
+                             onclick="showImage({{ outer_idx }}, {{ loop.index0 }})">
+                            <img src="{{ upload.public_id | cloudinary_thumbnail(50, 50) }}" 
+                                 alt="Thumbnail {{ loop.index }}">
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- IMAGE INFO -->
+                    <div class="image-info-footer">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong id="imageTitle-{{ loop.index }}">{{ group_info.uploads[0].original_filename|truncate(30) }}</strong>
+                                <small class="text-muted d-block">
+                                    <i class="bi bi-calendar3 me-1"></i>{{ group_info.uploads[0].uploaded_at.strftime('%d %b %Y') }} •
+                                    <i class="bi bi-file-image ms-1"></i> {{ group_info.uploads[0].format|upper }} •
+                                    {{ group_info.uploads[0].bytes_size | filesizeformat }}
+                                </small>
+                            </div>
+                            <a href="{{ group_info.uploads[0].cloudinary_url }}" 
+                               target="_blank" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="bi bi-images"></i>
+                        <h6>Belum Ada Gambar</h6>
+                        <p class="small text-muted">Belum ada upload untuk grup ini</p>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- RIGHT SIDE: INFORMASI - LAYOUT VERTIKAL -->
+            <div class="info-side">
+                <!-- INFORMASI STASIUN -->
+                <div class="info-section">
+                    <h6><i class="bi bi-info-circle"></i> Informasi Stasiun</h6>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Nama Stasiun</span>
+                            <span class="info-value">{{ station.stasiun_name }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Kota</span>
+                            <span class="info-value">{{ station.kota|title }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Operator</span>
+                            <span class="info-value">{{ station.operator|upper }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- STATUS STATISTICS -->
+                <div class="info-section">
+                    <h6><i class="bi bi-pie-chart"></i> Status Grup</h6>
+                    <div class="status-grid">
+                        <div class="status-item aktif">
+                            <span><i class="bi bi-check-circle me-1"></i>Aktif</span>
+                            <span class="status-count">{{ group_info.status_summary.aktif }}</span>
+                        </div>
+                        <div class="status-item tidak_aktif">
+                            <span><i class="bi bi-x-circle me-1"></i>Tidak Aktif</span>
+                            <span class="status-count">{{ group_info.status_summary.tidak_aktif }}</span>
+                        </div>
+                        <div class="status-item tidak_berizin">
+                            <span><i class="bi bi-exclamation-circle me-1"></i>Tidak Berizin</span>
+                            <span class="status-count">{{ group_info.status_summary.tidak_berizin }}</span>
+                        </div>
+                        <div class="status-item tidak_sesuai">
+                            <span><i class="bi bi-arrow-repeat me-1"></i>Tidak Sesuai</span>
+                            <span class="status-count">{{ group_info.status_summary.tidak_sesuai }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- DAFTAR STASIUN LAWAN - Layout Vertikal -->
+                <div class="info-section">
+                    <h6><i class="bi bi-people"></i> Stasiun Lawan <span class="badge bg-secondary ms-2">{{ group_info.opponents|length }}</span></h6>
+                    <div class="opponents-list">
+                        {% for opponent in group_info.opponents %}
+                        <div class="opponent-item">
+                            <div class="opponent-number">{{ loop.index }}</div>
+                            <div class="opponent-details">
+                                <!-- Baris 1: NAMA -->
+                                <div class="opponent-name-row">
+                                    <div class="opponent-name-container">
+                                        <span class="opponent-name" title="{{ opponent.nama }}">{{ opponent.nama }}</span>
+                                    </div>
+                                    
+                                    <!-- Baris 2: FREKUENSI -->
+                                    <div class="opponent-freqs">
+                                        {% if opponent.freq_tx and opponent.freq_tx|trim %}
+                                        <span class="freq-tx-badge" title="Frekuensi Transmit">
+                                            <i class="bi bi-arrow-up-short"></i> {{ opponent.freq_tx }}
+                                        </span>
+                                        {% endif %}
+                                        
+                                        {% if opponent.freq_rx and opponent.freq_rx|trim %}
+                                        <span class="freq-rx-badge" title="Frekuensi Receive">
+                                            <i class="bi bi-arrow-down-short"></i> {{ opponent.freq_rx }}
+                                        </span>
+                                        {% endif %}
+                                        
+                                        {% if not opponent.freq_tx and not opponent.freq_rx %}
+                                        <span class="badge bg-light text-dark" style="font-size: 0.8rem; padding: 4px 10px;" title="Belum ada frekuensi">-</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <!-- Baris 3: STATUS -->
+                                <div style="margin: 6px 0 4px 0;">
+                                    <span class="opponent-status {{ opponent.latest_status if opponent.latest_status else 'belum_ada' }}" 
+                                          title="Status: {% if opponent.latest_status == 'aktif' %}Aktif{% elif opponent.latest_status == 'tidak_aktif' %}Tidak Aktif{% elif opponent.latest_status == 'tidak_berizin' %}Tidak Berizin{% elif opponent.latest_status == 'tidak_sesuai' %}Tidak Sesuai{% else %}Belum Ada{% endif %}">
+                                        {% if opponent.latest_status == 'aktif' %}Aktif
+                                        {% elif opponent.latest_status == 'tidak_aktif' %}Tidak Aktif
+                                        {% elif opponent.latest_status == 'tidak_berizin' %}Tidak Berizin
+                                        {% elif opponent.latest_status == 'tidak_sesuai' %}Tidak Sesuai
+                                        {% else %}Belum Ada{% endif %}
+                                    </span>
+                                </div>
+                                
+                                <!-- Baris 4: CATATAN -->
+                                {% if opponent.catatan %}
+                                <div class="opponent-notes" title="Catatan: {{ opponent.catatan }}">
+                                    <i class="bi bi-chat"></i> {{ opponent.catatan }}
+                                </div>
+                                {% endif %}
+                                
+                                <!-- Baris 5: WAKTU UPDATE -->
+                                {% if opponent.status_updated_at %}
+                                <div class="opponent-time" title="Terakhir diperbarui: {{ opponent.status_updated_at.strftime('%d/%m/%Y %H:%M') }}">
+                                    <i class="bi bi-clock"></i> {{ opponent.status_updated_at.strftime('%d/%m/%Y') }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- ACTION BUTTON -->
+                <div class="action-buttons">
+                    <a href="{{ url_for('admin_master_edit_stasiun', station_id=station.id) }}" 
+                       class="btn btn-edit w-100">
+                        <i class="bi bi-pencil me-2"></i> Edit Stasiun
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% else %}
+<!-- NO GROUPS -->
+<div class="card border-0 shadow-sm">
+    <div class="card-body text-center py-5">
+        <i class="bi bi-diagram-3 display-1 text-muted"></i>
+        <h5 class="mt-3">Belum Ada Grup</h5>
+        <p class="text-muted">Stasiun ini belum memiliki grup.</p>
+        <a href="{{ url_for('admin_master_edit_stasiun', station_id=station.id) }}" class="btn btn-primary mt-3 px-4">
+            <i class="bi bi-pencil me-2"></i> Edit Stasiun
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<!-- ZOOM MODAL -->
+<div class="zoom-modal" id="zoomModal" onclick="closeZoom(event)">
+    <div class="zoom-content">
+        <button class="close-zoom" onclick="closeZoom(event)"><i class="bi bi-x-lg"></i></button>
+        <div class="zoom-image-container">
+            <img class="zoom-image" id="zoomImage" alt="Zoom">
+        </div>
+    </div>
+</div>
+
+<script>
+// Gallery data
+const galleries = {};
+
+{% for group_key, group_info in groups.items() %}
+    {% if group_info.uploads %}
+        galleries[{{ loop.index0 }}] = {
+            currentIndex: 0,
+            galleryId: {{ loop.index }},
+            images: [
+                {% for upload in group_info.uploads %}
+                {
+                    public_id: "{{ upload.public_id }}",
+                    url: "{{ upload.cloudinary_url }}",
+                    title: "{{ upload.original_filename }}",
+                    date: "{{ upload.uploaded_at.strftime('%d %b %Y') }}"
+                },
+                {% endfor %}
+            ]
+        };
+    {% endif %}
+{% endfor %}
+
+// Update tampilan gambar
+function updateImageDisplay(galleryIdx) {
+    const g = galleries[galleryIdx];
+    if (!g) return;
+    
+    const img = g.images[g.currentIndex];
+    
+    // Update main image
+    document.getElementById(`mainImage-${g.galleryId}`).src = img.url;
+    
+    // Update title
+    document.getElementById(`imageTitle-${g.galleryId}`).textContent = 
+        img.title.length > 30 ? img.title.substring(0,30)+'...' : img.title;
+    
+    // Update counter
+    document.getElementById(`counter-${g.galleryId}`).textContent = 
+        `${g.currentIndex + 1} / ${g.images.length}`;
+    
+    // Update active thumbnail
+    document.querySelectorAll(`#thumbnails-${g.galleryId} .image-thumb`).forEach((thumb, i) => {
+        thumb.classList.toggle('active', i === g.currentIndex);
+    });
+}
+
+// Show specific image
+function showImage(galleryIdx, imgIdx) {
+    const g = galleries[galleryIdx];
+    if (!g || !g.images[imgIdx]) return;
+    
+    g.currentIndex = imgIdx;
+    updateImageDisplay(galleryIdx);
+}
+
+// Next image
+function nextImage(galleryIdx) {
+    const g = galleries[galleryIdx];
+    if (!g || g.images.length <= 1) return;
+    
+    g.currentIndex++;
+    if (g.currentIndex >= g.images.length) g.currentIndex = 0;
+    
+    updateImageDisplay(galleryIdx);
+}
+
+// Previous image
+function prevImage(galleryIdx) {
+    const g = galleries[galleryIdx];
+    if (!g || g.images.length <= 1) return;
+    
+    g.currentIndex--;
+    if (g.currentIndex < 0) g.currentIndex = g.images.length - 1;
+    
+    updateImageDisplay(galleryIdx);
+}
+
+// Zoom image
+function zoomImage(galleryIdx) {
+    const g = galleries[galleryIdx];
+    if (!g) return;
+    
+    document.getElementById('zoomImage').src = g.images[g.currentIndex].url;
+    document.getElementById('zoomModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+// Close zoom
+function closeZoom(e) {
+    if (e) e.stopPropagation();
+    document.getElementById('zoomModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', function(e) {
+    const modal = document.getElementById('zoomModal');
+    if (modal.style.display === 'flex') {
+        if (e.key === 'Escape') closeZoom(e);
+        return;
+    }
+    
+    const activeTab = document.querySelector('.tab-pane.show.active');
+    if (!activeTab) return;
+    
+    const galleryIdx = Array.from(document.querySelectorAll('.tab-pane')).indexOf(activeTab);
+    if (galleryIdx >= 0 && galleries[galleryIdx] && galleries[galleryIdx].images.length > 1) {
+        if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            prevImage(galleryIdx);
+        } else if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            nextImage(galleryIdx);
+        }
+    }
+});
+
+// Inisialisasi
+document.addEventListener('DOMContentLoaded', function() {
+    // Set gambar pertama untuk setiap gallery
+    Object.keys(galleries).forEach(idx => {
+        showImage(parseInt(idx), 0);
+    });
+    
+    // Reset saat ganti tab
+    const tabs = document.querySelectorAll('button[data-bs-toggle="tab"]');
+    tabs.forEach((tab, idx) => {
+        tab.addEventListener('shown.bs.tab', function() {
+            const targetId = this.getAttribute('data-bs-target');
+            const targetPane = document.querySelector(targetId);
+            const galleryIdx = Array.from(document.querySelectorAll('.tab-pane')).indexOf(targetPane);
+            
+            if (galleries[galleryIdx]) {
+                showImage(galleryIdx, 0);
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

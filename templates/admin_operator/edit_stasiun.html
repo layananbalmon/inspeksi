@@ -1,0 +1,283 @@
+{% extends "admin_operator/base.html" %}
+
+{% block title %}Edit Stasiun - {{ station.stasiun_name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="mb-0">
+            <i class="bi bi-pencil"></i> Edit Stasiun: {{ station.stasiun_name }}
+        </h3>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{{ url_for('admin_operator_dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('admin_operator_daftar_stasiun') }}">Daftar Stasiun</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('admin_operator_detail_stasiun', station_id=station.id) }}">Detail</a></li>
+                <li class="breadcrumb-item active">Edit</li>
+            </ol>
+        </nav>
+    </div>
+    <div>
+        <a href="{{ url_for('admin_operator_detail_stasiun', station_id=station.id) }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Batal
+        </a>
+    </div>
+</div>
+
+<div id="js-data" 
+     data-opponent-count="{{ station.stasiun_lawan_list|length }}"
+     style="display: none;"></div>
+
+<div class="card">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0"><i class="bi bi-info-circle"></i> Informasi Penting</h5>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-info mb-0">
+            <i class="bi bi-info-circle"></i> 
+            <strong>Yang Perlu Diketahui:</strong>
+            <ul class="mb-0 mt-2">
+                <li>✅ <strong>Mengubah nama stasiun lawan</strong> - TIDAK akan menghapus data status dan upload yang sudah ada.</li>
+                <li>⚠️ <strong>Menghapus stasiun lawan</strong> - Akan menghapus STATUS per lawan tersebut, tapi GAMBAR yang sudah diupload untuk GRUP akan TETAP ADA.</li>
+                <li>✅ <strong>Menambahkan stasiun lawan baru</strong> - Aman dilakukan, tidak mempengaruhi data existing.</li>
+                <li>📸 <strong>Gambar yang sudah diupload</strong> - Akan tetap tersimpan di sistem meskipun stasiun lawan tertentu dihapus.</li>
+                <li>📝 <strong>Pengelompokan grup</strong> - Tidak akan terpengaruh dengan perubahan di halaman ini.</li>
+                <li>📡 <strong>Frekuensi Tx dan Rx</strong> - Kini dipisah untuk memudahkan identifikasi.</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-3">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-wifi"></i> Form Edit Stasiun</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('admin_operator_edit_stasiun', station_id=station.id) }}" id="editForm">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="stasiun_name" class="form-label">Nama Stasiun <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="stasiun_name" name="stasiun_name" 
+                               value="{{ station.stasiun_name }}" required>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="kota" class="form-label">Kota/Kabupaten <span class="text-danger">*</span></label>
+                        <select class="form-select" id="kota" name="kota" required>
+                            <option value="">Pilih Kota/Kab</option>
+                            {% for kota in kota_list %}
+                            <option value="{{ kota }}" {% if station.kota == kota %}selected{% endif %}>
+                                {{ kota|title }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert alert-info mb-4">
+                <i class="bi bi-info-circle"></i> 
+                <strong>Operator:</strong> Stasiun ini milik operator <strong>{{ station.operator|upper }}</strong> dan tidak dapat diubah.
+            </div>
+
+            <!-- Stasiun Lawan Section dengan 3 KOLOM: Nama, Freq Tx, Freq Rx -->
+            <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5><i class="bi bi-diagram-3"></i> Stasiun Lawan</h5>
+                    <button type="button" class="btn btn-sm btn-success" onclick="addOpponentField()">
+                        <i class="bi bi-plus-circle"></i> Tambah Baris
+                    </button>
+                </div>
+                
+                <!-- Header kolom - 3 KOLOM -->
+                <div class="row mb-2 fw-bold">
+                    <div class="col-md-4">Nama Stasiun Lawan</div>
+                    <div class="col-md-3">Freq Tx</div>
+                    <div class="col-md-3">Freq Rx</div>
+                    <div class="col-md-2">Aksi</div>
+                </div>
+                
+                <div id="opponent-container">
+                    <!-- Existing opponent stations -->
+                    {% for lawan in station.stasiun_lawan_list %}
+                    <div class="row mb-2 opponent-row" data-lawan-id="{{ lawan.id }}">
+                        <!-- Hidden input untuk menyimpan ID lawan yang sudah ada -->
+                        <input type="hidden" name="lawan_id[]" value="{{ lawan.id }}">
+                        
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" name="stasiun_lawan[]" 
+                                   value="{{ lawan.nama_stasiun_lawan }}" required>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="text" class="form-control" name="freq_tx[]" 
+                                   value="{{ lawan.freq_tx or '' }}" 
+                                   placeholder="Freq Tx (contoh: 1800 MHz)">
+                        </div>
+                        <div class="col-md-3">
+                            <input type="text" class="form-control" name="freq_rx[]" 
+                                   value="{{ lawan.freq_rx or '' }}" 
+                                   placeholder="Freq Rx (contoh: 1800 MHz)">
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-outline-danger w-100" onclick="removeField(this)">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="alert alert-info mt-3">
+                    <i class="bi bi-info-circle"></i> 
+                    <strong>Info:</strong> Pengelompokan (Group) stasiun lawan dilakukan oleh Operator di halaman "Kelola Grup".
+                </div>
+                
+                <!-- Checkbox untuk konfirmasi hapus -->
+                <div class="form-check mb-2 mt-3">
+                    <input class="form-check-input" type="checkbox" id="confirmDelete" onchange="toggleDeleteButtons()">
+                    <label class="form-check-label text-danger" for="confirmDelete">
+                        <i class="bi bi-exclamation-triangle"></i> Saya mengerti bahwa menghapus stasiun lawan akan menghapus STATUS per lawan, tapi GAMBAR akan tetap ada
+                    </label>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <a href="{{ url_for('admin_operator_detail_stasiun', station_id=station.id) }}" class="btn btn-secondary">
+                    <i class="bi bi-x-circle"></i> Batal
+                </a>
+                <button type="submit" class="btn btn-primary" onclick="return confirmSubmit()">
+                    <i class="bi bi-save"></i> Update Data
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const jsDataElement = document.getElementById('js-data');
+    let opponentCounter = parseInt(jsDataElement.getAttribute('data-opponent-count'));
+    let deletedLawanIds = [];
+
+    function addOpponentField() {
+        opponentCounter++;
+        const container = document.getElementById('opponent-container');
+        const div = document.createElement('div');
+        div.className = 'row mb-2 opponent-row';
+        div.innerHTML = `
+            <!-- Baris baru tidak punya hidden input lawan_id -->
+            <div class="col-md-4">
+                <input type="text" class="form-control" name="stasiun_lawan[]" 
+                       placeholder="Nama Stasiun Lawan">
+            </div>
+            <div class="col-md-3">
+                <input type="text" class="form-control" name="freq_tx[]" 
+                       placeholder="Freq Tx (contoh: 1800 MHz)">
+            </div>
+            <div class="col-md-3">
+                <input type="text" class="form-control" name="freq_rx[]" 
+                       placeholder="Freq Rx (contoh: 1800 MHz)">
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="btn btn-outline-danger w-100" onclick="removeField(this)">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        `;
+        container.appendChild(div);
+    }
+
+    function removeField(button) {
+        const row = button.closest('.opponent-row');
+        
+        // Cek apakah baris ini memiliki hidden input lawan_id (berarti data existing)
+        const lawanIdInput = row.querySelector('input[name="lawan_id[]"]');
+        
+        if (lawanIdInput && lawanIdInput.value) {
+            // Jika checkbox confirmDelete tidak dicentang, tampilkan pesan
+            if (!document.getElementById('confirmDelete').checked) {
+                alert('Untuk menghapus stasiun lawan yang sudah ada, centang kotak konfirmasi terlebih dahulu!');
+                return;
+            }
+            
+            // Simpan ID lawan yang akan dihapus
+            deletedLawanIds.push(lawanIdInput.value);
+            
+            // Tambahkan hidden input untuk mengirimkan data lawan yang dihapus
+            const deletedInput = document.createElement('input');
+            deletedInput.type = 'hidden';
+            deletedInput.name = 'deleted_lawan_ids[]';
+            deletedInput.value = lawanIdInput.value;
+            document.getElementById('editForm').appendChild(deletedInput);
+        }
+        
+        row.remove();
+        opponentCounter--;
+    }
+
+    function toggleDeleteButtons() {
+        const confirmCheck = document.getElementById('confirmDelete').checked;
+        const existingRows = document.querySelectorAll('.opponent-row input[name="lawan_id[]"]');
+        
+        existingRows.forEach(input => {
+            const row = input.closest('.opponent-row');
+            if (confirmCheck) {
+                row.classList.add('table-danger');
+            } else {
+                row.classList.remove('table-danger');
+            }
+        });
+    }
+
+    function confirmSubmit() {
+        // Validasi form
+        const stasiunName = document.getElementById('stasiun_name').value.trim();
+        const kota = document.getElementById('kota').value;
+        
+        if (!stasiunName || !kota) {
+            alert('Harap lengkapi semua field yang wajib diisi!');
+            return false;
+        }
+        
+        // Validasi minimal 1 stasiun lawan
+        const opponentInputs = document.querySelectorAll('input[name="stasiun_lawan[]"]');
+        let hasValue = false;
+        opponentInputs.forEach(input => {
+            if (input.value.trim()) {
+                hasValue = true;
+            }
+        });
+        
+        if (!hasValue) {
+            alert('Minimal harus ada 1 stasiun lawan!');
+            return false;
+        }
+        
+        if (deletedLawanIds.length > 0) {
+            return confirm(`Apakah Anda yakin ingin menghapus ${deletedLawanIds.length} stasiun lawan?\n\n` +
+                          `⚠️ STATUS per lawan akan dihapus.\n` +
+                          `✅ GAMBAR yang sudah diupload untuk GRUP akan TETAP ADA.\n\n` +
+                          `Lanjutkan?`);
+        }
+        
+        return confirm('Apakah Anda yakin ingin menyimpan perubahan?');
+    }
+</script>
+
+<style>
+.btn-operator {
+    background-color: var(--operator-color, #0d6efd);
+    border-color: var(--operator-color, #0d6efd);
+    color: white;
+}
+.btn-operator:hover {
+    background-color: var(--operator-hover, #0b5ed7);
+    border-color: var(--operator-hover, #0a58ca);
+}
+.table-danger {
+    background-color: #f8d7da !important;
+}
+</style>
+{% endblock %}

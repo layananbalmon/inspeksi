@@ -1,0 +1,511 @@
+{% extends "user_operator/base.html" %}
+
+{% block title %}Upload Gambar - {{ station.stasiun_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="mb-1">
+                <i class="bi bi-upload text-primary"></i> Upload Gambar - {{ station.stasiun_name }}
+            </h4>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{{ url_for('user_operator_dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('user_operator_stasiun') }}">Stasiun</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('user_operator_detail_stasiun', station_id=station.id) }}">{{ station.stasiun_name|truncate(20) }}</a></li>
+                    <li class="breadcrumb-item active">Upload</li>
+                </ol>
+            </nav>
+        </div>
+        <div>
+            <a href="{{ url_for('user_operator_grup_stasiun', station_id=station.id) }}" class="btn btn-outline-info me-2">
+                <i class="bi bi-diagram-3"></i> Grup IDU
+            </a>
+            <a href="{{ url_for('user_operator_detail_stasiun', station_id=station.id) }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Kembali
+            </a>
+        </div>
+    </div>
+
+    <!-- Form Upload -->
+    <form method="POST" action="{{ url_for('user_operator_upload', station_id=station.id) }}" 
+          enctype="multipart/form-data" id="uploadForm">
+        
+        {% for group_key, lawan_list in groups.items() %}
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    {% if group_key == 'ungrouped' %}
+                        <i class="bi bi-circle"></i> Tanpa Grup
+                    {% else %}
+                        <i class="bi bi-collection"></i> 
+                        {% set grup_nama = namespace(name=None) %}
+                        {% for g in station.grup_list %}
+                            {% if g.id == group_key|int %}
+                                {% set grup_nama.name = g.nama_grup %}
+                            {% endif %}
+                        {% endfor %}
+                        {% if grup_nama.name %}
+                            {{ grup_nama.name }}
+                        {% else %}
+                            Grup {{ group_key }}
+                        {% endif %}
+                    {% endif %}
+                    <span class="badge bg-light text-dark ms-2">{{ lawan_list|length }} lawan</span>
+                </h5>
+            </div>
+            
+            <div class="card-body">
+                <!-- Upload Area dengan Preview -->
+                <div class="mb-4">
+                    <h6>Upload Gambar untuk Grup Ini</h6>
+                    
+                    <!-- Upload Box -->
+                    <div class="upload-box border rounded p-4 text-center mb-3" 
+                         onclick="document.getElementById('hiddenFileInput_{{ group_key }}').click()"
+                         style="cursor: pointer; border: 2px dashed #ccc; background: #f8f9fa;">
+                        <i class="bi bi-cloud-arrow-up display-4 text-muted mb-3"></i>
+                        <h5 class="text-muted">Klik untuk Pilih Gambar</h5>
+                        <p class="text-muted small mb-0">Bisa pilih multiple • Max 5MB</p>
+                        <p class="text-muted small">Format: JPG, PNG, GIF, WEBP</p>
+                        <p class="text-muted small mt-2">
+                            <span class="badge bg-info">Gambar akan diupload ke Cloudinary</span>
+                        </p>
+                    </div>
+                    
+                    <!-- Hidden File Input -->
+                    <input type="file" 
+                           class="d-none" 
+                           id="hiddenFileInput_{{ group_key }}"
+                           accept=".png,.jpg,.jpeg,.gif,.webp"
+                           multiple
+                           onchange="handleFiles('{{ group_key }}', this)">
+                    
+                    <!-- File List Container -->
+                    <div id="fileList_{{ group_key }}" class="mt-3">
+                        <!-- File list akan muncul di sini -->
+                    </div>
+                    
+                    <!-- Info -->
+                    <div class="mt-2 text-end">
+                        <small class="text-muted">
+                            <span id="fileCount_{{ group_key }}">0</span> file dipilih • 
+                            <span id="totalSize_{{ group_key }}">0 KB</span>
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Status Lawan - dengan Frekuensi -->
+                <div class="mb-4">
+                    <h6>Atur Status untuk Setiap Lawan</h6>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th width="35%">Nama Stasiun Lawan</th>
+                                    <th width="15%">Frekuensi Tx</th>
+                                    <th width="15%">Frekuensi Rx</th>
+                                    <th width="20%">Status</th>
+                                    <th width="15%">Catatan</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for lawan in lawan_list %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ lawan.nama }}</strong>
+                                        {% if lawan.latest_status %}
+                                        <div class="small text-muted">
+                                            Status saat ini: 
+                                            <span class="badge {{ lawan.latest_status.status|status_badge_class }}">
+                                                {{ lawan.latest_status.status|status_display }}
+                                            </span>
+                                        </div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if lawan.freq_tx %}
+                                            <span class="badge bg-primary">{{ lawan.freq_tx }}</span>
+                                        {% else %}
+                                            <span class="badge bg-light text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if lawan.freq_rx %}
+                                            <span class="badge bg-success">{{ lawan.freq_rx }}</span>
+                                        {% else %}
+                                            <span class="badge bg-light text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <select class="form-select form-select-sm status-select" 
+                                                name="status_{{ group_key }}_{{ lawan.id }}"
+                                                data-lawan="{{ lawan.nama }}"
+                                                data-group="{{ group_key }}"
+                                                required>
+                                            <option value="">Pilih...</option>
+                                            {% for status_key, status_display in status_options.items() %}
+                                            <option value="{{ status_key }}" 
+                                                    {% if lawan.latest_status and lawan.latest_status.status == status_key %}selected{% endif %}>
+                                                {{ status_display }}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="text" 
+                                               class="form-control form-control-sm" 
+                                               name="catatan_{{ group_key }}_{{ lawan.id }}"
+                                               placeholder="Catatan..."
+                                               value="{{ lawan.catatan if lawan.catatan else '' }}">
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- Submit Button -->
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between">
+                    <a href="{{ url_for('user_operator_detail_stasiun', station_id=station.id) }}" 
+                       class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle"></i> Batal
+                    </a>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                        <i class="bi bi-cloud-upload"></i> Upload ke Cloudinary
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Loading Modal -->
+<div class="modal fade" id="loadingModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center py-4">
+                <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;"></div>
+                <h5>Mengupload ke Cloudinary...</h5>
+                <p class="text-muted small mb-0">Harap tunggu, file sedang diproses</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Store files for each group
+const groupFiles = {};
+
+// Initialize groups
+document.addEventListener('DOMContentLoaded', function() {
+    {% for group_key, lawan_list in groups.items() %}
+    groupFiles['{{ group_key }}'] = [];
+    {% endfor %}
+    
+    // Add validation styling
+    document.querySelectorAll('.status-select').forEach(select => {
+        select.addEventListener('change', function() {
+            if (this.value) {
+                this.classList.remove('is-invalid');
+            }
+        });
+    });
+});
+
+// Handle file selection
+function handleFiles(groupKey, input) {
+    const files = Array.from(input.files);
+    
+    if (files.length === 0) return;
+    
+    // Add files to group
+    files.forEach(file => {
+        // Check file size (5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            alert(`File ${file.name} terlalu besar (max 5MB)`);
+            return;
+        }
+        
+        // Check file type
+        const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp'];
+        if (!validTypes.includes(file.type)) {
+            alert(`File ${file.name} format tidak didukung`);
+            return;
+        }
+        
+        // Check if file already exists
+        const exists = groupFiles[groupKey].some(f => 
+            f.name === file.name && f.size === file.size
+        );
+        
+        if (!exists) {
+            // Create preview URL
+            const previewUrl = URL.createObjectURL(file);
+            
+            groupFiles[groupKey].push({
+                file: file,
+                name: file.name,
+                size: file.size,
+                type: file.type,
+                previewUrl: previewUrl,
+                id: Date.now() + Math.random()
+            });
+        }
+    });
+    
+    // Update display
+    updateFileList(groupKey);
+    
+    // Reset input
+    input.value = '';
+}
+
+// Update file list display
+function updateFileList(groupKey) {
+    const files = groupFiles[groupKey] || [];
+    const fileListDiv = document.getElementById(`fileList_${groupKey}`);
+    const fileCountSpan = document.getElementById(`fileCount_${groupKey}`);
+    const totalSizeSpan = document.getElementById(`totalSize_${groupKey}`);
+    
+    // Update counters
+    const totalSize = files.reduce((sum, f) => sum + f.size, 0);
+    fileCountSpan.textContent = files.length;
+    totalSizeSpan.textContent = formatBytes(totalSize);
+    
+    // Update file list
+    if (files.length === 0) {
+        fileListDiv.innerHTML = '<p class="text-muted small text-center">Belum ada file dipilih</p>';
+        return;
+    }
+    
+    let html = '<div class="row g-2">';
+    
+    files.forEach((fileData, index) => {
+        html += `
+            <div class="col-lg-3 col-md-4 col-sm-6">
+                <div class="card border position-relative">
+                    <div class="card-img-top" style="height: 120px; overflow: hidden;">
+                        <img src="${fileData.previewUrl}" 
+                             class="w-100 h-100 object-fit-cover"
+                             alt="${fileData.name}">
+                    </div>
+                    <div class="card-body p-2">
+                        <small class="d-block text-truncate" title="${fileData.name}">
+                            ${fileData.name}
+                        </small>
+                        <small class="d-block text-muted">
+                            ${formatBytes(fileData.size)}
+                        </small>
+                    </div>
+                    <button type="button" 
+                            class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1 rounded-circle"
+                            onclick="removeFile('${groupKey}', ${index})"
+                            style="width: 28px; height: 28px; padding: 0;">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    fileListDiv.innerHTML = html;
+}
+
+// Remove a file
+function removeFile(groupKey, index) {
+    if (groupFiles[groupKey] && groupFiles[groupKey][index]) {
+        // Revoke object URL
+        URL.revokeObjectURL(groupFiles[groupKey][index].previewUrl);
+        
+        // Remove from array
+        groupFiles[groupKey].splice(index, 1);
+        
+        // Update display
+        updateFileList(groupKey);
+    }
+}
+
+// Format bytes
+function formatBytes(bytes, decimals = 1) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
+
+// Form submission
+document.getElementById('uploadForm').addEventListener('submit', function(e) {
+    // 1. Validate status selections
+    let hasErrors = false;
+    let errorMessage = '';
+    
+    {% for group_key, lawan_list in groups.items() %}
+    {% for lawan in lawan_list %}
+    const statusSelect_{{ group_key }}_{{ lawan.id }} = document.querySelector('[name="status_{{ group_key }}_{{ lawan.id }}"]');
+    if (statusSelect_{{ group_key }}_{{ lawan.id }} && !statusSelect_{{ group_key }}_{{ lawan.id }}.value) {
+        hasErrors = true;
+        statusSelect_{{ group_key }}_{{ lawan.id }}.classList.add('is-invalid');
+        {% if group_key == 'ungrouped' %}
+        errorMessage += '• {{ lawan.nama }} (Tanpa Grup)\n';
+        {% else %}
+        {% set grup_nama = namespace(name=None) %}
+        {% for g in station.grup_list %}
+            {% if g.id == group_key|int %}
+                {% set grup_nama.name = g.nama_grup %}
+            {% endif %}
+        {% endfor %}
+        {% if grup_nama.name %}
+        errorMessage += '• {{ lawan.nama }} ({{ grup_nama.name }})\n';
+        {% else %}
+        errorMessage += '• {{ lawan.nama }} (Grup {{ group_key }})\n';
+        {% endif %}
+        {% endif %}
+    } else if (statusSelect_{{ group_key }}_{{ lawan.id }}) {
+        statusSelect_{{ group_key }}_{{ lawan.id }}.classList.remove('is-invalid');
+    }
+    {% endfor %}
+    {% endfor %}
+    
+    if (hasErrors) {
+        e.preventDefault();
+        alert('Harap pilih status untuk semua lawan:\n\n' + errorMessage);
+        return false;
+    }
+    
+    // 2. Check if at least one file is selected
+    let totalFiles = 0;
+    {% for group_key, lawan_list in groups.items() %}
+    totalFiles += groupFiles['{{ group_key }}'].length;
+    {% endfor %}
+    
+    if (totalFiles === 0) {
+        e.preventDefault();
+        alert('Pilih minimal satu file gambar untuk diupload!');
+        return false;
+    }
+    
+    // 3. Transfer files from JavaScript to hidden inputs
+    {% for group_key, lawan_list in groups.items() %}
+    // Create hidden file input
+    const hiddenInput_{{ group_key }} = document.createElement('input');
+    hiddenInput_{{ group_key }}.type = 'file';
+    hiddenInput_{{ group_key }}.name = 'gambar_{{ group_key }}';
+    hiddenInput_{{ group_key }}.multiple = true;
+    hiddenInput_{{ group_key }}.style.display = 'none';
+    
+    // Create DataTransfer to hold files
+    const dataTransfer_{{ group_key }} = new DataTransfer();
+    
+    // Add files from JavaScript storage
+    groupFiles['{{ group_key }}'].forEach(fileData => {
+        dataTransfer_{{ group_key }}.items.add(fileData.file);
+    });
+    
+    // Assign files to hidden input
+    hiddenInput_{{ group_key }}.files = dataTransfer_{{ group_key }}.files;
+    
+    // Add to form
+    this.appendChild(hiddenInput_{{ group_key }});
+    {% endfor %}
+    
+    // 4. Show loading modal
+    const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
+    loadingModal.show();
+    
+    // 5. Disable submit button
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Mengupload...';
+    
+    return true;
+});
+
+// Clean up object URLs when leaving page
+window.addEventListener('beforeunload', function() {
+    for (const groupKey in groupFiles) {
+        groupFiles[groupKey].forEach(file => {
+            if (file.previewUrl) {
+                URL.revokeObjectURL(file.previewUrl);
+            }
+        });
+    }
+});
+</script>
+
+<style>
+.upload-box {
+    transition: all 0.3s ease;
+}
+
+.upload-box:hover {
+    background: #e3f2fd !important;
+    border-color: #0d6efd !important;
+}
+
+.upload-box i {
+    transition: transform 0.3s ease;
+}
+
+.upload-box:hover i {
+    transform: scale(1.1);
+    color: #0d6efd !important;
+}
+
+.object-fit-cover {
+    object-fit: cover;
+}
+
+.is-invalid {
+    border-color: #dc3545 !important;
+}
+
+.card {
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.btn-danger {
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.btn-danger:hover {
+    opacity: 1;
+}
+
+/* Table styling */
+.table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.badge.bg-primary {
+    background: linear-gradient(135deg, #0d6efd, #0b5ed7) !important;
+}
+
+.badge.bg-success {
+    background: linear-gradient(135deg, #198754, #157347) !important;
+}
+</style>
+{% endblock %}

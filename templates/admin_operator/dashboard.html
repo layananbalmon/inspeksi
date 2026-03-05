@@ -1,0 +1,905 @@
+{% extends "admin_operator/base.html" %}
+
+{% block title %}Dashboard Admin Operator - {{ operator_name }}{% endblock %}
+
+{% block styles %}
+<style>
+/* ===== VARIABLES ===== */
+:root {
+    --operator-color: {% if current_user.operator_type == 'telkom' or current_user.operator_type == 'telkomsel' %}#E1251B
+                     {% elif current_user.operator_type == 'indosat' %}#FF6600
+                     {% elif current_user.operator_type == 'xl' %}#7F3F98
+                     {% else %}#0d6efd{% endif %};
+    --operator-color-light: {% if current_user.operator_type == 'telkom' or current_user.operator_type == 'telkomsel' %}rgba(225, 37, 27, 0.1)
+                           {% elif current_user.operator_type == 'indosat' %}rgba(255, 102, 0, 0.1)
+                           {% elif current_user.operator_type == 'xl' %}rgba(127, 63, 152, 0.1)
+                           {% else %}rgba(13, 110, 253, 0.1){% endif %};
+    --operator-color-dark: {% if current_user.operator_type == 'telkom' or current_user.operator_type == 'telkomsel' %}#B71C1C
+                          {% elif current_user.operator_type == 'indosat' %}#E65100
+                          {% elif current_user.operator_type == 'xl' %}#4A1B6D
+                          {% else %}#0b5ed7{% endif %};
+    --border-radius: 16px;
+    --border-radius-sm: 12px;
+    --shadow: 0 8px 24px rgba(0,0,0,0.08);
+    --shadow-hover: 0 12px 30px rgba(0,0,0,0.15);
+}
+
+/* ===== WELCOME HEADER ===== */
+.welcome-header {
+    background: white;
+    border-radius: var(--border-radius);
+    padding: 1.8rem 2rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow);
+    border-left: 6px solid var(--operator-color);
+    position: relative;
+    overflow: hidden;
+}
+
+.welcome-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 200px;
+    height: 100%;
+    background: linear-gradient(135deg, transparent, var(--operator-color-light));
+    opacity: 0.5;
+    z-index: 0;
+}
+
+.welcome-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.welcome-icon {
+    width: 70px;
+    height: 70px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, var(--operator-color), var(--operator-color-dark));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 2rem;
+    box-shadow: 0 10px 20px rgba(var(--operator-color-rgb), 0.3);
+}
+
+.welcome-text h3 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    color: #1e293b;
+}
+
+.welcome-text p {
+    color: #64748b;
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.welcome-text p i {
+    color: var(--operator-color);
+}
+
+/* ===== STATISTICS CARDS ===== */
+.statistics-row {
+    margin-bottom: 2.5rem;
+}
+
+.stat-card {
+    background: white;
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+    height: 100%;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    border: 1px solid #eef2f6;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, transparent, var(--operator-color-light));
+    border-radius: 50%;
+    opacity: 0.3;
+    transform: translate(30px, 30px);
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--operator-color-light);
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 18px;
+    background: var(--operator-color-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: var(--operator-color);
+}
+
+.stat-content {
+    flex: 1;
+    text-align: right;
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1.2;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #64748b;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+}
+
+/* ===== QUICK ACTIONS ===== */
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.section-title-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: var(--operator-color-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--operator-color);
+    font-size: 1.2rem;
+}
+
+.section-title h4 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin: 0;
+    color: #1e293b;
+}
+
+.section-title p {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+.quick-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+}
+
+.action-card {
+    background: white;
+    border-radius: var(--border-radius-sm);
+    padding: 1.5rem 1rem;
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    border: 1px solid #eef2f6;
+    position: relative;
+    overflow: hidden;
+}
+
+.action-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 0;
+    background: var(--operator-color);
+    transition: height 0.3s ease;
+}
+
+.action-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--operator-color-light);
+}
+
+.action-card:hover::before {
+    height: 100%;
+}
+
+.action-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    background: var(--operator-color-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: var(--operator-color);
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.action-card:hover .action-icon {
+    transform: scale(1.1);
+    background: var(--operator-color);
+    color: white;
+}
+
+.action-card h5 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    color: #1e293b;
+}
+
+.action-card p {
+    font-size: 0.85rem;
+    color: #64748b;
+    margin-bottom: 0;
+}
+
+/* ===== FILTER DROPDOWN ===== */
+.filter-dropdown {
+    background: white;
+    border-radius: var(--border-radius-sm);
+    padding: 0.5rem;
+    box-shadow: var(--shadow);
+    border: 1px solid #eef2f6;
+}
+
+.filter-btn {
+    width: 100%;
+    padding: 1rem;
+    border: 1px solid #eef2f6;
+    border-radius: var(--border-radius-sm);
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: #1e293b;
+    transition: all 0.3s ease;
+}
+
+.filter-btn:hover {
+    border-color: var(--operator-color);
+    background: var(--operator-color-light);
+}
+
+.filter-btn i:first-child {
+    color: var(--operator-color);
+    margin-right: 0.5rem;
+}
+
+.filter-menu {
+    width: 100%;
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #eef2f6;
+    border-radius: var(--border-radius-sm);
+    padding: 0.5rem;
+}
+
+.filter-menu .dropdown-item {
+    border-radius: 8px;
+    padding: 0.6rem 1rem;
+    margin-bottom: 0.25rem;
+}
+
+.filter-menu .dropdown-item.active {
+    background: var(--operator-color);
+    color: white;
+}
+
+.filter-menu .dropdown-item:hover:not(.active) {
+    background: var(--operator-color-light);
+    color: var(--operator-color);
+}
+
+/* ===== TABLE CARD ===== */
+.table-card {
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    border: 1px solid #eef2f6;
+}
+
+.table-header {
+    padding: 1.25rem 1.5rem;
+    background: white;
+    border-bottom: 1px solid #eef2f6;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.table-header h5 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.table-header h5 i {
+    color: var(--operator-color);
+}
+
+.table-header p {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+.table-responsive {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.table thead th {
+    background: #f8fafc;
+    color: #475569;
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 1rem 1.5rem;
+    border-bottom: 2px solid #eef2f6;
+    white-space: nowrap;
+}
+
+.table tbody td {
+    padding: 1rem 1.5rem;
+    vertical-align: middle;
+    color: #1e293b;
+    border-bottom: 1px solid #eef2f6;
+}
+
+.table tbody tr:hover {
+    background: var(--operator-color-light);
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* ===== BADGES ===== */
+.badge-city {
+    background: #f1f5f9;
+    color: #475569;
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.badge-city i {
+    color: var(--operator-color);
+    font-size: 0.7rem;
+}
+
+.badge-uploaded {
+    background: rgba(25, 135, 84, 0.1);
+    color: #198754;
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.badge-pending {
+    background: rgba(255, 193, 7, 0.1);
+    color: #856404;
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.badge-count {
+    background: var(--operator-color-light);
+    color: var(--operator-color);
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    margin-left: 0.5rem;
+}
+
+/* ===== ACTION BUTTONS ===== */
+.btn-action {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    background: #f8fafc;
+    border: 1px solid #eef2f6;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.btn-action:hover {
+    background: var(--operator-color);
+    color: white;
+    border-color: var(--operator-color);
+    transform: translateY(-2px);
+}
+
+.btn-action-group {
+    display: flex;
+    gap: 0.3rem;
+}
+
+/* ===== EMPTY STATE ===== */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.empty-state-icon {
+    width: 120px;
+    height: 120px;
+    border-radius: 60px;
+    background: var(--operator-color-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 3rem;
+    color: var(--operator-color);
+}
+
+.empty-state h4 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+    color: #64748b;
+    margin-bottom: 2rem;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.btn-primary-custom {
+    background: var(--operator-color);
+    color: white;
+    padding: 0.75rem 2rem;
+    border-radius: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.btn-primary-custom:hover {
+    background: var(--operator-color-dark);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(var(--operator-color-rgb), 0.3);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 992px) {
+    .quick-actions-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .welcome-header {
+        padding: 1.5rem;
+    }
+    
+    .welcome-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+    }
+    
+    .welcome-text h3 {
+        font-size: 1.3rem;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+    }
+    
+    .quick-actions-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .table-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 576px) {
+    .stat-card {
+        padding: 1rem;
+    }
+    
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+    }
+    
+    .stat-number {
+        font-size: 1.8rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- WELCOME HEADER -->
+<div class="welcome-header">
+    <div class="welcome-content">
+        <div class="welcome-icon">
+            <i class="bi bi-wifi"></i>
+        </div>
+        <div class="welcome-text">
+            <h3>Selamat Datang, PIC {{ operator_name }}</h3>
+            <p>
+                <i class="bi bi-calendar3"></i>
+                {% if current_date %}
+                    {{ current_date }}
+                {% else %}
+                    {{ now().strftime('%d %B %Y') }}
+                {% endif %}
+                <span class="mx-2">•</span>
+                <i class="bi bi-clock"></i>
+                <span id="live-time"></span>
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- STATISTICS CARDS -->
+<div class="statistics-row">
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="bi bi-wifi"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ total_stations }}</div>
+                    <div class="stat-label">Total Stasiun Name</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+                <div class="stat-content">
+                    {% set stations_with_uploads = [] %}
+                    {% for station in recent_stations %}
+                        {% if station.uploads %}
+                            {% set _ = stations_with_uploads.append(station.id) %}
+                        {% endif %}
+                    {% endfor %}
+                    <div class="stat-number">{{ stations_with_uploads|length }}</div>
+                    <div class="stat-label">Sudah Upload</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="bi bi-diagram-3"></i>
+                </div>
+                <div class="stat-content">
+                    {% set total_opponents = namespace(value=0) %}
+                    {% for station in recent_stations %}
+                        {% set total_opponents.value = total_opponents.value + station.stasiun_lawan_list|length %}
+                    {% endfor %}
+                    <div class="stat-number">{{ total_opponents.value }}</div>
+                    <div class="stat-label">Stasiun Lawan</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- QUICK ACTIONS -->
+<div class="section-title">
+    <div class="section-title-icon">
+        <i class="bi bi-lightning-charge"></i>
+    </div>
+    <div>
+        <h4>Aksi Cepat</h4>
+        <p>Menu cepat untuk mengelola data stasiun</p>
+    </div>
+</div>
+
+<div class="quick-actions-grid">
+    <a href="{{ url_for('admin_operator_tambah_data') }}" class="action-card">
+        <div class="action-icon">
+            <i class="bi bi-plus-circle"></i>
+        </div>
+        <h5>Tambah Stasiun</h5>
+        <p>Data stasiun baru</p>
+    </a>
+    
+    <a href="{{ url_for('admin_operator_daftar_stasiun') }}" class="action-card">
+        <div class="action-icon">
+            <i class="bi bi-list-ul"></i>
+        </div>
+        <h5>Lihat Semua</h5>
+        <p>Daftar lengkap stasiun</p>
+    </a>
+    
+    {% if kota_list %}
+    <div class="action-card" style="cursor: pointer;" onclick="toggleFilterDropdown()">
+        <div class="action-icon">
+            <i class="bi bi-geo-alt"></i>
+        </div>
+        <h5>Filter Kota</h5>
+        <p>{{ kota_list|length }} kota tersedia</p>
+        
+        <!-- Filter Dropdown (hidden by default) -->
+        <div class="filter-dropdown" id="filterDropdown" style="display: none; position: absolute; top: 100%; left: 0; right: 0; margin-top: 0.5rem; z-index: 1000;">
+            <div class="filter-menu">
+                <a class="dropdown-item d-flex justify-content-between align-items-center {% if not request.args.get('kota') %}active{% endif %}" 
+                   href="{{ url_for('admin_operator_daftar_stasiun') }}">
+                    <span><i class="bi bi-filter-circle me-2"></i>Semua Kota</span>
+                    <span class="badge-count">{{ kota_list|length }}</span>
+                </a>
+                <hr class="dropdown-divider">
+                {% for kota in kota_list|sort %}
+                <a class="dropdown-item {% if request.args.get('kota') == kota %}active{% endif %}" 
+                   href="{{ url_for('admin_operator_daftar_stasiun', kota=kota) }}">
+                    <i class="bi bi-geo-alt me-2"></i>{{ kota|title }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if recent_stations %}
+    {% else %}
+    <div class="action-card" style="opacity: 0.5; cursor: not-allowed;">
+        <div class="action-icon">
+            <i class="bi bi-eye"></i>
+        </div>
+        <h5>Lihat Terbaru</h5>
+        <p>Belum ada data</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- RECENT STATIONS TABLE -->
+<div class="table-card">
+    <div class="table-header">
+        <div>
+            <h5>
+                <i class="bi bi-clock-history"></i>
+                Stasiun Terbaru
+            </h5>
+            <p>Data stasiun yang baru ditambahkan</p>
+        </div>
+        <a href="{{ url_for('admin_operator_daftar_stasiun') }}" class="btn-primary-custom">
+            Lihat Semua <i class="bi bi-arrow-right"></i>
+        </a>
+    </div>
+    
+    {% if recent_stations %}
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Nama Stasiun</th>
+                    <th>Kota</th>
+                    <th>Stasiun Lawan</th>
+                    <th>Status</th>
+                    <th>Tanggal</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for station in recent_stations %}
+                <tr>
+                    <td>
+                        <span class="fw-bold text-muted">{{ loop.index }}</span>
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="me-2" style="color: var(--operator-color);">
+                                <i class="bi bi-wifi"></i>
+                            </div>
+                            <span class="fw-semibold">{{ station.stasiun_name }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge-city">
+                            <i class="bi bi-geo-alt"></i>
+                            {{ station.kota|title }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge-count">
+                            <i class="bi bi-diagram-3 me-1"></i>
+                            {{ station.stasiun_lawan_list|length }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if station.uploads %}
+                            <span class="badge-uploaded">
+                                <i class="bi bi-check-circle"></i> Sudah Upload
+                            </span>
+                        {% else %}
+                            <span class="badge-pending">
+                                <i class="bi bi-clock"></i> Belum Upload
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="text-muted small">
+                            <i class="bi bi-calendar3 me-1"></i>
+                            {{ station.created_at.strftime('%d/%m/%Y') }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="btn-action-group">
+                            <a href="{{ url_for('admin_operator_detail_stasiun', station_id=station.id) }}" 
+                               class="btn-action" title="Detail">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{{ url_for('admin_operator_edit_stasiun', station_id=station.id) }}" 
+                               class="btn-action" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">
+            <i class="bi bi-inbox"></i>
+        </div>
+        <h4>Belum Ada Data Stasiun</h4>
+        <p>Mulai dengan menambahkan stasiun pertama Anda untuk memulai monitoring</p>
+        <a href="{{ url_for('admin_operator_tambah_data') }}" class="btn-primary-custom">
+            <i class="bi bi-plus-circle"></i> Tambah Stasiun Pertama
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Live time update
+    function updateLiveTime() {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString('id-ID', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        });
+        
+        const liveTimeElement = document.getElementById('live-time');
+        if (liveTimeElement) {
+            liveTimeElement.textContent = timeString;
+        }
+    }
+    
+    updateLiveTime();
+    setInterval(updateLiveTime, 1000);
+    
+    // Toggle filter dropdown
+    function toggleFilterDropdown() {
+        const dropdown = document.getElementById('filterDropdown');
+        if (dropdown) {
+            if (dropdown.style.display === 'none' || dropdown.style.display === '') {
+                dropdown.style.display = 'block';
+            } else {
+                dropdown.style.display = 'none';
+            }
+        }
+    }
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(event) {
+        const filterCard = document.querySelector('.action-card:has(.filter-dropdown)');
+        const dropdown = document.getElementById('filterDropdown');
+        
+        if (filterCard && dropdown && !filterCard.contains(event.target)) {
+            dropdown.style.display = 'none';
+        }
+    });
+    
+    // Animation on scroll
+    document.addEventListener('DOMContentLoaded', function() {
+        const cards = document.querySelectorAll('.stat-card, .action-card');
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+        
+        cards.forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            observer.observe(card);
+        });
+    });
+</script>
+{% endblock %}

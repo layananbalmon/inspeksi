@@ -1,0 +1,125 @@
+{% extends "admin_master/base.html" %}
+
+{% block title %}Manage Users{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="mb-0">
+        <i class="bi bi-people"></i> Manage Users
+    </h3>
+    <!-- PERBAIKAN: Ganti admin_master_tambah_user dengan admin_master_add_user -->
+    <a href="{{ url_for('admin_master_add_user') }}" class="btn btn-primary">
+        <i class="bi bi-person-plus"></i> Tambah User Baru
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="bi bi-list-ul"></i> Daftar User
+            <span class="badge bg-primary ms-2">{{ users|length }} user</span>
+        </h5>
+    </div>
+    
+    <div class="card-body">
+        {% if users %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Role</th>
+                        <th>Operator</th>
+                        <th>Tanggal Dibuat</th>
+                        <th class="text-center">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.id }}</td>
+                        <td>
+                            <strong>{{ user.username }}</strong>
+                            {% if user.id == current_user.id %}
+                            <span class="badge bg-info ms-1">Anda</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if user.role == 'admin_master' %}
+                                <span class="badge" style="background-color: #0d6efd;">Admin Master</span>
+                            {% elif user.role == 'admin_operator' %}
+                                <span class="badge" style="background-color: #17a2b8;">Admin Operator</span>
+                            {% elif user.role == 'user_operator' %}
+                                <span class="badge" style="background-color: #28a745;">User Operator</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if user.operator_type %}
+                                {% if user.operator_type == 'telkom' %}
+                                    <span class="badge" style="background-color: #E1251B;">Telkom</span>
+                                {% elif user.operator_type == 'telkomsel' %}
+                                    <span class="badge" style="background-color: #0056b3;">Telkomsel</span>
+                                {% elif user.operator_type == 'indosat' %}
+                                    <span class="badge" style="background-color: #FF6600;">Indosat</span>
+                                {% elif user.operator_type == 'xl' %}
+                                    <span class="badge" style="background-color: #7F3F98;">XL</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="badge bg-secondary">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <small class="text-muted">
+                                {{ user.created_at.strftime('%d/%m/%Y %H:%M') }}
+                            </small>
+                        </td>
+                        <td class="text-center">
+                            <div class="btn-group btn-group-sm" role="group">
+                                <a href="{{ url_for('admin_master_edit_user', user_id=user.id) }}" 
+                                   class="btn btn-outline-primary" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                {% if user.id != current_user.id %}
+                                <a href="{{ url_for('admin_master_delete_user', user_id=user.id) }}" 
+                                   class="btn btn-outline-danger"
+                                   onclick="return confirm('Apakah Anda yakin ingin menghapus user {{ user.username }}?')"
+                                   title="Hapus">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                                {% else %}
+                                <span class="badge bg-secondary">Tidak dapat dihapus</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-people" style="font-size: 64px; color: #dee2e6;"></i>
+            <h5 class="text-muted mt-3">Belum ada data user</h5>
+            <p class="text-muted">
+                <!-- PERBAIKAN: Ganti admin_master_tambah_user dengan admin_master_add_user -->
+                <a href="{{ url_for('admin_master_add_user') }}">Tambahkan user baru</a>.
+            </p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.badge {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+.btn-group-sm .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,1134 @@
+{% extends "user_operator/base.html" %}
+
+{% block title %}Detail Stasiun - {{ station.stasiun_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ===== VARIABLES & RESET ===== */
+:root {
+    --gradient-primary: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    --gradient-success: linear-gradient(135deg, #198754, #146c43);
+    --gradient-warning: linear-gradient(135deg, #ffc107, #ffb000);
+    --gradient-info: linear-gradient(135deg, #0dcaf0, #0bb2d4);
+    --gradient-danger: linear-gradient(135deg, #dc3545, #bb2d3b);
+    --border-radius-lg: 16px;
+    --border-radius-md: 12px;
+    --border-radius-sm: 8px;
+    --box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    --box-shadow-hover: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+/* ===== FIX SCROLL ISSUE ===== */
+html, body {
+    overflow: auto !important;
+    overflow-x: hidden !important;
+    height: 100%;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    position: relative;
+    overflow-y: auto !important;
+}
+
+/* ===== STATION HEADER ===== */
+.station-header {
+    background: var(--gradient-primary);
+    color: white;
+    padding: 1.5rem;
+    border-radius: var(--border-radius-lg);
+    margin-bottom: 1.5rem;
+    box-shadow: var(--box-shadow);
+}
+
+.station-header h2 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.station-meta {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255,255,255,0.1);
+    padding: 0.4rem 1rem;
+    border-radius: 100px;
+    font-size: 0.85rem;
+}
+
+/* ===== TABS ===== */
+.nav-tabs {
+    border-bottom: 1px solid #eef2f6;
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.nav-tabs .nav-link {
+    font-weight: 600;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: #64748b;
+    padding: 0.75rem 1.25rem;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}
+
+.nav-tabs .nav-link i {
+    margin-right: 0.5rem;
+}
+
+.nav-tabs .nav-link.active {
+    border-bottom-color: #2a5298;
+    color: #1e3c72;
+    background-color: transparent;
+}
+
+.nav-tabs .nav-link .badge {
+    margin-left: 0.5rem;
+    background: #eef2f6;
+    color: #475569;
+    font-weight: 600;
+}
+
+/* ===== GROUP CONTAINER ===== */
+.group-container {
+    background: white;
+    border: 1px solid #eef2f6;
+    border-radius: var(--border-radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--box-shadow);
+}
+
+.group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid #f1f5f9;
+}
+
+.group-header h5 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    color: #1e293b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 300px;
+}
+
+.group-header h5[title] {
+    cursor: help;
+}
+
+/* ===== FREKUENSI BADGES ===== */
+.freq-tx-badge {
+    display: inline-flex;
+    align-items: center;
+    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+    color: #0d47a1;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border: 1px solid rgba(13, 71, 161, 0.3);
+    line-height: 1.4;
+    white-space: nowrap;
+    margin-right: 8px;
+}
+
+.freq-tx-badge i {
+    font-size: 0.85rem;
+    margin-right: 6px;
+    color: #1976d2;
+}
+
+.freq-rx-badge {
+    display: inline-flex;
+    align-items: center;
+    background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+    color: #1b5e20;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border: 1px solid rgba(27, 94, 32, 0.3);
+    line-height: 1.4;
+    white-space: nowrap;
+    margin-left: 8px;
+}
+
+.freq-rx-badge i {
+    font-size: 0.85rem;
+    margin-right: 6px;
+    color: #2e7d32;
+}
+
+/* ===== GALLERY ===== */
+.image-gallery {
+    position: relative;
+    margin-bottom: 1.5rem;
+    background: #f8fafc;
+    border-radius: var(--border-radius-lg);
+    padding: 1rem;
+}
+
+.main-image-container {
+    position: relative;
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+    background: white;
+    min-height: 350px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.main-image {
+    max-width: 100%;
+    max-height: 400px;
+    object-fit: contain;
+    transition: transform 0.3s;
+    cursor: pointer;
+}
+
+.main-image:hover {
+    transform: scale(1.02);
+}
+
+.gallery-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: white;
+    color: #1e293b;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 20;
+    transition: all 0.25s;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    font-size: 1.2rem;
+}
+
+.gallery-nav:hover {
+    background: #2a5298;
+    color: white;
+    border-color: #2a5298;
+    transform: translateY(-50%) scale(1.1);
+}
+
+.gallery-nav.prev { left: 20px; }
+.gallery-nav.next { right: 20px; }
+
+.thumbnails {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    padding: 0.5rem 0;
+    overflow-x: auto;
+    scrollbar-width: thin;
+}
+
+.thumbnails::-webkit-scrollbar {
+    height: 4px;
+}
+
+.thumbnails::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 10px;
+}
+
+.thumbnails::-webkit-scrollbar-thumb {
+    background: #94a3b8;
+    border-radius: 10px;
+}
+
+.thumbnail {
+    width: 70px;
+    height: 70px;
+    border-radius: var(--border-radius-sm);
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid transparent;
+    flex-shrink: 0;
+    transition: all 0.2s;
+    opacity: 0.7;
+}
+
+.thumbnail:hover {
+    opacity: 1;
+    transform: translateY(-2px);
+}
+
+.thumbnail.active {
+    border-color: #2a5298;
+    opacity: 1;
+    box-shadow: 0 0 0 3px rgba(42, 82, 152, 0.2);
+}
+
+.thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.image-info {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: white;
+    border-radius: var(--border-radius-md);
+    border: 1px solid #eef2f6;
+}
+
+.image-title {
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+    font-size: 0.95rem;
+}
+
+/* ===== INFO PANEL ===== */
+.info-panel {
+    background: white;
+    border-radius: var(--border-radius-lg);
+    padding: 1.25rem;
+    border: 1px solid #eef2f6;
+    height: 100%;
+}
+
+.info-section {
+    margin-bottom: 1.5rem;
+}
+
+.info-section h6 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #475569;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.info-section h6 i {
+    margin-right: 0.5rem;
+    color: #2a5298;
+}
+
+.info-grid {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    background: #f8fafc;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.85rem;
+}
+
+.info-label { color: #64748b; font-weight: 500; }
+.info-value { font-weight: 600; color: #1e293b; }
+
+/* ===== STATUS STATISTICS ===== */
+.status-statistics {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+}
+
+.status-stat-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 0.75rem;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.status-stat-item span:first-child {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.status-stat-count { font-weight: 700; font-size: 1rem; }
+
+/* ===== STATUS BADGES ===== */
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 100px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+.status-aktif { background: rgba(25, 135, 84, 0.1); color: #198754; border: 1px solid rgba(25, 135, 84, 0.2); }
+.status-tidak_aktif { background: rgba(220, 53, 69, 0.1); color: #dc3545; border: 1px solid rgba(220, 53, 69, 0.2); }
+.status-tidak_berizin { background: rgba(255, 193, 7, 0.1); color: #856404; border: 1px solid rgba(255, 193, 7, 0.2); }
+.status-tidak_sesuai { background: rgba(13, 110, 253, 0.1); color: #0d6efd; border: 1px solid rgba(13, 110, 253, 0.2); }
+.status-belum_ada { background: rgba(108, 117, 125, 0.1); color: #6c757d; border: 1px solid rgba(108, 117, 125, 0.2); }
+
+/* ===== OPPONENTS LIST ===== */
+.opponents-list {
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 0.25rem;
+}
+
+.opponents-list::-webkit-scrollbar { width: 4px; }
+.opponents-list::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
+.opponents-list::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }
+
+.opponent-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    background: white;
+    border-radius: var(--border-radius-md);
+    border: 1px solid #eef2f6;
+    transition: all 0.2s;
+}
+
+.opponent-item:hover {
+    border-color: #2a5298;
+    box-shadow: 0 2px 8px rgba(42, 82, 152, 0.1);
+    transform: translateX(3px);
+}
+
+.opponent-number {
+    width: 28px;
+    height: 28px;
+    background: #eef2f6;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-right: 1rem;
+    flex-shrink: 0;
+    color: #475569;
+}
+
+.opponent-details { 
+    flex-grow: 1; 
+    min-width: 0; 
+}
+
+/* Layout vertikal untuk nama dan frekuensi */
+.opponent-name-row {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 8px;
+    width: 100%;
+}
+
+.opponent-name-container {
+    width: 100%;
+    margin-bottom: 6px;
+}
+
+.opponent-name {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 0.95rem;
+    word-break: break-word;
+    white-space: normal;
+    line-height: 1.4;
+    cursor: help;
+}
+
+.opponent-freqs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.opponent-notes {
+    font-size: 0.8rem;
+    color: #64748b;
+    font-style: italic;
+    margin: 6px 0 4px 0;
+    word-break: break-word;
+    white-space: normal;
+    cursor: help;
+}
+
+.opponent-notes i {
+    margin-right: 4px;
+}
+
+.opponent-update-time {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    margin-top: 4px;
+}
+
+.opponent-update-time i {
+    margin-right: 4px;
+}
+
+/* ===== ACTION BUTTONS ===== */
+.action-buttons {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #eef2f6;
+}
+
+.action-buttons .btn {
+    flex: 1;
+    padding: 0.7rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-radius: var(--border-radius-md);
+}
+
+/* ===== ZOOM MODAL ===== */
+.zoom-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 99999;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.zoom-content {
+    position: relative;
+    max-width: 90%;
+    max-height: 90%;
+}
+
+.zoom-image {
+    max-width: 100%;
+    max-height: 90vh;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.close-zoom {
+    position: absolute;
+    top: -50px;
+    right: 0;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: white;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 1.2rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.close-zoom:hover {
+    transform: rotate(90deg);
+    background: #dc3545;
+    color: white;
+}
+
+/* ===== EMPTY STATE ===== */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1.5rem;
+    color: #64748b;
+}
+
+.empty-state i {
+    font-size: 3.5rem;
+    color: #cbd5e1;
+    margin-bottom: 1rem;
+}
+
+.empty-state h5 {
+    color: #1e293b;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .station-header { padding: 1.25rem; }
+    .station-header h2 { font-size: 1.4rem; }
+    .station-meta { gap: 0.75rem; }
+    .meta-item { padding: 0.3rem 0.75rem; font-size: 0.75rem; }
+    .group-header { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+    .main-image-container { min-height: 250px; }
+    .gallery-nav { width: 36px; height: 36px; font-size: 1rem; }
+    .gallery-nav.prev { left: 10px; }
+    .gallery-nav.next { right: 10px; }
+    .thumbnail { width: 60px; height: 60px; }
+    .status-statistics { grid-template-columns: 1fr; }
+    .action-buttons { flex-direction: column; }
+    .freq-tx-badge, .freq-rx-badge { 
+        padding: 4px 8px; 
+        font-size: 0.8rem; 
+    }
+}
+
+[title] {
+    cursor: help;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- STATION HEADER -->
+<div class="station-header">
+    <div class="d-flex justify-content-between align-items-start align-items-md-center flex-column flex-md-row">
+        <div>
+            <h2>
+                <i class="bi bi-broadcast me-2"></i>{{ station.stasiun_name }}
+            </h2>
+            <p class="mb-0 opacity-75">
+                <i class="bi bi-building me-1"></i>Operator: <strong>{{ station.operator|upper }}</strong>
+            </p>
+        </div>
+        <div class="mt-3 mt-md-0 d-flex gap-2">
+            <a href="{{ url_for('user_operator_stasiun') }}" class="btn btn-light btn-sm px-3">
+                <i class="bi bi-arrow-left me-1"></i> Kembali
+            </a>
+            <a href="{{ url_for('user_operator_grup_stasiun', station_id=station.id) }}" 
+               class="btn btn-info btn-sm px-3 text-white">
+                <i class="bi bi-diagram-3 me-1"></i>Grup IDU
+            </a>
+        </div>
+    </div>
+    
+    <div class="station-meta">
+        <div class="meta-item">
+            <i class="bi bi-geo-alt"></i>
+            <span>{{ station.kota|title if station.kota else 'Tidak diketahui' }}</span>
+        </div>
+        <div class="meta-item">
+            <i class="bi bi-people"></i>
+            <span>{{ total_opponents }} Stasiun Lawan</span>
+        </div>
+        <div class="meta-item">
+            <i class="bi bi-diagram-3"></i>
+            <span>{{ groups|length }} Grup</span>
+        </div>
+        <div class="meta-item">
+            <i class="bi bi-images"></i>
+            <span>{{ all_uploads|length }} Gambar</span>
+        </div>
+    </div>
+</div>
+
+<!-- TABS FOR GROUPS -->
+{% if groups %}
+<ul class="nav nav-tabs" id="groupTabs" role="tablist">
+    {% for group_key, group_info in groups.items() %}
+    <li class="nav-item" role="presentation">
+        <button class="nav-link {% if loop.first %}active{% endif %}" 
+                id="tab-{{ loop.index }}" 
+                data-bs-toggle="tab" 
+                data-bs-target="#content-{{ loop.index }}" 
+                type="button"
+                role="tab"
+                data-group-key="{{ group_key }}">
+            {% if group_key == 'ungrouped' %}
+                <i class="bi bi-circle"></i> Tanpa Grup
+            {% else %}
+                <i class="bi bi-collection"></i> {{ group_info.label }}
+            {% endif %}
+            <span class="badge">{{ group_info.lawans|length }}</span>
+        </button>
+    </li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+<div class="tab-content mt-3" id="groupTabsContent">
+    {% if groups %}
+        {% for group_key, group_info in groups.items() %}
+        {% set outer_index = loop.index0 %}
+        {% set gallery_id = loop.index %}
+        <div class="tab-pane fade {% if loop.first %}show active{% endif %}" 
+             id="content-{{ loop.index }}"
+             role="tabpanel"
+             data-group-key="{{ group_key }}">
+            
+            <div class="group-container">
+                <!-- GROUP HEADER -->
+                <div class="group-header">
+                    <div>
+                        <h5 title="{{ group_info.label }}">
+                            {% if group_key == 'ungrouped' %}
+                                <i class="bi bi-circle text-secondary me-2"></i>Tanpa Grup
+                            {% else %}
+                                <i class="bi bi-collection text-primary me-2"></i>{{ group_info.label }}
+                            {% endif %}
+                        </h5>
+                        <div class="small text-muted">
+                            <i class="bi bi-people me-1"></i>{{ group_info.lawans|length }} stasiun lawan • 
+                            <i class="bi bi-images ms-1 me-1"></i>{{ group_info.uploads|length }} gambar
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('user_operator_edit_grup', station_id=station.id, group_key=group_key) }}" 
+                           class="btn btn-outline-warning btn-sm">
+                            <i class="bi bi-pencil me-1"></i> Edit
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- MAIN CONTENT ROW -->
+                <div class="row g-4">
+                    <!-- LEFT COLUMN: IMAGE GALLERY -->
+                    <div class="col-lg-8">
+                        {% if group_info.uploads %}
+                        <div class="image-gallery" id="gallery-{{ gallery_id }}">
+                            <!-- MAIN IMAGE -->
+                            <div class="main-image-container">
+                                <img id="mainImage-{{ gallery_id }}" 
+                                     src="{{ group_info.uploads[0].public_id | cloudinary_optimized(800) }}" 
+                                     class="main-image"
+                                     alt="Gambar grup"
+                                     onclick="zoomImage({{ outer_index }})">
+                                
+                                <!-- NAVIGATION BUTTONS -->
+                                {% if group_info.uploads|length > 1 %}
+                                <button class="gallery-nav prev" 
+                                        onclick="event.stopPropagation(); prevImage({{ outer_index }})"
+                                        data-gallery-index="{{ outer_index }}">
+                                    <i class="bi bi-chevron-left"></i>
+                                </button>
+                                <button class="gallery-nav next" 
+                                        onclick="event.stopPropagation(); nextImage({{ outer_index }})"
+                                        data-gallery-index="{{ outer_index }}">
+                                    <i class="bi bi-chevron-right"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- THUMBNAILS -->
+                            {% if group_info.uploads|length > 1 %}
+                            <div class="thumbnails" id="thumbnails-{{ gallery_id }}">
+                                {% for upload in group_info.uploads %}
+                                <div class="thumbnail {% if loop.first %}active{% endif %}" 
+                                     onclick="showImage({{ outer_index }}, {{ loop.index0 }})"
+                                     data-index="{{ loop.index0 }}">
+                                    <img src="{{ upload.public_id | cloudinary_thumbnail(70, 70) }}" 
+                                         alt="Thumb {{ loop.index }}">
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            
+                            <!-- IMAGE INFO -->
+                            <div class="image-info">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <div class="image-title" id="imageTitle-{{ gallery_id }}">
+                                            {{ group_info.uploads[0].original_filename|truncate(30) }}
+                                        </div>
+                                        <div class="text-muted small">
+                                            <i class="bi bi-calendar3 me-1"></i>
+                                            {{ group_info.uploads[0].uploaded_at.strftime('%d %b %Y') }} •
+                                            <i class="bi bi-file-image ms-1"></i> {{ group_info.uploads[0].format|upper }} •
+                                            {{ group_info.uploads[0].bytes_size | filesizeformat }}
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-1">
+                                        <a href="{{ group_info.uploads[0].cloudinary_url }}" 
+                                           target="_blank
+                                           class="btn btn-sm btn-outline-primary"
+                                           title="Lihat Original">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <!-- NO IMAGES -->
+                        <div class="empty-state">
+                            <i class="bi bi-images"></i>
+                            <h5>Belum Ada Gambar</h5>
+                            <p class="text-muted mb-3">Upload gambar pertama untuk grup ini</p>
+                            <a href="{{ url_for('user_operator_upload', station_id=station.id) }}" 
+                               class="btn btn-primary">
+                                <i class="bi bi-cloud-arrow-up me-1"></i> Upload Sekarang
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- RIGHT COLUMN: INFO PANEL -->
+                    <div class="col-lg-4">
+                        <div class="info-panel">
+                            <!-- STATION INFO -->
+                            <div class="info-section">
+                                <h6><i class="bi bi-info-circle"></i>Informasi Stasiun</h6>
+                                <div class="info-grid">
+                                    <div class="info-item">
+                                        <span class="info-label">Nama Stasiun</span>
+                                        <span class="info-value">{{ station.stasiun_name|truncate(15) }}</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Kota</span>
+                                        <span class="info-value">{{ station.kota|title }}</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Operator</span>
+                                        <span class="info-value">{{ station.operator|upper }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- STATUS STATISTICS -->
+                            <div class="info-section">
+                                <h6><i class="bi bi-pie-chart"></i>Status Grup</h6>
+                                <div class="status-statistics">
+                                    {% set counts = {
+                                        'aktif': group_info.lawans|selectattr('latest_status', 'equalto', 'aktif')|list|length,
+                                        'tidak_aktif': group_info.lawans|selectattr('latest_status', 'equalto', 'tidak_aktif')|list|length,
+                                        'tidak_berizin': group_info.lawans|selectattr('latest_status', 'equalto', 'tidak_berizin')|list|length,
+                                        'tidak_sesuai': group_info.lawans|selectattr('latest_status', 'equalto', 'tidak_sesuai')|list|length
+                                    } %}
+                                    
+                                    <div class="status-stat-item status-aktif">
+                                        <span><i class="bi bi-check-circle"></i> Aktif</span>
+                                        <span class="status-stat-count">{{ counts.aktif }}</span>
+                                    </div>
+                                    <div class="status-stat-item status-tidak_aktif">
+                                        <span><i class="bi bi-x-circle"></i> Tidak Aktif</span>
+                                        <span class="status-stat-count">{{ counts.tidak_aktif }}</span>
+                                    </div>
+                                    <div class="status-stat-item status-tidak_berizin">
+                                        <span><i class="bi bi-exclamation-circle"></i> Tidak Berizin</span>
+                                        <span class="status-stat-count">{{ counts.tidak_berizin }}</span>
+                                    </div>
+                                    <div class="status-stat-item status-tidak_sesuai">
+                                        <span><i class="bi bi-arrow-repeat"></i> Tidak Sesuai</span>
+                                        <span class="status-stat-count">{{ counts.tidak_sesuai }}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- DAFTAR STASIUN LAWAN - DENGAN FREKUENSI TX DAN RX -->
+                            <div class="info-section">
+                                <h6>
+                                    <i class="bi bi-people"></i>Stasiun Lawan
+                                    <span class="badge bg-secondary ms-2">{{ group_info.lawans|length }}</span>
+                                </h6>
+                                <div class="opponents-list">
+                                    {% if group_info.lawans %}
+                                        {% for lawan in group_info.lawans %}
+                                        <div class="opponent-item">
+                                            <div class="opponent-number">{{ loop.index }}</div>
+                                            <div class="opponent-details">
+                                                <!-- Baris 1: NAMA (full width) -->
+                                                <div class="opponent-name-row">
+                                                    <div class="opponent-name-container">
+                                                        <span class="opponent-name" title="{{ lawan.nama }}">
+                                                            {{ lawan.nama }}
+                                                        </span>
+                                                    </div>
+                                                    
+                                                    <!-- Baris 2: FREKUENSI Tx & Rx -->
+                                                    <div class="opponent-freqs">
+                                                        {% if lawan.freq_tx %}
+                                                        <span class="freq-tx-badge" title="Frekuensi Transmit">
+                                                            <i class="bi bi-arrow-up-short"></i> {{ lawan.freq_tx }}
+                                                        </span>
+                                                        {% endif %}
+                                                        
+                                                        {% if lawan.freq_rx %}
+                                                        <span class="freq-rx-badge" title="Frekuensi Receive">
+                                                            <i class="bi bi-arrow-down-short"></i> {{ lawan.freq_rx }}
+                                                        </span>
+                                                        {% endif %}
+                                                        
+                                                        {% if not lawan.freq_tx and not lawan.freq_rx %}
+                                                        <span class="badge bg-light text-muted">-</span>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Baris 3: STATUS -->
+                                                <div style="margin-bottom: 6px;">
+                                                    {% set status = lawan.latest_status if lawan.latest_status else 'belum_ada' %}
+                                                    <span class="status-badge status-{{ status }}" 
+                                                          title="Status: {% if status == 'aktif' %}Aktif{% elif status == 'tidak_aktif' %}Tidak Aktif{% elif status == 'tidak_berizin' %}Tidak Berizin{% elif status == 'tidak_sesuai' %}Tidak Sesuai{% else %}Belum Ada{% endif %}">
+                                                        {% if status == 'aktif' %}Aktif
+                                                        {% elif status == 'tidak_aktif' %}Tidak Aktif
+                                                        {% elif status == 'tidak_berizin' %}Tidak Berizin
+                                                        {% elif status == 'tidak_sesuai' %}Tidak Sesuai
+                                                        {% else %}Belum Ada{% endif %}
+                                                    </span>
+                                                </div>
+                                                
+                                                <!-- Baris 4: CATATAN -->
+                                                {% if lawan.catatan %}
+                                                <div class="opponent-notes" title="{{ lawan.catatan }}">
+                                                    <i class="bi bi-chat"></i> {{ lawan.catatan|truncate(35) }}
+                                                </div>
+                                                {% endif %}
+                                                
+                                                <!-- Baris 5: WAKTU UPDATE -->
+                                                {% if lawan.updated_at %}
+                                                <div class="opponent-update-time" title="Terakhir diperbarui: {{ lawan.updated_at.strftime('%d/%m/%Y %H:%M') }}">
+                                                    <i class="bi bi-clock"></i>
+                                                    {{ lawan.updated_at.strftime('%d/%m/%Y') }}
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    {% else %}
+                                    <div class="text-center text-muted py-4">
+                                        <i class="bi bi-people fs-1"></i>
+                                        <p class="mb-0 mt-2">Belum ada stasiun lawan</p>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- ACTION BUTTONS -->
+                            <div class="action-buttons">
+                                <a href="{{ url_for('user_operator_grup_stasiun', station_id=station.id) }}" 
+                                   class="btn btn-outline-info">
+                                    <i class="bi bi-diagram-3 me-1"></i> Kelola Grup
+                                </a>
+                                <a href="{{ url_for('user_operator_upload', station_id=station.id) }}" 
+                                   class="btn btn-success">
+                                    <i class="bi bi-cloud-arrow-up me-1"></i> Upload
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+    <!-- NO GROUPS -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <div class="empty-state">
+                <i class="bi bi-diagram-3"></i>
+                <h5>Belum Ada Grup</h5>
+                <p class="text-muted">Mulai dengan membuat grup untuk mengelompokkan stasiun lawan</p>
+                <div class="d-flex justify-content-center gap-2">
+                    <a href="{{ url_for('user_operator_grup_stasiun', station_id=station.id) }}" 
+                       class="btn btn-primary px-4">
+                        <i class="bi bi-diagram-3 me-1"></i> Buat Grup
+                    </a>
+                    <a href="{{ url_for('user_operator_upload', station_id=station.id) }}" 
+                       class="btn btn-outline-primary px-4">
+                        <i class="bi bi-cloud-arrow-up me-1"></i> Upload
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- ZOOM MODAL -->
+<div class="zoom-modal" id="zoomModal" onclick="closeZoom(event)">
+    <div class="zoom-content">
+        <button class="close-zoom" onclick="closeZoom(event)">
+            <i class="bi bi-x-lg"></i>
+        </button>
+        <img class="zoom-image" id="zoomImage" alt="Zoom">
+    </div>
+</div>
+
+<script>
+// ============ GALLERY MANAGEMENT ============
+const galleries = {};
+
+// Initialize galleries from Django/Jinja
+{% if groups %}
+    {% for group_key, group_info in groups.items() %}
+        {% if group_info.uploads %}
+            galleries[{{ loop.index0 }}] = {
+                currentIndex: 0,
+                groupKey: '{{ group_key }}',
+                galleryId: {{ loop.index }},
+                images: [
+                    {% for upload in group_info.uploads %}
+                    {
+                        public_id: "{{ upload.public_id }}",
+                        url: "{{ upload.cloudinary_url }}",
+                        title: "{{ upload.original_filename }}",
+                        date: "{{ upload.uploaded_at.strftime('%d %b %Y') }}"
+                    },
+                    {% endfor %}
+                ]
+            };
+        {% endif %}
+    {% endfor %}
+{% endif %}
+
+// Show image by index
+function showImage(galleryIndex, imageIndex) {
+    const gallery = galleries[galleryIndex];
+    if (!gallery || !gallery.images || !gallery.images[imageIndex]) return;
+    
+    gallery.currentIndex = imageIndex;
+    
+    const mainImage = document.getElementById(`mainImage-${gallery.galleryId}`);
+    if (mainImage) {
+        mainImage.src = gallery.images[imageIndex].url;
+        mainImage.alt = gallery.images[imageIndex].title;
+    }
+    
+    const imageTitle = document.getElementById(`imageTitle-${gallery.galleryId}`);
+    if (imageTitle) {
+        imageTitle.textContent = gallery.images[imageIndex].title.length > 30 
+            ? gallery.images[imageIndex].title.substring(0, 30) + '...' 
+            : gallery.images[imageIndex].title;
+    }
+    
+    const thumbnails = document.querySelectorAll(`#thumbnails-${gallery.galleryId} .thumbnail`);
+    thumbnails.forEach((thumb, i) => {
+        if (i === imageIndex) {
+            thumb.classList.add('active');
+        } else {
+            thumb.classList.remove('active');
+        }
+    });
+}
+
+// Previous image
+function prevImage(galleryIndex) {
+    const gallery = galleries[galleryIndex];
+    if (!gallery || !gallery.images || gallery.images.length <= 1) return;
+    
+    let newIndex = gallery.currentIndex - 1;
+    if (newIndex < 0) {
+        newIndex = gallery.images.length - 1;
+    }
+    showImage(galleryIndex, newIndex);
+}
+
+// Next image
+function nextImage(galleryIndex) {
+    const gallery = galleries[galleryIndex];
+    if (!gallery || !gallery.images || gallery.images.length <= 1) return;
+    
+    let newIndex = gallery.currentIndex + 1;
+    if (newIndex >= gallery.images.length) {
+        newIndex = 0;
+    }
+    showImage(galleryIndex, newIndex);
+}
+
+// ============ ZOOM MODAL ============
+function zoomImage(galleryIndex) {
+    const gallery = galleries[galleryIndex];
+    if (!gallery) return;
+    
+    const zoomImage = document.getElementById('zoomImage');
+    const zoomModal = document.getElementById('zoomModal');
+    
+    if (zoomImage && zoomModal) {
+        zoomImage.src = gallery.images[gallery.currentIndex].url;
+        zoomModal.style.display = 'flex';
+    }
+}
+
+function closeZoom(event) {
+    if (event) event.stopPropagation();
+    const zoomModal = document.getElementById('zoomModal');
+    if (zoomModal) {
+        zoomModal.style.display = 'none';
+    }
+}
+
+// ============ DOCUMENT READY ============
+document.addEventListener('DOMContentLoaded', function() {
+    // UNLOCK SCROLL
+    document.body.style.overflow = 'auto';
+    document.body.style.overflowX = 'hidden';
+    document.documentElement.style.overflow = 'auto';
+    document.documentElement.style.overflowX = 'hidden';
+    
+    // Initialize first image for each gallery
+    Object.keys(galleries).forEach(index => {
+        showImage(parseInt(index), 0);
+    });
+    
+    // Handle tab changes
+    const tabs = document.querySelectorAll('button[data-bs-toggle="tab"]');
+    tabs.forEach(tab => {
+        tab.addEventListener('shown.bs.tab', function(event) {
+            const targetId = event.target.getAttribute('data-bs-target');
+            const targetElement = document.querySelector(targetId);
+            
+            if (targetElement) {
+                const groupKey = targetElement.getAttribute('data-group-key');
+                for (const [index, gallery] of Object.entries(galleries)) {
+                    if (gallery.groupKey === groupKey) {
+                        showImage(parseInt(index), 0);
+                        break;
+                    }
+                }
+            }
+        });
+    });
+    
+    // Close zoom modal with ESC key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeZoom(e);
+        }
+    });
+    
+    // Tooltips
+    const tooltipTriggerList = document.querySelectorAll('[title]');
+    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+        new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+</script>
+{% endblock %}
