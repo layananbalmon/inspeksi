@@ -848,19 +848,59 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
     
-    // ===== FORM SUBMIT =====
-    const form = document.getElementById('editForm');
-    if (form) {
-        form.onsubmit = function() {
-            // Cek apakah ada file yang dipilih untuk dihapus
-            const deleteChecked = document.querySelectorAll('input[name="delete_files[]"]:checked').length;
-            console.log(`Submitting with ${deleteChecked} images to delete`);
+    // ===== FORM SUBMIT - DENGAN TRANSFER FILE =====
+const form = document.getElementById('editForm');
+if (form) {
+    form.onsubmit = function(e) {
+        // 1. CEK DELETE FILES
+        const deleteChecked = document.querySelectorAll('input[name="delete_files[]"]:checked').length;
+        console.log(`Submitting with ${deleteChecked} images to delete`);
+        
+        // 2. TRANSFER FILE DARI selectedFiles KE FILE INPUT
+        if (selectedFiles.length > 0) {
+            console.log(`📤 Transferring ${selectedFiles.length} files to form...`);
             
-            document.getElementById('progressOverlay').style.display = 'block';
-            document.getElementById('progressModal').style.display = 'block';
-            return true;
-        };
-    }
+            const fileInput = document.getElementById('fileInput');
+            const dataTransfer = new DataTransfer();
+            
+            selectedFiles.forEach((file, index) => {
+                dataTransfer.items.add(file);
+                console.log(`  - File ${index + 1}: ${file.name} (${(file.size/1024).toFixed(1)} KB)`);
+            });
+            
+            // Assign files ke input
+            fileInput.files = dataTransfer.files;
+            
+            console.log(`✅ Files assigned to input. Input now has: ${fileInput.files.length} files`);
+        } else {
+            console.log('No files to upload');
+            
+            // Optional: cek apakah ada file di input langsung
+            const fileInput = document.getElementById('fileInput');
+            if (fileInput.files.length > 0) {
+                console.log(`⚠️ Found ${fileInput.files.length} files directly in input!`);
+            }
+        }
+        
+        // 3. DEBUG: CEK SEMUA DATA YANG AKAN DIKIRIM
+        console.log('📋 Form data yang akan dikirim:');
+        console.log('  - action:', form.action);
+        console.log('  - method:', form.method);
+        console.log('  - enctype:', form.enctype);
+        
+        const fileInput = document.getElementById('fileInput');
+        console.log(`  - files in input: ${fileInput.files.length}`);
+        for (let i = 0; i < fileInput.files.length; i++) {
+            console.log(`    * ${fileInput.files[i].name}`);
+        }
+        
+        // 4. TAMPILKAN LOADING MODAL
+        document.getElementById('progressOverlay').style.display = 'block';
+        document.getElementById('progressModal').style.display = 'block';
+        
+        return true;
+    };
+}
 });
 
 // ============ 6. HANDLE FILES UPLOAD ============

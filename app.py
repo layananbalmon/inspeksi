@@ -2524,7 +2524,7 @@ def admin_master_detail_stasiun(station_id):
     # Kelompokkan lawan dan upload berdasarkan grup
     groups = {}
     
-    # Proses lawan per grup
+    # ===== PROSES LAWAN PER GRUP =====
     for lawan in all_lawans:
         group_key = lawan.group_id if lawan.group_id is not None else 'ungrouped'
         
@@ -2533,7 +2533,7 @@ def admin_master_detail_stasiun(station_id):
                 'group_id': lawan.group_id,
                 'nama_grup': groups_dict.get(lawan.group_id) if lawan.group_id else None,
                 'opponents': [],
-                'uploads': [],
+                'uploads': [],  # PASTIKAN FIELD INI ADA
                 'status_summary': {'aktif': 0, 'tidak_aktif': 0, 'tidak_berizin': 0, 'tidak_sesuai': 0}
             }
         
@@ -2559,7 +2559,7 @@ def admin_master_detail_stasiun(station_id):
         if latest_status and latest_status.status in groups[group_key]['status_summary']:
             groups[group_key]['status_summary'][latest_status.status] += 1
     
-    # Proses upload per grup
+    # ===== PROSES UPLOAD PER GRUP - YANG INI PENTING! =====
     for upload in all_uploads:
         group_key = upload.group_id if upload.group_id is not None else 'ungrouped'
         
@@ -2572,13 +2572,13 @@ def admin_master_detail_stasiun(station_id):
                 'status_summary': {'aktif': 0, 'tidak_aktif': 0, 'tidak_berizin': 0, 'tidak_sesuai': 0}
             }
         
-        # Cek duplikasi public_id
+        # Cek duplikasi public_id dalam grup yang sama
         existing_public_ids = [u['public_id'] for u in groups[group_key]['uploads']]
         if upload.public_id not in existing_public_ids:
             upload_data = {
                 'id': upload.id,
                 'public_id': upload.public_id,
-                'url': upload.cloudinary_url,
+                'cloudinary_url': upload.cloudinary_url,
                 'original_filename': upload.original_filename,
                 'uploaded_at': upload.uploaded_at,
                 'format': upload.format,
@@ -2588,7 +2588,7 @@ def admin_master_detail_stasiun(station_id):
             }
             groups[group_key]['uploads'].append(upload_data)
     
-    # Urutkan grup
+    # Urutkan grup: ungrouped dulu, lalu grup numeric
     sorted_groups = {}
     
     # Ungrouped dulu
@@ -3173,7 +3173,7 @@ def admin_operator_detail_stasiun(station_id):
     # Kelompokkan lawan dan upload berdasarkan grup
     groups = {}
     
-    # Proses lawan per grup
+    # ===== PROSES LAWAN PER GRUP =====
     for lawan in all_lawans:
         group_key = lawan.group_id if lawan.group_id is not None else 'ungrouped'
         
@@ -3182,7 +3182,7 @@ def admin_operator_detail_stasiun(station_id):
                 'group_id': lawan.group_id,
                 'nama_grup': groups_dict.get(lawan.group_id) if lawan.group_id else None,
                 'opponents': [],
-                'uploads': [],
+                'uploads': [],  # PASTIKAN FIELD INI ADA
                 'status_summary': {'aktif': 0, 'tidak_aktif': 0, 'tidak_berizin': 0, 'tidak_sesuai': 0}
             }
         
@@ -3208,7 +3208,7 @@ def admin_operator_detail_stasiun(station_id):
         if latest_status and latest_status.status in groups[group_key]['status_summary']:
             groups[group_key]['status_summary'][latest_status.status] += 1
     
-    # Proses upload per grup
+    # ===== PROSES UPLOAD PER GRUP - INI PENTING! =====
     for upload in all_uploads:
         group_key = upload.group_id if upload.group_id is not None else 'ungrouped'
         
@@ -3221,13 +3221,13 @@ def admin_operator_detail_stasiun(station_id):
                 'status_summary': {'aktif': 0, 'tidak_aktif': 0, 'tidak_berizin': 0, 'tidak_sesuai': 0}
             }
         
-        # Cek duplikasi public_id
+        # Cek duplikasi public_id dalam grup yang sama
         existing_public_ids = [u['public_id'] for u in groups[group_key]['uploads']]
         if upload.public_id not in existing_public_ids:
             upload_data = {
                 'id': upload.id,
                 'public_id': upload.public_id,
-                'url': upload.cloudinary_url,
+                'cloudinary_url': upload.cloudinary_url,
                 'original_filename': upload.original_filename,
                 'uploaded_at': upload.uploaded_at,
                 'format': upload.format,
@@ -3237,7 +3237,7 @@ def admin_operator_detail_stasiun(station_id):
             }
             groups[group_key]['uploads'].append(upload_data)
     
-    # Urutkan grup
+    # Urutkan grup: ungrouped dulu, lalu grup numeric
     sorted_groups = {}
     
     # Ungrouped dulu
@@ -3905,6 +3905,7 @@ def user_operator_detail_stasiun(station_id):
         .order_by(StasiunLawan.urutan)\
         .all()
     
+    # AMBIL SEMUA UPLOAD UNIK (group by public_id)
     uploads_query = db.session.query(
         UploadGambar.group_id,
         UploadGambar.public_id,
@@ -3923,6 +3924,7 @@ def user_operator_detail_stasiun(station_id):
     
     groups_data = {}
     
+    # === PROSES LAWAN PER GRUP ===
     for lawan in all_lawans:
         group_key = lawan.group_id if lawan.group_id is not None else 'ungrouped'
         
@@ -3936,7 +3938,7 @@ def user_operator_detail_stasiun(station_id):
                 'group_id': lawan.group_id,
                 'label': label,
                 'lawans': [],
-                'uploads': [],
+                'uploads': [],  # PASTIKAN FIELD INI ADA
                 'status_summary': {'aktif': 0, 'tidak_aktif': 0, 'tidak_berizin': 0, 'tidak_sesuai': 0}
             }
         
@@ -3961,6 +3963,7 @@ def user_operator_detail_stasiun(station_id):
         if latest_status and latest_status.status in groups_data[group_key]['status_summary']:
             groups_data[group_key]['status_summary'][latest_status.status] += 1
     
+    # === PROSES UPLOAD PER GRUP - INI YANG DITAMBAHKAN! ===
     for upload in all_uploads:
         group_key = upload.group_id if upload.group_id is not None else 'ungrouped'
         
@@ -3978,12 +3981,13 @@ def user_operator_detail_stasiun(station_id):
                 'status_summary': {'aktif': 0, 'tidak_aktif': 0, 'tidak_berizin': 0, 'tidak_sesuai': 0}
             }
         
+        # Cek duplikasi public_id dalam grup yang sama
         existing_public_ids = [u['public_id'] for u in groups_data[group_key]['uploads']]
         if upload.public_id not in existing_public_ids:
             upload_data = {
                 'id': upload.id,
                 'public_id': upload.public_id,
-                'url': upload.cloudinary_url,
+                'cloudinary_url': upload.cloudinary_url,
                 'original_filename': upload.original_filename,
                 'uploaded_at': upload.uploaded_at,
                 'status': upload.status,
@@ -3994,6 +3998,7 @@ def user_operator_detail_stasiun(station_id):
             }
             groups_data[group_key]['uploads'].append(upload_data)
     
+    # Urutkan grup: ungrouped dulu, lalu grup lainnya
     sorted_groups = {}
     if 'ungrouped' in groups_data:
         sorted_groups['ungrouped'] = groups_data.pop('ungrouped')
@@ -4002,6 +4007,7 @@ def user_operator_detail_stasiun(station_id):
     for group_key in sorted(numeric_groups.keys(), key=lambda x: int(x) if str(x).isdigit() else x):
         sorted_groups[group_key] = numeric_groups[group_key]
     
+    # Hitung status counts total
     status_counts = {'aktif': 0, 'tidak_aktif': 0, 'tidak_berizin': 0, 'tidak_sesuai': 0}
     for lawan in all_lawans:
         latest_status = StatusUpdate.query\
@@ -4564,12 +4570,27 @@ def user_operator_edit_grup(station_id, group_key):
             print("🚀 EDIT GRUP - CLOUDINARY")
             print("="*80)
             
-            files = request.files.getlist('new_files[]')
-            delete_files = request.form.getlist('delete_files[]')
+            # ===== DEBUG: CEK SEMUA FILE DI REQUEST =====
+            print(f"\n📋 REQUEST FILES:")
+            print(f"  request.files keys: {list(request.files.keys())}")
             
-            print(f"\n📁 Files to upload: {len(files)}")
+            files = request.files.getlist('new_files[]')
+            print(f"  files from 'new_files[]': {len(files)}")
+            
+            for i, file in enumerate(files):
+                if file and file.filename:
+                    print(f"    File {i}: {file.filename} - {file.content_type} - {file.content_length} bytes")
+            
+            # ===== DEBUG: CEK SEMUA FORM DATA =====
+            print(f"\n📋 FORM DATA:")
+            for key, value in request.form.items():
+                if not key.startswith('status_') and not key.startswith('catatan_'):
+                    print(f"  {key}: {value}")
+            
+            delete_files = request.form.getlist('delete_files[]')
             print(f"\n🗑️ Files to delete: {delete_files}")
             
+            # ===== 1. HAPUS FILE =====
             deleted_count = 0
             for upload_id in delete_files:
                 try:
@@ -4600,67 +4621,110 @@ def user_operator_edit_grup(station_id, group_key):
                 except Exception as e:
                     print(f"    - Error: {e}")
             
-            uploaded_count = 0
-            for file in files:
-                if file and file.filename:
-                    print(f"\n  Processing: {file.filename}")
-                    
-                    if not allowed_file(file.filename):
-                        print(f"    - ❌ Format tidak didukung")
-                        continue
-                    
-                    # Upload ke Cloudinary
-                    result, error = upload_to_cloudinary(file, station_id, None, group_id)
-                    
-                    if result:
-                        print(f"    - ✅ File uploaded: {result['public_id']}")
-                        
-                        for lawan in lawans_in_group:
-                            upload = UploadGambar(
-                                stasiun_id=station_id,
-                                stasiun_lawan_id=lawan.id,
-                                group_id=group_id,
-                                # Data Cloudinary
-                                public_id=result['public_id'],
-                                cloudinary_url=result['url'],
-                                original_filename=result['original_filename'],
-                                width=result['width'],
-                                height=result['height'],
-                                format=result['format'],
-                                bytes_size=result['bytes'],
-                                # Data lain
-                                uploaded_by=current_user.id,
-                                is_checked=True
-                            )
-                            db.session.add(upload)
-                            uploaded_count += 1
-                            print(f"    - Created for lawan {lawan.id}")
-                    else:
-                        print(f"    - ❌ Failed to upload: {error}")
-            
-            status_count = 0
+            # ===== 2. KOLEKSI STATUS DARI FORM =====
+            status_map = {}
             for lawan in lawans_in_group:
                 status_value = request.form.get(f'status_{lawan.id}')
                 catatan_value = request.form.get(f'catatan_{lawan.id}', '')
-                
                 if status_value:
-                    print(f"\n  Status for {lawan.id}: {status_value}")
+                    status_map[lawan.id] = {
+                        'status': status_value,
+                        'catatan': catatan_value
+                    }
+                    print(f"  Status for lawan {lawan.id}: {status_value}")
+            
+            # ===== 3. UPLOAD FILE BARU - CARA ALTERNATIF =====
+            uploaded_count = 0
+            
+            # Coba cari file dengan cara langsung
+            for key in request.files:
+                file_list = request.files.getlist(key)
+                print(f"  Processing key '{key}' with {len(file_list)} files")
+                
+                for file in file_list:
+                    if file and file.filename:
+                        print(f"\n  📤 Processing: {file.filename}")
+                        
+                        # Validasi file
+                        if not allowed_file(file.filename):
+                            print(f"    - ❌ Format tidak didukung: {file.filename}")
+                            flash(f'File {file.filename} format tidak didukung!', 'warning')
+                            continue
+                        
+                        # Baca file untuk validasi ukuran
+                        file_content = file.read()
+                        file_size = len(file_content)
+                        file.seek(0)  # Reset pointer
+                        
+                        if file_size > 5 * 1024 * 1024:
+                            print(f"    - ❌ File terlalu besar: {file_size} bytes")
+                            flash(f'File {file.filename} terlalu besar (maks 5MB)!', 'warning')
+                            continue
+                        
+                        print(f"    - ✅ File valid: {file.filename}, size: {file_size} bytes")
+                        
+                        # Upload ke Cloudinary
+                        result, error = upload_to_cloudinary(file, station_id, None, group_id)
+                        
+                        if result:
+                            print(f"    - ✅ File uploaded ke Cloudinary: {result['public_id']}")
+                            
+                            # Untuk setiap lawan dalam grup, buat record upload
+                            for lawan in lawans_in_group:
+                                # Ambil status lawan ini dari form
+                                status_info = status_map.get(lawan.id, {})
+                                current_status = status_info.get('status')
+                                current_catatan = status_info.get('catatan', '')
+                                
+                                upload = UploadGambar(
+                                    stasiun_id=station_id,
+                                    stasiun_lawan_id=lawan.id,
+                                    group_id=group_id,
+                                    # Data Cloudinary
+                                    public_id=result['public_id'],
+                                    cloudinary_url=result['url'],
+                                    original_filename=result['original_filename'],
+                                    width=result['width'],
+                                    height=result['height'],
+                                    format=result['format'],
+                                    bytes_size=result['bytes'],
+                                    # Data lain
+                                    status=current_status,
+                                    uploaded_by=current_user.id,
+                                    is_checked=True
+                                )
+                                db.session.add(upload)
+                                uploaded_count += 1
+                                print(f"    - Created upload for lawan {lawan.id} with status '{current_status}'")
+                        else:
+                            print(f"    - ❌ Failed to upload: {error}")
+                            flash(f'Gagal upload {file.filename}: {error}', 'error')
+            
+            # ===== 4. UPDATE STATUS =====
+            status_count = 0
+            for lawan in lawans_in_group:
+                status_info = status_map.get(lawan.id)
+                
+                if status_info:
+                    print(f"\n  Updating status for lawan {lawan.id}: {status_info['status']}")
                     
+                    # Buat status update baru
                     status_update = StatusUpdate(
                         stasiun_lawan_id=lawan.id,
-                        status=status_value,
+                        status=status_info['status'],
                         updated_by=current_user.id,
-                        catatan=catatan_value
+                        catatan=status_info['catatan']
                     )
                     db.session.add(status_update)
                     status_count += 1
                     
-                    # Update status di semua upload yang terkait
-                    UploadGambar.query.filter_by(
-                        stasiun_lawan_id=lawan.id,
-                        group_id=group_id
-                    ).update({'status': status_value})
+                    # Update status di SEMUA upload yang terkait dengan lawan ini
+                    updated = UploadGambar.query.filter_by(
+                        stasiun_lawan_id=lawan.id
+                    ).update({'status': status_info['status']})
+                    print(f"    - Updated {updated} existing uploads")
             
+            # ===== 5. COMMIT SEMUA PERUBAHAN =====
             db.session.commit()
             
             print("\n" + "="*80)
@@ -4670,7 +4734,10 @@ def user_operator_edit_grup(station_id, group_key):
             print(f"  - Status updated: {status_count}")
             print("="*80)
             
-            flash(f'✅ Berhasil: {uploaded_count} file diupload, {deleted_count} file dihapus, {status_count} status diperbarui', 'success')
+            if uploaded_count > 0:
+                flash(f'✅ Berhasil: {uploaded_count} file diupload!', 'success')
+            if status_count > 0:
+                flash(f'✅ {status_count} status diperbarui', 'success')
             
         except Exception as e:
             db.session.rollback()
@@ -4681,6 +4748,7 @@ def user_operator_edit_grup(station_id, group_key):
         
         return redirect(url_for('user_operator_detail_stasiun', station_id=station_id))
     
+    # GET REQUEST - TAMPILKAN FORM
     opponents_data = []
     for lawan in lawans_in_group:
         latest = StatusUpdate.query.filter_by(
