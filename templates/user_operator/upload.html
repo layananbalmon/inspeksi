@@ -23,7 +23,7 @@
             <a href="{{ url_for('user_operator_grup_stasiun', station_id=station.id) }}" class="btn btn-outline-info me-2">
                 <i class="bi bi-diagram-3"></i> Grup IDU
             </a>
-            <a href="{{ url_for('user_operator_detail_stasiun', station_id=station.id) }}" class="btn btn-outline-secondary">
+            <a href="{{ url_for('user_operator_stasiun', station_id=station.id) }}" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left"></i> Kembali
             </a>
         </div>
@@ -58,27 +58,47 @@
             </div>
             
             <div class="card-body">
-                <!-- Upload Area dengan Preview -->
+                <!-- Upload Area dengan Preview - DENGAN DRAG & DROP DAN PASTE -->
                 <div class="mb-4">
                     <h6>Upload Gambar untuk Grup Ini</h6>
                     
-                    <!-- Upload Box -->
+                    <!-- Upload Box dengan Drag & Drop -->
                     <div class="upload-box border rounded p-4 text-center mb-3" 
-                         onclick="document.getElementById('hiddenFileInput_{{ group_key }}').click()"
-                         style="cursor: pointer; border: 2px dashed #ccc; background: #f8f9fa;">
+                         id="dropZone_{{ group_key }}"
+                         ondragover="handleDragOver(event)"
+                         ondragleave="handleDragLeave(event)"
+                         ondrop="handleDrop(event, '{{ group_key }}')"
+                         onclick="document.getElementById('fileInput_{{ group_key }}').click()"
+                         style="cursor: pointer; border: 2px dashed #ccc; background: #f8f9fa; transition: all 0.3s;">
                         <i class="bi bi-cloud-arrow-up display-4 text-muted mb-3"></i>
                         <h5 class="text-muted">Klik untuk Pilih Gambar</h5>
-                        <p class="text-muted small mb-0">Bisa pilih multiple • Max 5MB</p>
-                        <p class="text-muted small">Format: JPG, PNG, GIF, WEBP</p>
+                        <p class="text-muted small mb-2">Atau drag & drop file di sini</p>
+                        <p class="text-muted small mb-0">
+                            <i class="bi bi-files me-1"></i> Bisa copy paste dari folder
+                        </p>
+                        <p class="text-muted small">Format: JPG, PNG, GIF, WEBP • Max 5MB per file</p>
                     </div>
                     
                     <!-- Hidden File Input -->
                     <input type="file" 
                            class="d-none" 
-                           id="hiddenFileInput_{{ group_key }}"
+                           id="fileInput_{{ group_key }}"
                            accept=".png,.jpg,.jpeg,.gif,.webp"
                            multiple
-                           onchange="handleFiles('{{ group_key }}', this)">
+                           onchange="handleFileSelect('{{ group_key }}', this)">
+                    
+                    <!-- Paste Area (hidden) -->
+                    <textarea id="pasteArea_{{ group_key }}" 
+                              class="d-none" 
+                              onpaste="handlePaste(event, '{{ group_key }}')"></textarea>
+                    
+                    <!-- Quick Paste Button -->
+                    <div class="text-center mb-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" 
+                                onclick="focusPasteArea('{{ group_key }}')">
+                            <i class="bi bi-clipboard me-1"></i> Klik di sini lalu Ctrl+V untuk paste
+                        </button>
+                    </div>
                     
                     <!-- File List Container -->
                     <div id="fileList_{{ group_key }}" class="mt-3">
@@ -91,6 +111,14 @@
                             <span id="fileCount_{{ group_key }}">0</span> file dipilih • 
                             <span id="totalSize_{{ group_key }}">0 KB</span>
                         </small>
+                    </div>
+                    
+                    <!-- Clear All Button -->
+                    <div class="mt-2 text-end" id="clearAllBtn_{{ group_key }}" style="display: none;">
+                        <button type="button" class="btn btn-sm btn-outline-danger" 
+                                onclick="clearAllFiles('{{ group_key }}')">
+                            <i class="bi bi-trash me-1"></i> Hapus Semua
+                        </button>
                     </div>
                 </div>
 
@@ -105,7 +133,7 @@
                                     <th width="35%">Nama Stasiun Lawan</th>
                                     <th width="15%">Frekuensi Tx</th>
                                     <th width="15%">Frekuensi Rx</th>
-                                    <th width="20%">Status</th>
+                                    <th width="20%">Status <span class="text-danger">*</span></th>
                                     <th width="15%">Catatan</th>
                                 </tr>
                             </thead>
@@ -219,14 +247,98 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Handle file selection
-function handleFiles(groupKey, input) {
-    const files = Array.from(input.files);
+// ========== DRAG & DROP FUNCTIONS ==========
+function handleDragOver(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    e.currentTarget.style.background = '#e3f2fd';
+    e.currentTarget.style.borderColor = '#0d6efd';
+}
+
+function handleDragLeave(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    e.currentTarget.style.background = '#f8f9fa';
+    e.currentTarget.style.borderColor = '#ccc';
+}
+
+function handleDrop(e, groupKey) {
+    e.preventDefault();
+    e.stopPropagation();
     
-    if (files.length === 0) return;
+    const dropZone = e.currentTarget;
+    dropZone.style.background = '#f8f9fa';
+    dropZone.style.borderColor = '#ccc';
     
-    // Add files to group
-    files.forEach(file => {
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+        processFiles(files, groupKey);
+    }
+}
+
+// ========== FILE SELECT FUNCTIONS ==========
+function handleFileSelect(groupKey, input) {
+    const files = input.files;
+    if (files.length > 0) {
+        processFiles(files, groupKey);
+    }
+    input.value = ''; // Reset input
+}
+
+// ========== PASTE FUNCTIONS ==========
+function focusPasteArea(groupKey) {
+    const pasteArea = document.getElementById(`pasteArea_${groupKey}`);
+    pasteArea.focus();
+    pasteArea.select();
+    
+    // Show temporary message
+    const dropZone = document.getElementById(`dropZone_${groupKey}`);
+    const originalText = dropZone.innerHTML;
+    dropZone.innerHTML = '<i class="bi bi-clipboard-check display-4 text-success mb-3"></i><h5 class="text-success">Siap untuk paste!</h5><p class="text-muted small">Tekan Ctrl+V untuk paste gambar</p>';
+    setTimeout(() => {
+        dropZone.innerHTML = originalText;
+    }, 2000);
+}
+
+function handlePaste(e, groupKey) {
+    e.preventDefault();
+    
+    const items = e.clipboardData.items;
+    const files = [];
+    
+    for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item.kind === 'file') {
+            const file = item.getAsFile();
+            if (file && file.type.startsWith('image/')) {
+                files.push(file);
+            }
+        }
+    }
+    
+    if (files.length > 0) {
+        processFiles(files, groupKey);
+        
+        // Show success message
+        const dropZone = document.getElementById(`dropZone_${groupKey}`);
+        const originalText = dropZone.innerHTML;
+        dropZone.innerHTML = `<i class="bi bi-check-circle-fill text-success display-4 mb-3"></i><h5 class="text-success">${files.length} file berhasil di-paste!</h5>`;
+        setTimeout(() => {
+            dropZone.innerHTML = originalText;
+        }, 2000);
+    } else {
+        alert('Tidak ada gambar yang ditemukan di clipboard');
+    }
+    
+    // Clear paste area
+    e.target.value = '';
+}
+
+// ========== FILE PROCESSING ==========
+function processFiles(files, groupKey) {
+    const fileArray = Array.from(files);
+    
+    fileArray.forEach(file => {
         // Check file size (5MB)
         if (file.size > 5 * 1024 * 1024) {
             alert(`File ${file.name} terlalu besar (max 5MB)`);
@@ -262,9 +374,6 @@ function handleFiles(groupKey, input) {
     
     // Update display
     updateFileList(groupKey);
-    
-    // Reset input
-    input.value = '';
 }
 
 // Update file list display
@@ -273,11 +382,19 @@ function updateFileList(groupKey) {
     const fileListDiv = document.getElementById(`fileList_${groupKey}`);
     const fileCountSpan = document.getElementById(`fileCount_${groupKey}`);
     const totalSizeSpan = document.getElementById(`totalSize_${groupKey}`);
+    const clearAllBtn = document.getElementById(`clearAllBtn_${groupKey}`);
     
     // Update counters
     const totalSize = files.reduce((sum, f) => sum + f.size, 0);
     fileCountSpan.textContent = files.length;
     totalSizeSpan.textContent = formatBytes(totalSize);
+    
+    // Show/hide clear all button
+    if (files.length > 0) {
+        clearAllBtn.style.display = 'block';
+    } else {
+        clearAllBtn.style.display = 'none';
+    }
     
     // Update file list
     if (files.length === 0) {
@@ -327,6 +444,24 @@ function removeFile(groupKey, index) {
         
         // Remove from array
         groupFiles[groupKey].splice(index, 1);
+        
+        // Update display
+        updateFileList(groupKey);
+    }
+}
+
+// Clear all files in a group
+function clearAllFiles(groupKey) {
+    if (confirm('Hapus semua file di grup ini?')) {
+        // Revoke all object URLs
+        groupFiles[groupKey].forEach(file => {
+            if (file.previewUrl) {
+                URL.revokeObjectURL(file.previewUrl);
+            }
+        });
+        
+        // Clear array
+        groupFiles[groupKey] = [];
         
         // Update display
         updateFileList(groupKey);
@@ -440,11 +575,82 @@ window.addEventListener('beforeunload', function() {
         });
     }
 });
+
+// PERBAIKAN: Global paste handler yang simpel dan tidak membingungkan
+document.addEventListener('paste', function(e) {
+    // Hanya handle jika tidak ada input/textare yang aktif
+    if (document.activeElement.tagName !== 'INPUT' && 
+        document.activeElement.tagName !== 'TEXTAREA') {
+        
+        const items = e.clipboardData.items;
+        let hasImage = false;
+        
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].kind === 'file' && items[i].type.startsWith('image/')) {
+                hasImage = true;
+                break;
+            }
+        }
+        
+        if (hasImage) {
+            e.preventDefault();
+            
+            // Tampilkan pilihan grup dalam bentuk prompt sederhana
+            const groups = [{% for group_key, lawan_list in groups.items() %}'{{ group_key }}',{% endfor %}];
+            const groupNames = [{% for group_key, lawan_list in groups.items() %}
+                {% if group_key == 'ungrouped' %}'Tanpa Grup'{% else %}
+                    {% set grup_nama = namespace(name=None) %}
+                    {% for g in station.grup_list %}
+                        {% if g.id == group_key|int %}
+                            {% set grup_nama.name = g.nama_grup %}
+                        {% endif %}
+                    {% endfor %}
+                    {% if grup_nama.name %}'{{ grup_nama.name }}'{% else %}'Grup {{ group_key }}'{% endif %}
+                {% endif %},
+            {% endfor %}];
+            
+            // Buat teks pilihan yang jelas
+            let pilihanText = 'Pilih grup untuk paste:\n\n';
+            groupNames.forEach((nama, index) => {
+                pilihanText += `${index + 1}. ${nama}\n`;
+            });
+            pilihanText += '\nMasukkan nomor (1-' + groups.length + '):';
+            
+            const groupIndex = prompt(pilihanText);
+            
+            if (groupIndex && !isNaN(groupIndex) && groupIndex > 0 && groupIndex <= groups.length) {
+                const selectedGroup = groups[groupIndex - 1];
+                
+                // Proses paste dengan grup yang dipilih
+                const files = [];
+                for (let i = 0; i < items.length; i++) {
+                    const item = items[i];
+                    if (item.kind === 'file') {
+                        const file = item.getAsFile();
+                        if (file && file.type.startsWith('image/')) {
+                            files.push(file);
+                        }
+                    }
+                }
+                
+                if (files.length > 0) {
+                    processFiles(files, selectedGroup);
+                    alert(`${files.length} file berhasil di-paste ke ${groupNames[groupIndex - 1]}!`);
+                }
+            }
+        }
+    }
+});
 </script>
 
 <style>
 .upload-box {
     transition: all 0.3s ease;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 .upload-box:hover {
@@ -503,6 +709,17 @@ window.addEventListener('beforeunload', function() {
 
 .badge.bg-success {
     background: linear-gradient(135deg, #198754, #157347) !important;
+}
+
+/* Animasi untuk paste success */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.upload-box.text-success {
+    animation: pulse 0.5s ease;
 }
 </style>
 {% endblock %}

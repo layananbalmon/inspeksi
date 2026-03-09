@@ -333,17 +333,6 @@
         transition: var(--transition);
     }
 
-    .btn-edit-mini {
-        background: #6f42c1;
-        color: white;
-    }
-
-    .btn-edit-mini:hover {
-        background: #5a32a3;
-        transform: translateY(-2px);
-        box-shadow: 0 3px 8px rgba(106, 66, 193, 0.3);
-    }
-
     .btn-delete-mini {
         background: #dc3545;
         color: white;
@@ -372,7 +361,7 @@
         background: #f8fafd;
     }
 
-    /* Frekuensi badges */
+    /* Frekuensi badges - HANYA TAMPILAN */
     .freq-tx-badge {
         display: inline-flex;
         align-items: center;
@@ -418,7 +407,7 @@
         margin-top: 5px;
     }
 
-    /* Opponent Items - TANPA IKON SINYAL */
+    /* Opponent Items */
     .opponent-grid-mini {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -464,7 +453,7 @@
         cursor: help;
     }
 
-    /* Table Mini - TANPA IKON SINYAL */
+    /* Table Mini */
     .table-mini {
         width: 100%;
         border-collapse: separate;
@@ -537,7 +526,7 @@
         font-size: 2rem;
     }
 
-    /* ===== MODAL ===== */
+    /* ===== MODAL STYLING ===== */
     .modal {
         z-index: 1060 !important;
     }
@@ -566,12 +555,6 @@
         margin: 1.75rem auto;
     }
 
-    .modal-body {
-        padding: 1.5rem !important;
-        max-height: calc(100vh - 150px);
-        overflow-y: auto;
-    }
-
     .modal-header {
         padding: 1.25rem 1.5rem !important;
         border-bottom: 1px solid var(--gray-200);
@@ -579,20 +562,46 @@
         border-top-right-radius: 20px !important;
     }
 
+    .modal-header.bg-primary {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark)) !important;
+    }
+
+    .modal-header .btn-close-white {
+        filter: brightness(0) invert(1);
+    }
+
     .modal-header .modal-title {
         font-size: 1.1rem;
         font-weight: 700;
     }
 
-    .modal .form-control,
+    .modal-body {
+        padding: 1.5rem !important;
+        max-height: calc(100vh - 150px);
+        overflow-y: auto;
+    }
+
+    /* Style untuk readonly inputs */
+    .modal .form-control[readonly] {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        cursor: not-allowed;
+        opacity: 0.9;
+    }
+
+    .modal .form-control[readonly]:focus {
+        box-shadow: none;
+        border-color: #dee2e6;
+    }
+
     .modal .form-select {
         padding: 0.6rem 1rem;
         font-size: 0.95rem;
         border-radius: 12px;
         border: 1px solid var(--gray-300);
+        background-color: white;
     }
 
-    .modal .form-control:focus,
     .modal .form-select:focus {
         border-color: var(--primary);
         box-shadow: 0 0 0 0.2rem rgba(67, 97, 238, 0.25);
@@ -601,6 +610,32 @@
     .modal .btn {
         border-radius: 30px !important;
         padding: 0.5rem 1.5rem !important;
+    }
+
+    .modal .btn-primary {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        border: none;
+    }
+
+    .modal .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+    }
+
+    .modal .text-primary {
+        color: var(--primary) !important;
+    }
+
+    /* Info card di modal */
+    .modal .card {
+        border-radius: 12px;
+        background: #f8fafc;
+        border: 1px solid #e9ecef;
+    }
+
+    .modal .card .badge {
+        font-size: 0.75rem;
+        padding: 4px 8px;
     }
 
     /* Responsive */
@@ -698,7 +733,7 @@
             </div>
         </div>
         <div class="mt-2 mt-md-0">
-            <a href="{{ url_for('user_operator_detail_stasiun', station_id=station.id) }}" class="btn btn-light btn-sm rounded-pill px-4">
+            <a href="{{ url_for('user_operator_stasiun', station_id=station.id) }}" class="btn btn-light btn-sm rounded-pill px-4">
                 <i class="bi bi-arrow-left me-1"></i> Kembali
             </a>
         </div>
@@ -855,13 +890,16 @@
                                 </div>
                             </div>
                             <div class="d-flex gap-1">
+                                <!-- Tombol Edit - untuk memindahkan grup -->
                                 <button type="button" class="btn btn-sm btn-outline-primary rounded-circle p-1" 
                                         style="width: 28px; height: 28px;" 
                                         data-bs-toggle="modal" 
                                         data-bs-target="#editLawanModal{{ lawan.id }}"
-                                        title="Edit Lawan">
-                                    <i class="bi bi-pencil"></i>
+                                        title="Pindahkan ke grup lain">
+                                    <i class="bi bi-arrow-left-right"></i>
                                 </button>
+                                
+                                <!-- Tombol Keluarkan dari Grup -->
                                 <form method="POST" action="{{ url_for('user_operator_grup_stasiun', station_id=station.id) }}" 
                                       class="d-inline" onsubmit="return confirm('Keluarkan {{ lawan.nama_stasiun_lawan }} dari grup?')">
                                     <input type="hidden" name="action" value="remove_from_group">
@@ -947,14 +985,14 @@
                                             <span class="badge bg-light text-muted">-</span>
                                         {% endif %}
                                     </td>
-                                    <td class="text-end">
-                                        <div class="d-flex gap-1 justify-content-end">
-                                            <button type="button" class="btn-icon-mini" 
-                                                    style="background: #6f42c1; color: white; border: none; border-radius: 20px; padding: 6px 14px; font-size: 0.75rem;"
-                                                    data-bs-toggle="modal" data-bs-target="#editLawanModal{{ lawan.id }}">
-                                                <i class="bi bi-pencil me-1"></i> Edit
-                                            </button>
-                                        </div>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                style="border-radius: 20px; padding: 4px 12px; font-size: 0.7rem;"
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#editLawanModal{{ lawan.id }}"
+                                                title="Pindahkan ke grup">
+                                            <i class="bi bi-arrow-left-right me-1"></i> Pindah
+                                        </button>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -984,72 +1022,91 @@
     </div>
 </div>
 
-<!-- EDIT LAWAN MODALS - UNTUK SEMUA LAWAN DENGAN FREKUENSI -->
+<!-- EDIT LAWAN MODALS - NAMA DAN FREKUENSI READONLY, GRUP BISA DIEDIT -->
 {% if stasiun_lawan %}
     {% for lawan in stasiun_lawan %}
     <div class="modal fade" id="editLawanModal{{ lawan.id }}" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow-lg" style="max-width: 500px;">
-                <div class="modal-header bg-light border-0 py-3">
+                <div class="modal-header bg-primary text-white py-3">
                     <h5 class="modal-title fw-bold">
-                        <i class="bi bi-pencil-square me-2 text-warning"></i> Edit Stasiun Lawan
+                        <i class="bi bi-arrow-left-right me-2"></i> Pindahkan Stasiun Lawan
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4">
-                    <form method="POST" action="{{ url_for('user_operator_edit_lawan_single', station_id=station.id) }}">
+                    <form method="POST" action="{{ url_for('user_operator_grup_stasiun', station_id=station.id) }}">
+                        <input type="hidden" name="action" value="edit_lawan">
                         <input type="hidden" name="lawan_id" value="{{ lawan.id }}">
                         
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">
-                                <i class="bi bi-broadcast me-1"></i> Nama Stasiun Lawan
-                            </label>
-                            <input type="text" class="form-control" name="nama_lawan" 
-                                   value="{{ lawan.nama_stasiun_lawan }}" required
-                                   placeholder="Masukkan nama stasiun lawan">
+                        <!-- Card Informasi Stasiun Lawan (READONLY) -->
+                        <div class="card bg-light border-0 mb-4">
+                            <div class="card-body p-3">
+                                <h6 class="card-title text-primary mb-3">
+                                    <i class="bi bi-info-circle me-1"></i> Informasi Stasiun Lawan
+                                </h6>
+                                
+                                <div class="mb-2 row">
+                                    <div class="col-4 text-muted small">Nama:</div>
+                                    <div class="col-8 fw-bold">{{ lawan.nama_stasiun_lawan }}</div>
+                                </div>
+                                
+                                <div class="mb-2 row">
+                                    <div class="col-4 text-muted small">Frekuensi Tx:</div>
+                                    <div class="col-8">
+                                        {% if lawan.freq_tx %}
+                                            <span class="badge bg-info">{{ lawan.freq_tx }}</span>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-4 text-muted small">Frekuensi Rx:</div>
+                                    <div class="col-8">
+                                        {% if lawan.freq_rx %}
+                                            <span class="badge bg-success">{{ lawan.freq_rx }}</span>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">
-                                    <i class="bi bi-arrow-up-short me-1"></i> Frekuensi Tx
-                                </label>
-                                <input type="text" class="form-control" name="freq_tx" 
-                                       value="{{ lawan.freq_tx or '' }}" 
-                                       placeholder="Contoh: 1800 MHz">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">
-                                    <i class="bi bi-arrow-down-short me-1"></i> Frekuensi Rx
-                                </label>
-                                <input type="text" class="form-control" name="freq_rx" 
-                                       value="{{ lawan.freq_rx or '' }}" 
-                                       placeholder="Contoh: 1800 MHz">
-                            </div>
-                        </div>
+                        <!-- Hidden inputs untuk mengirim data (tidak diedit) -->
+                        <input type="hidden" name="nama_lawan" value="{{ lawan.nama_stasiun_lawan }}">
+                        <input type="hidden" name="freq_tx" value="{{ lawan.freq_tx or '' }}">
+                        <input type="hidden" name="freq_rx" value="{{ lawan.freq_rx or '' }}">
                         
+                        <!-- Dropdown Grup - BISA DIEDIT -->
                         <div class="mb-3">
                             <label class="form-label fw-semibold">
                                 <i class="bi bi-diagram-3 me-1"></i> Pindahkan ke Grup
                             </label>
-                            <select class="form-select" name="new_group_id">
-                                <option value="">— Tetap tanpa grup —</option>
+                            <select class="form-select" name="new_group_id" required>
+                                <option value="">— Pilih Grup Tujuan —</option>
                                 {% for group_key, group_data in groups.items() %}
                                     {% if group_key != 'ungrouped' %}
                                     <option value="{{ group_key }}" {% if lawan.group_id == group_key|int %}selected{% endif %}>
-                                        {{ group_data.nama }}
+                                        {{ group_data.nama }} ({{ group_data.lawans|length }} lawan)
                                     </option>
                                     {% endif %}
                                 {% endfor %}
                             </select>
+                            <div class="form-text mt-2">
+                                <i class="bi bi-info-circle me-1 text-primary"></i>
+                                Hanya grup yang dapat diubah. Nama dan frekuensi tidak dapat diedit.
+                            </div>
                         </div>
                         
                         <div class="d-flex justify-content-end gap-2 mt-4">
                             <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">
-                                Batal
+                                <i class="bi bi-x-circle me-1"></i> Batal
                             </button>
                             <button type="submit" class="btn btn-primary rounded-pill px-4">
-                                <i class="bi bi-check-circle me-1"></i> Simpan
+                                <i class="bi bi-arrow-right-circle me-1"></i> Pindahkan
                             </button>
                         </div>
                     </form>
@@ -1177,21 +1234,6 @@ document.addEventListener('DOMContentLoaded', function() {
         new bootstrap.Tooltip(tooltipTriggerEl);
     });
 });
-
-// Debug tambahan: event listener untuk semua tombol edit
-document.addEventListener('click', function(e) {
-    const editButton = e.target.closest('[data-bs-toggle="modal"]');
-    if (editButton) {
-        const target = editButton.getAttribute('data-bs-target');
-        const modal = document.querySelector(target);
-        console.log(`Tombol edit diklik: target=${target}, modal exists=${!!modal}`);
-        
-        if (!modal) {
-            e.preventDefault();
-            alert(`ERROR: Modal dengan ID ${target} tidak ditemukan di halaman!`);
-        }
-    }
-}, true);
 </script>
 
 <!-- DEBUG INFO - HAPUS SETELAH SELESAI -->

@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Admin Master{% endblock %} - SIPAMEL</title>
+    <title>{% block title %}Admin Master{% endblock %} - SiPaMeL</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
         :root {
@@ -25,11 +26,13 @@
             --indosat: #FF6600;
             --xl: #7F3F98;
             
-            --sidebar-width: 260px;
-            --navbar-height: 57px;
-            --border-radius: 12px;
+            --sidebar-width: 280px;
+            --navbar-height: 70px;
+            --border-radius: 16px;
+            --border-radius-sm: 12px;
             --shadow: 0 4px 20px rgba(0,0,0,0.05);
             --shadow-hover: 0 8px 25px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 40px rgba(0,0,0,0.08);
         }
         
         * {
@@ -39,90 +42,242 @@
         }
         
         body {
-            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-            background-color: #f1f5f9;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f1f5f9 0%, #eef2f6 100%);
             color: var(--dark);
             overflow-x: hidden;
-            padding-top: var(--navbar-height); /* Penting: beri jarak dari navbar */
+            padding-top: var(--navbar-height);
         }
         
-        /* Navbar */
+        /* ===== CUSTOM SCROLLBAR ===== */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 8px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        
+        /* ===== NAVBAR - PERBAIKAN TOTAL ===== */
         .navbar {
-            background: white !important;
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px);
             box-shadow: var(--shadow);
-            padding: 0.75rem 1.5rem;
             z-index: 1030;
             height: var(--navbar-height);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            padding: 0 !important;
         }
         
+        .navbar .container-fluid {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 100%;
+            padding: 0 2rem;
+            margin: 0;
+        }
+        
+        /* Bagian kiri navbar */
+        .navbar .navbar-left {
+            display: flex;
+            align-items: center;
+            height: 100%;
+            gap: 1rem;
+        }
+        
+        /* Tombol sidebar toggle */
+        #sidebarToggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            margin: 0;
+            height: 100%;
+            width: 40px;
+            border: none;
+            background: transparent;
+            color: var(--dark);
+            cursor: pointer;
+        }
+        
+        #sidebarToggle i {
+            font-size: 2rem;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #sidebarToggle:hover {
+            color: var(--primary);
+        }
+        
+        #sidebarToggle:focus {
+            outline: none;
+            box-shadow: none;
+        }
+        
+        /* Brand */
         .navbar-brand {
-            font-weight: 700;
+            font-weight: 800;
+            font-size: 1.4rem;
             color: var(--dark) !important;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.75rem;
+            letter-spacing: -0.5px;
+            padding: 0;
+            margin: 0;
+            height: 100%;
+            text-decoration: none;
         }
         
         .navbar-brand i {
             color: var(--primary);
-            font-size: 1.5rem;
+            font-size: 1.8rem;
+            background: var(--primary-light);
+            padding: 0.5rem;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 48px;
+            width: 48px;
+            line-height: 1;
+        }
+        
+        .navbar-brand span {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            display: inline-block;
+            font-size: 1.4rem;
+        }
+        
+        /* Bagian kanan navbar */
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            height: 100%;
+        }
+        
+        /* Dropdown user */
+        .dropdown {
+            display: flex;
+            align-items: center;
+            height: 100%;
+        }
+        
+        .dropdown-toggle {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            height: 100%;
+            padding: 0;
+            background: transparent;
+            border: none;
+        }
+        
+        .dropdown-toggle::after {
+            display: none; /* Hide default bootstrap dropdown arrow */
+        }
+        
+        .dropdown-toggle:focus {
+            outline: none;
+            box-shadow: none;
         }
         
         .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 600;
-            font-size: 1rem;
+            font-weight: 700;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 10px rgba(67, 97, 238, 0.3);
+            transition: all 0.3s ease;
+            line-height: 1;
+            cursor: pointer;
         }
         
+        .user-avatar:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 15px rgba(67, 97, 238, 0.4);
+        }
+        
+        /* Dropdown menu */
         .dropdown-menu {
             border: none;
             border-radius: var(--border-radius);
-            box-shadow: var(--shadow-hover);
-            padding: 0.5rem;
-            min-width: 200px;
+            box-shadow: var(--shadow-lg);
+            padding: 0.75rem;
+            min-width: 260px;
+            border: 1px solid rgba(0,0,0,0.05);
+            margin-top: 0.75rem !important;
         }
         
         .dropdown-item {
-            border-radius: 8px;
-            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            padding: 0.7rem 1rem;
             transition: all 0.2s;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
         }
         
         .dropdown-item i {
-            width: 20px;
+            width: 22px;
             color: var(--primary);
+            font-size: 1.1rem;
+            margin-right: 0.75rem;
         }
         
         .dropdown-item:hover {
             background: var(--primary-light);
             color: var(--primary);
-            transform: translateX(3px);
+            transform: translateX(5px);
         }
         
-        /* Sidebar */
+        .dropdown-divider {
+            margin: 0.5rem 0;
+        }
+        
+        /* ===== SIDEBAR ===== */
         .sidebar-wrapper {
             position: fixed;
-            top: var(--navbar-height); /* Mulai setelah navbar */
+            top: var(--navbar-height);
             left: 0;
             bottom: 0;
             width: var(--sidebar-width);
             background: white;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.02);
-            border-right: 1px solid #e9ecef;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.02);
+            border-right: 1px solid rgba(0,0,0,0.05);
             overflow-y: auto;
             z-index: 1020;
+            transition: all 0.3s ease;
         }
         
         .sidebar-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid #e9ecef;
+            padding: 1.75rem 1.5rem;
+            border-bottom: 1px solid #eef2f6;
+            background: linear-gradient(135deg, #f8fafc 0%, white 100%);
         }
         
         .sidebar-header h5 {
@@ -130,24 +285,33 @@
             font-weight: 700;
             color: var(--dark);
             margin-bottom: 0.25rem;
+            letter-spacing: -0.3px;
         }
         
         .sidebar-header small {
             font-size: 0.75rem;
             color: var(--secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .sidebar-header small i {
+            color: var(--primary);
+            font-size: 0.7rem;
         }
         
         .section-title {
-            font-size: 0.65rem;
+            font-size: 0.7rem;
             text-transform: uppercase;
             font-weight: 700;
             color: var(--secondary);
             letter-spacing: 0.5px;
-            margin: 1.25rem 0 0.5rem 1.25rem;
+            margin: 1.5rem 0 0.75rem 1.5rem;
         }
         
         .nav {
-            padding: 0 0.75rem;
+            padding: 0 1rem;
         }
         
         .nav-item {
@@ -156,106 +320,206 @@
         }
         
         .nav-link {
-            padding: 0.6rem 1rem;
-            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
             color: var(--secondary);
-            font-weight: 500;
+            font-weight: 600;
             font-size: 0.9rem;
             display: flex;
             align-items: center;
-            transition: all 0.2s;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 0;
+            background: var(--primary-light);
+            transition: width 0.3s ease;
+            z-index: -1;
+        }
+        
+        .nav-link:hover::before {
+            width: 100%;
         }
         
         .nav-link i {
-            margin-right: 10px;
-            width: 20px;
-            font-size: 1.1rem;
+            margin-right: 12px;
+            width: 22px;
+            font-size: 1.2rem;
             color: var(--secondary);
-            transition: all 0.2s;
+            transition: all 0.3s;
         }
         
         .nav-link:hover {
-            background: var(--primary-light);
             color: var(--primary);
-            transform: translateX(3px);
+            transform: translateX(5px);
         }
         
         .nav-link:hover i {
             color: var(--primary);
+            transform: scale(1.1);
         }
         
         .nav-link.active {
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
-            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.2);
+            box-shadow: 0 8px 20px rgba(67, 97, 238, 0.3);
         }
         
         .nav-link.active i {
             color: white;
         }
         
-        /* Operator badges in sidebar */
+        .nav-link.active::before {
+            display: none;
+        }
+        
+        /* ===== OPERATOR BADGES ===== */
         .operator-badge-link {
             display: flex;
             align-items: center;
-            padding: 0.4rem 1rem;
-            border-radius: 10px;
-            transition: all 0.2s;
+            padding: 0.6rem 1rem;
+            border-radius: 12px;
+            transition: all 0.3s;
             text-decoration: none;
             color: var(--secondary);
-            margin: 0 0.75rem 0.25rem;
+            margin: 0 1rem 0.25rem;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .operator-badge-link::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 0;
+            background: var(--primary-light);
+            transition: width 0.3s ease;
+            z-index: -1;
+        }
+        
+        .operator-badge-link:hover::before {
+            width: 100%;
         }
         
         .operator-badge-link:hover {
-            background: var(--primary-light);
-            transform: translateX(3px);
+            transform: translateX(5px);
         }
         
         .operator-badge {
             display: inline-block;
-            padding: 0.2rem 0.8rem;
-            border-radius: 20px;
+            padding: 0.25rem 1rem;
+            border-radius: 30px;
             font-size: 0.75rem;
-            font-weight: 600;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            transition: all 0.3s;
         }
         
-        .badge-telkom, .badge-telkomsel { background: rgba(225, 37, 27, 0.1); color: var(--telkom); }
-        .badge-indosat { background: rgba(255, 102, 0, 0.1); color: var(--indosat); }
-        .badge-xl { background: rgba(127, 63, 152, 0.1); color: var(--xl); }
+        .badge-telkom, .badge-telkomsel { 
+            background: rgba(225, 37, 27, 0.1); 
+            color: var(--telkom);
+            border: 1px solid rgba(225, 37, 27, 0.2);
+        }
+        .badge-indosat { 
+            background: rgba(255, 102, 0, 0.1); 
+            color: var(--indosat);
+            border: 1px solid rgba(255, 102, 0, 0.2);
+        }
+        .badge-xl { 
+            background: rgba(127, 63, 152, 0.1); 
+            color: var(--xl);
+            border: 1px solid rgba(127, 63, 152, 0.2);
+        }
         
-        /* Main Content */
+        /* ===== MAIN CONTENT ===== */
         .main-content-wrapper {
             margin-left: var(--sidebar-width);
             min-height: calc(100vh - var(--navbar-height));
             background: #f1f5f9;
+            transition: all 0.3s ease;
         }
         
         .main-content {
             padding: 2rem;
         }
         
-        /* Page Header */
-        .page-header {
+        /* ===== WELCOME CARD ===== */
+        .welcome-card {
+            background: linear-gradient(135deg, white 0%, #f8fafc 100%);
+            border-radius: var(--border-radius);
+            padding: 1.5rem 2rem;
             margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(0,0,0,0.03);
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            position: relative;
+            overflow: hidden;
         }
         
-        .page-header h2 {
-            font-size: 1.8rem;
+        .welcome-card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200px;
+            height: 200px;
+            background: var(--primary-light);
+            border-radius: 50%;
+            opacity: 0.3;
+        }
+        
+        .welcome-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            box-shadow: 0 10px 25px rgba(67, 97, 238, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .welcome-text h3 {
+            font-size: 1.6rem;
             font-weight: 700;
-            color: var(--dark);
             margin-bottom: 0.25rem;
+            color: var(--dark);
+            letter-spacing: -0.5px;
         }
         
-        .page-header p {
+        .welcome-text p {
             color: var(--secondary);
             margin-bottom: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
         
-        /* Stats Cards */
+        .welcome-text p i {
+            color: var(--primary);
+        }
+        
+        /* ===== STATS CARDS ===== */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 1.25rem;
+            gap: 1.5rem;
             margin-bottom: 2rem;
         }
         
@@ -264,60 +528,87 @@
             border-radius: var(--border-radius);
             padding: 1.5rem;
             box-shadow: var(--shadow);
-            transition: all 0.3s;
-            border: 1px solid #e9ecef;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0,0,0,0.03);
             display: flex;
             align-items: center;
             justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 0;
+            background: var(--primary);
+            transition: height 0.3s ease;
         }
         
         .stat-card:hover {
-            transform: translateY(-3px);
+            transform: translateY(-5px);
             box-shadow: var(--shadow-hover);
-            border-color: var(--primary-light);
+        }
+        
+        .stat-card:hover::before {
+            height: 100%;
         }
         
         .stat-info h3 {
-            font-size: 2rem;
-            font-weight: 700;
+            font-size: 2.2rem;
+            font-weight: 800;
             margin-bottom: 0.25rem;
             color: var(--dark);
+            line-height: 1;
+            letter-spacing: -1px;
         }
         
         .stat-info p {
             color: var(--secondary);
             font-size: 0.85rem;
             margin-bottom: 0;
-            font-weight: 500;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         
         .stat-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
             background: var(--primary-light);
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--primary);
-            font-size: 1.5rem;
+            font-size: 2rem;
+            transition: all 0.3s ease;
         }
         
-        /* Operator Cards */
+        .stat-card:hover .stat-icon {
+            transform: scale(1.1) rotate(5deg);
+            background: var(--primary);
+            color: white;
+        }
+        
+        /* ===== OPERATOR CARDS ===== */
         .operator-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 1.25rem;
+            gap: 1.5rem;
             margin-bottom: 2rem;
         }
         
         .operator-card {
             background: white;
             border-radius: var(--border-radius);
-            padding: 1.25rem;
+            padding: 1.5rem;
             box-shadow: var(--shadow);
-            border: 1px solid #e9ecef;
-            transition: all 0.3s;
+            border: 1px solid rgba(0,0,0,0.03);
+            transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
         }
@@ -327,9 +618,9 @@
             position: absolute;
             top: 0;
             left: 0;
-            width: 4px;
-            height: 100%;
-            transition: all 0.3s;
+            width: 100%;
+            height: 4px;
+            transition: all 0.3s ease;
         }
         
         .operator-card.telkom::before { background: var(--telkom); }
@@ -338,35 +629,57 @@
         .operator-card.xl::before { background: var(--xl); }
         
         .operator-card:hover {
-            transform: translateY(-3px);
+            transform: translateY(-5px);
             box-shadow: var(--shadow-hover);
+        }
+        
+        .operator-card:hover::before {
+            height: 100%;
+            opacity: 0.05;
         }
         
         .operator-header {
             display: flex;
             align-items: center;
             gap: 1rem;
-            margin-bottom: 1rem;
+            margin-bottom: 1.25rem;
+            position: relative;
+            z-index: 1;
         }
         
         .operator-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
+            width: 50px;
+            height: 50px;
+            border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
         }
         
-        .operator-icon.telkom, .operator-icon.telkomsel { background: rgba(225, 37, 27, 0.1); color: var(--telkom); }
-        .operator-icon.indosat { background: rgba(255, 102, 0, 0.1); color: var(--indosat); }
-        .operator-icon.xl { background: rgba(127, 63, 152, 0.1); color: var(--xl); }
+        .operator-card:hover .operator-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+        
+        .operator-icon.telkom, .operator-icon.telkomsel { 
+            background: rgba(225, 37, 27, 0.1); 
+            color: var(--telkom);
+        }
+        .operator-icon.indosat { 
+            background: rgba(255, 102, 0, 0.1); 
+            color: var(--indosat);
+        }
+        .operator-icon.xl { 
+            background: rgba(127, 63, 152, 0.1); 
+            color: var(--xl);
+        }
         
         .operator-name {
             font-weight: 700;
-            font-size: 1rem;
+            font-size: 1.1rem;
             margin-bottom: 0.25rem;
+            color: var(--dark);
         }
         
         .operator-stats {
@@ -374,157 +687,262 @@
             justify-content: space-between;
             align-items: center;
             margin-top: 0.5rem;
+            position: relative;
+            z-index: 1;
         }
         
         .operator-count {
-            font-size: 1.5rem;
-            font-weight: 700;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--dark);
+            letter-spacing: -1px;
         }
         
         .operator-link {
             color: var(--primary);
             text-decoration: none;
             font-size: 0.8rem;
-            font-weight: 500;
-            transition: all 0.2s;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            background: var(--primary-light);
         }
         
         .operator-link:hover {
-            transform: translateX(3px);
-            color: var(--primary-dark);
-        }
-        
-        /* Quick Actions */
-        .quick-actions {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1.25rem;
-            margin-bottom: 2rem;
-        }
-        
-        .action-card {
-            background: white;
-            border-radius: var(--border-radius);
-            padding: 1.5rem;
-            box-shadow: var(--shadow);
-            border: 1px solid #e9ecef;
-            transition: all 0.3s;
-            text-align: center;
-            text-decoration: none;
-            color: inherit;
-        }
-        
-        .action-card:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-hover);
-            border-color: var(--primary);
-        }
-        
-        .action-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
-            background: var(--primary-light);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 1rem;
-            color: var(--primary);
-            font-size: 1.5rem;
-            transition: all 0.3s;
-        }
-        
-        .action-card:hover .action-icon {
             background: var(--primary);
             color: white;
+            transform: translateX(3px);
         }
         
-        .action-title {
-            font-weight: 700;
-            margin-bottom: 0.25rem;
-        }
-        
-        .action-desc {
-            font-size: 0.8rem;
-            color: var(--secondary);
-        }
-        
-        /* Recent Items */
-        .recent-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.25rem;
-            margin-bottom: 2rem;
-        }
-        
-        .recent-card {
-            background: white;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            border: 1px solid #e9ecef;
-            overflow: hidden;
-        }
-        
-        .recent-header {
-            padding: 1rem 1.25rem;
-            border-bottom: 1px solid #e9ecef;
+        /* ===== QUICK ACTIONS ===== */
+        .section-header {
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
         }
         
-        .recent-header h6 {
+        .section-header h4 {
+            font-size: 1.3rem;
             font-weight: 700;
+            color: var(--dark);
             margin: 0;
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
         
-        .recent-header h6 i {
+        .section-header h4 i {
             color: var(--primary);
         }
         
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .action-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 2rem 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(0,0,0,0.03);
+            transition: all 0.3s ease;
+            text-align: center;
+            text-decoration: none;
+            color: inherit;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .action-card::after {
+            content: '';
+            position: absolute;
+            bottom: -50%;
+            right: -50%;
+            width: 200px;
+            height: 200px;
+            background: var(--primary-light);
+            border-radius: 50%;
+            opacity: 0;
+            transition: all 0.5s ease;
+        }
+        
+        .action-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+        
+        .action-card:hover::after {
+            opacity: 0.3;
+        }
+        
+        .action-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 20px;
+            background: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.25rem;
+            color: var(--primary);
+            font-size: 2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .action-card:hover .action-icon {
+            transform: scale(1.1) rotate(5deg);
+            background: var(--primary);
+            color: white;
+        }
+        
+        .action-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+        }
+        
+        .action-desc {
+            font-size: 0.85rem;
+            color: var(--secondary);
+            margin-bottom: 0;
+        }
+        
+        /* ===== RECENT CARDS ===== */
+        .recent-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        
+        .recent-card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(0,0,0,0.03);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .recent-card:hover {
+            box-shadow: var(--shadow-hover);
+        }
+        
+        .recent-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #eef2f6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, #f8fafc 0%, white 100%);
+        }
+        
+        .recent-header h6 {
+            font-weight: 700;
+            font-size: 1rem;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--dark);
+        }
+        
+        .recent-header h6 i {
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+        
+        .recent-header a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.8rem;
+            padding: 0.3rem 1rem;
+            border-radius: 20px;
+            background: var(--primary-light);
+            transition: all 0.3s;
+        }
+        
+        .recent-header a:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
         .recent-body {
-            padding: 0.5rem;
+            padding: 0.75rem;
+            max-height: 320px;
+            overflow-y: auto;
         }
         
         .recent-item {
-            padding: 0.75rem 1rem;
-            border-radius: 8px;
-            transition: all 0.2s;
+            padding: 1rem 1.25rem;
+            border-radius: 12px;
+            transition: all 0.3s;
             display: flex;
             justify-content: space-between;
             align-items: center;
             text-decoration: none;
             color: inherit;
+            border: 1px solid transparent;
         }
         
         .recent-item:hover {
-            background: #f8fafc;
+            background: var(--primary-light);
+            border-color: var(--primary);
+            transform: translateX(5px);
         }
         
         .recent-item .item-title {
             font-weight: 600;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
+            color: var(--dark);
+            margin-bottom: 0.25rem;
         }
         
         .recent-item .item-meta {
             font-size: 0.75rem;
             color: var(--secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
         }
         
         .recent-item .item-badge {
             font-size: 0.7rem;
-            padding: 0.15rem 0.5rem;
-            border-radius: 20px;
-            background: #e9ecef;
+            padding: 0.25rem 1rem;
+            border-radius: 30px;
+            background: #eef2f6;
+            color: var(--secondary);
+            font-weight: 600;
         }
         
-        /* Footer */
+        .recent-item .item-badge.master {
+            background: rgba(67, 97, 238, 0.1);
+            color: var(--primary);
+        }
+        
+        .recent-item .item-badge.admin {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+        
+        .recent-item .item-badge.user {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+        
+        /* ===== FOOTER ===== */
         .footer {
             background: white;
-            border-top: 1px solid #e9ecef;
+            border-top: 1px solid #eef2f6;
             padding: 1rem 2rem;
             margin-left: var(--sidebar-width);
         }
@@ -532,9 +950,16 @@
         .footer .text-muted {
             color: var(--secondary) !important;
             font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
         }
         
-        /* Mobile Navigation */
+        .footer .text-muted i {
+            color: var(--primary);
+        }
+        
+        /* ===== MOBILE NAVIGATION ===== */
         .mobile-nav {
             display: none;
             position: fixed;
@@ -546,6 +971,8 @@
             border-top: 3px solid var(--primary);
             z-index: 1030;
             padding: 0.5rem 0;
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
         }
         
         .mobile-nav .d-flex {
@@ -563,22 +990,61 @@
             align-items: center;
             gap: 0.25rem;
             text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
         }
         
         .mobile-nav .nav-link i {
             margin: 0;
-            font-size: 1.2rem;
+            font-size: 1.3rem;
+            transition: all 0.3s;
         }
         
         .mobile-nav .nav-link.active {
             color: var(--primary);
-            background: transparent;
         }
         
-        /* Responsive */
+        .mobile-nav .nav-link.active i {
+            transform: translateY(-3px);
+        }
+        
+        /* ===== ANIMATIONS ===== */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .fade-in-up {
+            animation: fadeInUp 0.5s ease forwards;
+        }
+        
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+        .delay-4 { animation-delay: 0.4s; }
+        
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1200px) {
+            .stats-grid,
+            .operator-grid,
+            .quick-actions {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
         @media (max-width: 992px) {
             .sidebar-wrapper {
-                display: none;
+                transform: translateX(-100%);
+            }
+            
+            .sidebar-wrapper.show {
+                transform: translateX(0);
             }
             
             .main-content-wrapper {
@@ -593,11 +1059,32 @@
             .mobile-nav {
                 display: block;
             }
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1.5rem;
+            }
+            
+            .welcome-card {
+                padding: 1.25rem;
+            }
+            
+            .welcome-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 1.5rem;
+            }
+            
+            .welcome-text h3 {
+                font-size: 1.2rem;
+            }
             
             .stats-grid,
             .operator-grid,
             .quick-actions {
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns: 1fr;
+                gap: 1rem;
             }
             
             .recent-grid {
@@ -610,68 +1097,99 @@
                 padding: 1rem;
             }
             
-            .stats-grid,
-            .operator-grid,
-            .quick-actions {
-                grid-template-columns: 1fr;
+            .stat-card {
+                padding: 1.25rem;
+            }
+            
+            .stat-info h3 {
+                font-size: 1.8rem;
+            }
+            
+            .stat-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 1.5rem;
+            }
+            
+            .navbar .container-fluid {
+                padding: 0 1rem;
+            }
+            
+            .navbar-brand span {
+                font-size: 1.2rem;
+            }
+            
+            .navbar-brand i {
+                height: 40px;
+                width: 40px;
+                font-size: 1.5rem;
             }
         }
     </style>
     {% block styles %}{% endblock %}
 </head>
 <body>
-    <!-- Navbar -->
+    <!-- Navbar - PERBAIKAN LENGKAP -->
     <nav class="navbar fixed-top">
         <div class="container-fluid">
-            <a class="navbar-brand" href="{{ url_for('admin_master_dashboard') }}">
-                <i class="bi bi-wifi"></i>
-                <span>Admin Master</span>
-            </a>
-            
-            <div class="dropdown">
-                <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" 
-                   id="userDropdown" data-bs-toggle="dropdown">
-                    <div class="user-avatar">
-                        {{ current_user.username[0].upper() }}
-                    </div>
+            <!-- Bagian kiri: toggle dan brand -->
+            <div class="navbar-left">
+                <button class="btn btn-link d-lg-none" type="button" id="sidebarToggle">
+                    <i class="bi bi-list"></i>
+                </button>
+                
+                <a class="navbar-brand" href="{{ url_for('admin_master_dashboard') }}">
+                    <i class="bi bi-wifi"></i>
+                    <span>SiPaMeL</span>
                 </a>
-                <ul class="dropdown-menu dropdown-menu-end shadow">
-                    <li>
-                        <span class="dropdown-item-text text-muted small px-3">
-                            <i class="bi bi-person-circle me-2"></i>{{ current_user.username }}
-                        </span>
-                    </li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li>
-                        <a class="dropdown-item" href="{{ url_for('admin_master_dashboard') }}">
-                            <i class="bi bi-speedometer2 me-2"></i> Dashboard
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item" href="{{ url_for('admin_master_manage_users') }}">
-                            <i class="bi bi-people me-2"></i> Kelola User
-                        </a>
-                    </li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li>
-                        <a class="dropdown-item text-danger" href="{{ url_for('logout') }}">
-                            <i class="bi bi-box-arrow-right me-2"></i> Logout
-                        </a>
-                    </li>
-                </ul>
+            </div>
+            
+            <!-- Bagian kanan: user dropdown -->
+            <div class="navbar-right">
+                <div class="dropdown">
+                    <a href="#" class="dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="user-avatar">
+                            {{ current_user.username[0].upper() }}
+                        </div>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userDropdown">
+                        <li>
+                            <div class="px-3 py-2">
+                                <small class="text-muted d-block">{{ current_user.role|replace('_', ' ')|title }}</small>
+                            </div>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item" href="{{ url_for('admin_master_dashboard') }}">
+                                <i class="bi bi-speedometer2 me-2"></i> Dashboard
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ url_for('admin_master_manage_users') }}">
+                                <i class="bi bi-people me-2"></i> Kelola User
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item text-danger" href="{{ url_for('logout') }}">
+                                <i class="bi bi-box-arrow-right me-2"></i> Logout
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
     </nav>
 
     <!-- Sidebar -->
-    <div class="sidebar-wrapper">
+    <div class="sidebar-wrapper" id="sidebar">
         <div class="sidebar-header">
-            <h5>Navigation</h5>
-            <small>Admin Master Panel</small>
+            <h5>Menu Navigasi</h5>
+            <small><i class="bi bi-shield-check"></i> Admin Master Panel</small>
         </div>
         
         <!-- Main Menu -->
-        <div class="section-title">Main Menu</div>
+        <div class="section-title">Utama</div>
         <ul class="nav flex-column">
             <li class="nav-item">
                 <a class="nav-link {% if request.endpoint == 'admin_master_dashboard' %}active{% endif %}" 
@@ -682,7 +1200,7 @@
         </ul>
         
         <!-- Data Management -->
-        <div class="section-title">Data Management</div>
+        <div class="section-title">Manajemen Data</div>
         <ul class="nav flex-column">
             <li class="nav-item">
                 <a class="nav-link {% if request.endpoint == 'admin_master_tambah_data' %}active{% endif %}" 
@@ -710,7 +1228,7 @@
         </ul>
         
         <!-- User Management -->
-        <div class="section-title">User Management</div>
+        <div class="section-title">Manajemen User</div>
         <ul class="nav flex-column">
             <li class="nav-item">
                 <a class="nav-link {% if request.endpoint == 'admin_master_manage_users' %}active{% endif %}" 
@@ -731,18 +1249,23 @@
         <div class="d-flex flex-column">
             <a class="operator-badge-link" href="{{ url_for('admin_master_daftar_stasiun') }}">
                 <i class="bi bi-filter-circle me-2"></i> Semua Operator
+                <span class="ms-auto badge bg-secondary">{{ total_stations|default(0) }}</span>
             </a>
             <a class="operator-badge-link" href="{{ url_for('admin_master_daftar_stasiun', operator='telkom') }}">
                 <span class="operator-badge badge-telkom me-2">TELKOM</span>
+                <span class="ms-auto">{{ telkom_stations|default(0) }}</span>
             </a>
             <a class="operator-badge-link" href="{{ url_for('admin_master_daftar_stasiun', operator='telkomsel') }}">
                 <span class="operator-badge badge-telkomsel me-2">TELKOMSEL</span>
+                <span class="ms-auto">{{ telkomsel_stations|default(0) }}</span>
             </a>
             <a class="operator-badge-link" href="{{ url_for('admin_master_daftar_stasiun', operator='indosat') }}">
                 <span class="operator-badge badge-indosat me-2">INDOSAT</span>
+                <span class="ms-auto">{{ indosat_stations|default(0) }}</span>
             </a>
             <a class="operator-badge-link" href="{{ url_for('admin_master_daftar_stasiun', operator='xl') }}">
                 <span class="operator-badge badge-xl me-2">XL</span>
+                <span class="ms-auto">{{ xl_stations|default(0) }}</span>
             </a>
         </div>
     </div>
@@ -755,9 +1278,9 @@
                 {% if messages %}
                     <div class="mb-4">
                         {% for category, message in messages %}
-                            <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show">
+                            <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show shadow-sm">
                                 <div class="d-flex align-items-center">
-                                    <i class="bi bi-{{ 'exclamation-triangle' if category == 'error' else 'check-circle' if category == 'success' else 'info-circle' }} me-2"></i>
+                                    <i class="bi bi-{{ 'exclamation-triangle-fill' if category == 'error' else 'check-circle-fill' if category == 'success' else 'info-circle-fill' }} me-2 fs-5"></i>
                                     <div>{{ message }}</div>
                                 </div>
                                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -767,25 +1290,46 @@
                 {% endif %}
             {% endwith %}
             
-            <!-- Page Header -->
-            <div class="page-header">
-                <h2>Dashboard</h2>
-                <p>Selamat datang kembali, {{ current_user.username }}</p>
+            <!-- Welcome Card -->
+            <div class="welcome-card fade-in-up">
+                <div class="welcome-icon">
+                    <i class="bi bi-person-circle"></i>
+                </div>
+                <div class="welcome-text">
+                    <h3>Selamat Datang, {{ current_user.username }}!</h3>
+                    <p>
+                        <i class="bi bi-calendar3"></i>
+                        <span id="current-date"></span>
+                        <span class="mx-2">•</span>
+                        <i class="bi bi-clock"></i>
+                        <span id="live-time"></span>
+                    </p>
+                </div>
             </div>
             
             <!-- Stats Cards -->
             <div class="stats-grid">
-                <div class="stat-card">
+                <div class="stat-card fade-in-up delay-1">
                     <div class="stat-info">
                         <h3>{{ total_stations|default('0') }}</h3>
-                        <p>Total Stasiun</p>
+                        <p>Stasiun Name</p>
                     </div>
                     <div class="stat-icon">
-                        <i class="bi bi-wifi"></i>
+                        <i class="bi bi-broadcast"></i>
                     </div>
                 </div>
                 
-                <div class="stat-card">
+                <div class="stat-card fade-in-up delay-2">
+                    <div class="stat-info">
+                        <h3>{{ total_opponents|default('0') }}</h3>
+                        <p>Stasiun Lawan</p>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="bi bi-diagram-3"></i>
+                    </div>
+                </div>
+                
+                <div class="stat-card fade-in-up delay-3">
                     <div class="stat-info">
                         <h3>{{ user_stats.admin_operator|default('0') + user_stats.user_operator|default('0') }}</h3>
                         <p>Total User</p>
@@ -795,101 +1339,107 @@
                     </div>
                 </div>
                 
-                <div class="stat-card">
+                <div class="stat-card fade-in-up delay-4">
                     <div class="stat-info">
                         <h3>{{ user_stats.admin_master|default('0') }}</h3>
                         <p>Admin Master</p>
                     </div>
                     <div class="stat-icon">
-                        <i class="bi bi-shield"></i>
-                    </div>
-                </div>
-                
-                <div class="stat-card">
-                    <div class="stat-info">
-                        <h3>{{ recent_stations|length|default('0') }}</h3>
-                        <p>Stasiun Baru</p>
-                    </div>
-                    <div class="stat-icon">
-                        <i class="bi bi-clock-history"></i>
+                        <i class="bi bi-shield-check"></i>
                     </div>
                 </div>
             </div>
             
             <!-- Operator Cards -->
+            <div class="section-header">
+                <h4>
+                    <i class="bi bi-phone"></i>
+                    Operator
+                </h4>
+                <small class="text-muted">Total stasiun Name Per Operator</small>
+            </div>
+            
             <div class="operator-grid">
-                <div class="operator-card telkom">
+                <div class="operator-card telkom fade-in-up delay-1">
                     <div class="operator-header">
                         <div class="operator-icon telkom">
                             <i class="bi bi-phone-vibrate"></i>
                         </div>
                         <div>
                             <div class="operator-name">Telkom</div>
-                            <div class="operator-stats">
-                                <span class="operator-count">{{ telkom_stations|default('0') }}</span>
-                                <a href="{{ url_for('admin_master_daftar_stasiun', operator='telkom') }}" class="operator-link">
-                                    Lihat <i class="bi bi-arrow-right"></i>
-                                </a>
-                            </div>
                         </div>
+                    </div>
+                    <div class="operator-stats">
+                        <span class="operator-count">{{ telkom_stations|default('0') }}</span>
+                        <a href="{{ url_for('admin_master_daftar_stasiun', operator='telkom') }}" class="operator-link">
+                            Lihat <i class="bi bi-arrow-right"></i>
+                        </a>
                     </div>
                 </div>
                 
-                <div class="operator-card telkomsel">
+                <div class="operator-card telkomsel fade-in-up delay-2">
                     <div class="operator-header">
                         <div class="operator-icon telkomsel">
                             <i class="bi bi-phone-vibrate"></i>
                         </div>
                         <div>
                             <div class="operator-name">Telkomsel</div>
-                            <div class="operator-stats">
-                                <span class="operator-count">{{ telkomsel_stations|default('0') }}</span>
-                                <a href="{{ url_for('admin_master_daftar_stasiun', operator='telkomsel') }}" class="operator-link">
-                                    Lihat <i class="bi bi-arrow-right"></i>
-                                </a>
-                            </div>
                         </div>
+                    </div>
+                    <div class="operator-stats">
+                        <span class="operator-count">{{ telkomsel_stations|default('0') }}</span>
+                        <a href="{{ url_for('admin_master_daftar_stasiun', operator='telkomsel') }}" class="operator-link">
+                            Lihat <i class="bi bi-arrow-right"></i>
+                        </a>
                     </div>
                 </div>
                 
-                <div class="operator-card indosat">
+                <div class="operator-card indosat fade-in-up delay-3">
                     <div class="operator-header">
                         <div class="operator-icon indosat">
                             <i class="bi bi-phone-vibrate"></i>
                         </div>
                         <div>
                             <div class="operator-name">Indosat</div>
-                            <div class="operator-stats">
-                                <span class="operator-count">{{ indosat_stations|default('0') }}</span>
-                                <a href="{{ url_for('admin_master_daftar_stasiun', operator='indosat') }}" class="operator-link">
-                                    Lihat <i class="bi bi-arrow-right"></i>
-                                </a>
-                            </div>
                         </div>
+                    </div>
+                    <div class="operator-stats">
+                        <span class="operator-count">{{ indosat_stations|default('0') }}</span>
+                        <a href="{{ url_for('admin_master_daftar_stasiun', operator='indosat') }}" class="operator-link">
+                            Lihat <i class="bi bi-arrow-right"></i>
+                        </a>
                     </div>
                 </div>
                 
-                <div class="operator-card xl">
+                <div class="operator-card xl fade-in-up delay-4">
                     <div class="operator-header">
                         <div class="operator-icon xl">
                             <i class="bi bi-phone-vibrate"></i>
                         </div>
                         <div>
                             <div class="operator-name">XL</div>
-                            <div class="operator-stats">
-                                <span class="operator-count">{{ xl_stations|default('0') }}</span>
-                                <a href="{{ url_for('admin_master_daftar_stasiun', operator='xl') }}" class="operator-link">
-                                    Lihat <i class="bi bi-arrow-right"></i>
-                                </a>
-                            </div>
                         </div>
+                    </div>
+                    <div class="operator-stats">
+                        <span class="operator-count">{{ xl_stations|default('0') }}</span>
+                        <a href="{{ url_for('admin_master_daftar_stasiun', operator='xl') }}" class="operator-link">
+                            Lihat <i class="bi bi-arrow-right"></i>
+                        </a>
                     </div>
                 </div>
             </div>
             
             <!-- Quick Actions -->
+            <div class="section-header">
+                <h4>
+                    <i class="bi bi-lightning-charge"></i>
+                    Aksi Cepat
+                </h4>
+                <small class="text-muted">Menu cepat untuk pengelolaan</small>
+            </div>
+            
             <div class="quick-actions">
-                <a href="{{ url_for('admin_master_tambah_data') }}" class="action-card">
+                <a href="{{ url_for('admin_master_tambah_data') }}" class="action-card fade-in-up">
                     <div class="action-icon">
                         <i class="bi bi-plus-circle"></i>
                     </div>
@@ -897,7 +1447,7 @@
                     <div class="action-desc">Input data stasiun baru</div>
                 </a>
                 
-                <a href="{{ url_for('admin_master_upload_excel') }}" class="action-card">
+                <a href="{{ url_for('admin_master_upload_excel') }}" class="action-card fade-in-up delay-2">
                     <div class="action-icon">
                         <i class="bi bi-file-earmark-excel"></i>
                     </div>
@@ -905,7 +1455,7 @@
                     <div class="action-desc">Import data massal</div>
                 </a>
                 
-                <a href="{{ url_for('admin_master_add_user') }}" class="action-card">
+                <a href="{{ url_for('admin_master_add_user') }}" class="action-card fade-in-up delay-3">
                     <div class="action-icon">
                         <i class="bi bi-person-plus"></i>
                     </div>
@@ -917,25 +1467,32 @@
             <!-- Recent Items -->
             <div class="recent-grid">
                 <!-- Recent Stations -->
-                <div class="recent-card">
+                <div class="recent-card fade-in-up">
                     <div class="recent-header">
-                        <h6><i class="bi bi-clock-history me-2"></i>Stasiun Terbaru</h6>
-                        <a href="{{ url_for('admin_master_daftar_stasiun') }}" class="text-decoration-none small">Lihat Semua</a>
+                        <h6><i class="bi bi-clock-history"></i>Stasiun Terbaru</h6>
+                        <a href="{{ url_for('admin_master_daftar_stasiun') }}" class="text-decoration-none">
+                            Lihat Semua
+                        </a>
                     </div>
                     <div class="recent-body">
                         {% if recent_stations %}
                             {% for station in recent_stations[:5] %}
                             <a href="{{ url_for('admin_master_detail_stasiun', station_id=station.id) }}" 
-                               class="recent-item text-decoration-none text-dark">
+                               class="recent-item">
                                 <div>
                                     <div class="item-title">{{ station.stasiun_name }}</div>
-                                    <div class="item-meta">{{ station.kota|title }} • {{ station.operator|upper }}</div>
+                                    <div class="item-meta">
+                                        <i class="bi bi-geo-alt"></i> {{ station.kota|title }}
+                                        <span class="mx-1">•</span>
+                                        <i class="bi bi-phone"></i> {{ station.operator|upper }}
+                                    </div>
                                 </div>
                                 <span class="item-badge">{{ station.created_at.strftime('%d/%m') }}</span>
                             </a>
                             {% endfor %}
                         {% else %}
-                            <div class="text-center text-muted py-3">
+                            <div class="text-center text-muted py-4">
+                                <i class="bi bi-inbox fs-1 d-block mb-2"></i>
                                 <small>Belum ada stasiun</small>
                             </div>
                         {% endif %}
@@ -943,10 +1500,12 @@
                 </div>
                 
                 <!-- Recent Users -->
-                <div class="recent-card">
+                <div class="recent-card fade-in-up delay-2">
                     <div class="recent-header">
-                        <h6><i class="bi bi-people me-2"></i>User Terbaru</h6>
-                        <a href="{{ url_for('admin_master_manage_users') }}" class="text-decoration-none small">Lihat Semua</a>
+                        <h6><i class="bi bi-people"></i>User Terbaru</h6>
+                        <a href="{{ url_for('admin_master_manage_users') }}" class="text-decoration-none">
+                            Lihat Semua
+                        </a>
                     </div>
                     <div class="recent-body">
                         {% if recent_users %}
@@ -954,21 +1513,21 @@
                             <div class="recent-item">
                                 <div>
                                     <div class="item-title">{{ user.username }}</div>
-                                    <div class="item-meta">{{ user.role|replace('_', ' ')|title }}</div>
+                                    <div class="item-meta">
+                                        <i class="bi bi-tag"></i> {{ user.role|replace('_', ' ')|title }}
+                                    </div>
                                 </div>
-                                <span class="item-badge">
-                                    {% if user.role == 'admin_master' %}
-                                        Master
-                                    {% elif user.role == 'admin_operator' %}
-                                        Admin
-                                    {% else %}
-                                        User
-                                    {% endif %}
+                                <span class="item-badge 
+                                    {% if user.role == 'admin_master' %}master
+                                    {% elif user.role == 'admin_operator' %}admin
+                                    {% else %}user{% endif %}">
+                                    {{ user.created_at.strftime('%d/%m') }}
                                 </span>
                             </div>
                             {% endfor %}
                         {% else %}
-                            <div class="text-center text-muted py-3">
+                            <div class="text-center text-muted py-4">
+                                <i class="bi bi-people fs-1 d-block mb-2"></i>
                                 <small>Belum ada user</small>
                             </div>
                         {% endif %}
@@ -984,12 +1543,12 @@
             <div class="row align-items-center">
                 <div class="col-md-6">
                     <span class="text-muted">
-                        <i class="bi bi-c-circle me-1"></i> 2026 SIPAMEL - Admin Master
+                        <i class="bi bi-c-circle me-1"></i> 2026 SiPaMeL - Sistem Pemeriksaan Microwave Link
                     </span>
                 </div>
                 <div class="col-md-6 text-md-end">
                     <span class="text-muted">
-                        <i class="bi bi-clock me-1"></i> <span id="current-time"></span>
+                        <i class="bi bi-clock me-1"></i> <span id="current-time-footer"></span>
                         <span class="mx-2">|</span>
                         <i class="bi bi-person-circle me-1"></i> {{ current_user.username }}
                     </span>
@@ -1041,18 +1600,64 @@
                 });
                 const dateString = now.toLocaleDateString('id-ID', {
                     day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                });
+                const shortDateString = now.toLocaleDateString('id-ID', {
+                    day: 'numeric',
                     month: 'short',
                     year: 'numeric'
                 });
                 
-                const timeElement = document.getElementById('current-time');
-                if (timeElement) {
-                    timeElement.textContent = `${dateString} ${timeString}`;
-                }
+                // Update elements
+                const dateElement = document.getElementById('current-date');
+                if (dateElement) dateElement.textContent = dateString;
+                
+                const timeElement = document.getElementById('live-time');
+                if (timeElement) timeElement.textContent = timeString;
+                
+                const footerTime = document.getElementById('current-time-footer');
+                if (footerTime) footerTime.textContent = `${shortDateString} ${timeString}`;
             }
             
             updateTime();
             setInterval(updateTime, 1000);
+            
+            // Sidebar toggle for mobile
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            
+            if (sidebarToggle && sidebar) {
+                sidebarToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('show');
+                });
+                
+                // Close sidebar when clicking outside on mobile
+                document.addEventListener('click', function(event) {
+                    if (window.innerWidth <= 992) {
+                        if (!sidebar.contains(event.target) && !sidebarToggle.contains(event.target)) {
+                            sidebar.classList.remove('show');
+                        }
+                    }
+                });
+            }
+            
+            // Add fade-in animation to elements
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            document.querySelectorAll('.stat-card, .operator-card, .action-card, .recent-card').forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(20px)';
+                el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                observer.observe(el);
+            });
         });
     </script>
     

@@ -626,7 +626,7 @@
                 </div>
                 <div class="stat-content">
                     <div class="stat-number">{{ total_stations }}</div>
-                    <div class="stat-label">Total Stasiun Name</div>
+                    <div class="stat-label">Total Stasiun</div>
                 </div>
             </div>
         </div>
@@ -637,13 +637,7 @@
                     <i class="bi bi-check-circle"></i>
                 </div>
                 <div class="stat-content">
-                    {% set stations_with_uploads = [] %}
-                    {% for station in recent_stations %}
-                        {% if station.uploads %}
-                            {% set _ = stations_with_uploads.append(station.id) %}
-                        {% endif %}
-                    {% endfor %}
-                    <div class="stat-number">{{ stations_with_uploads|length }}</div>
+                    <div class="stat-number">{{ stations_with_uploads|default(0) }}</div>
                     <div class="stat-label">Sudah Upload</div>
                 </div>
             </div>
@@ -655,12 +649,8 @@
                     <i class="bi bi-diagram-3"></i>
                 </div>
                 <div class="stat-content">
-                    {% set total_opponents = namespace(value=0) %}
-                    {% for station in recent_stations %}
-                        {% set total_opponents.value = total_opponents.value + station.stasiun_lawan_list|length %}
-                    {% endfor %}
-                    <div class="stat-number">{{ total_opponents.value }}</div>
-                    <div class="stat-label">Stasiun Lawan</div>
+                    <div class="stat-number">{{ total_opponents }}</div>
+                    <div class="stat-label">Total Stasiun Lawan</div>
                 </div>
             </div>
         </div>

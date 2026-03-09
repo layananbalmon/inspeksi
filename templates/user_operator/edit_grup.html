@@ -4,52 +4,85 @@
 
 {% block extra_css %}
 <style>
-:root {
-    --gradient-primary: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-    --border-radius-lg: 16px;
-    --border-radius-md: 12px;
-}
-
-.edit-container { max-width: 1200px; margin: 0 auto; }
-
-/* ===== HEADER ===== */
-.edit-header {
-    background: var(--gradient-primary);
-    color: white;
-    padding: 1.5rem;
-    border-radius: var(--border-radius-lg);
-    margin-bottom: 1.5rem;
-}
-
-/* ===== GROUP INFO ===== */
-.group-info-card {
-    background: var(--gradient-primary);
-    color: white;
-    border-radius: var(--border-radius-lg);
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-}
-
-/* ===== SECTION CARD ===== */
-.section-card {
-    background: white;
-    border-radius: var(--border-radius-lg);
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-    border: 1px solid #eef2f6;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-}
-
-.section-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #1e293b;
-    margin-bottom: 1rem;
+.upload-box {
+    transition: all 0.3s ease;
+    min-height: 200px;
     display: flex;
+    flex-direction: column;
     align-items: center;
+    justify-content: center;
 }
 
-/* ===== IMAGE GRID ===== */
+.upload-box:hover {
+    background: #e3f2fd !important;
+    border-color: #0d6efd !important;
+}
+
+.upload-box i {
+    transition: transform 0.3s ease;
+}
+
+.upload-box:hover i {
+    transform: scale(1.1);
+    color: #0d6efd !important;
+}
+
+.object-fit-cover {
+    object-fit: cover;
+}
+
+.is-invalid {
+    border-color: #dc3545 !important;
+}
+
+.card {
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.btn-danger {
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.btn-danger:hover {
+    opacity: 1;
+}
+
+/* Table styling */
+.table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.badge.bg-primary {
+    background: linear-gradient(135deg, #0d6efd, #0b5ed7) !important;
+}
+
+.badge.bg-success {
+    background: linear-gradient(135deg, #198754, #157347) !important;
+}
+
+/* Animasi untuk paste success */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.upload-box.text-success {
+    animation: pulse 0.5s ease;
+}
+
+/* Current Images Grid */
 .current-images-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -59,7 +92,7 @@
 
 .current-image-card {
     border: 1px solid #eef2f6;
-    border-radius: var(--border-radius-md);
+    border-radius: 12px;
     overflow: hidden;
     background: white;
     position: relative;
@@ -67,8 +100,8 @@
 }
 
 .current-image-card:hover {
-    border-color: #2a5298;
-    box-shadow: 0 10px 20px rgba(42, 82, 152, 0.1);
+    border-color: #0d6efd;
+    box-shadow: 0 10px 20px rgba(13, 110, 253, 0.1);
 }
 
 .current-image-card img {
@@ -90,7 +123,6 @@
     text-overflow: ellipsis;
 }
 
-/* ===== DELETE BUTTON ===== */
 .delete-btn {
     position: absolute !important;
     top: 10px !important;
@@ -105,7 +137,7 @@
     align-items: center !important;
     justify-content: center !important;
     cursor: pointer !important;
-    z-index: 9999 !important;
+    z-index: 10 !important;
     font-size: 18px !important;
     padding: 0 !important;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2) !important;
@@ -116,33 +148,15 @@
     transform: scale(1.1);
 }
 
-.delete-btn.active {
-    background: #bd2130 !important;
-    box-shadow: 0 0 0 3px rgba(255,255,255,0.5);
+.delete-checkbox {
+    display: none !important;
 }
 
-/* ===== UPLOAD AREA ===== */
-.upload-area {
-    border: 2px dashed #e2e8f0;
-    border-radius: var(--border-radius-md);
-    padding: 2.5rem;
-    text-align: center;
-    background: #f8fafc;
-    cursor: pointer;
-    transition: all 0.3s;
+.current-image-card.deleted {
+    display: none !important;
 }
 
-.upload-area:hover {
-    border-color: #2a5298;
-    background: #f0f7ff;
-}
-
-.upload-area i {
-    font-size: 3rem;
-    color: #94a3b8;
-}
-
-/* ===== NEW IMAGES PREVIEW ===== */
+/* New Images Preview */
 .new-images-preview {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -152,7 +166,7 @@
 
 .new-image-preview {
     border: 1px solid #eef2f6;
-    border-radius: var(--border-radius-md);
+    border-radius: 12px;
     overflow: hidden;
     position: relative;
     background: white;
@@ -180,146 +194,24 @@
     cursor: pointer;
 }
 
-/* ===== OPPONENT STATUS CARD ===== */
-.opponent-status-card {
-    background: #f8fafc;
-    border-radius: var(--border-radius-md);
-    padding: 1.25rem;
-    margin-bottom: 1rem;
-    border: 1px solid #eef2f6;
-}
-
-.opponent-header {
-    display: flex;
-    align-items: center;
-    margin-bottom: 1rem;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-.opponent-name {
+/* Frekuensi Badge */
+.freq-badge {
+    background: #e3f2fd;
+    color: #0d47a1;
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    border-radius: 12px;
     font-weight: 600;
-    margin-right: 1rem;
-}
-
-.opponent-status-badge {
-    font-size: 0.75rem;
-    padding: 0.25rem 0.75rem;
-    border-radius: 100px;
-    font-weight: 600;
-}
-
-.opponent-status-badge.status-aktif {
-    background: rgba(25, 135, 84, 0.1);
-    color: #198754;
-}
-
-.opponent-status-badge.status-tidak_aktif {
-    background: rgba(220, 53, 69, 0.1);
-    color: #dc3545;
-}
-
-.opponent-status-badge.status-tidak_berizin {
-    background: rgba(255, 193, 7, 0.1);
-    color: #856404;
-}
-
-.opponent-status-badge.status-tidak_sesuai {
-    background: rgba(13, 110, 253, 0.1);
-    color: #0d6efd;
-}
-
-.opponent-status-row {
-    display: flex;
-    gap: 1.5rem;
-    flex-wrap: wrap;
-}
-
-.status-select-wrapper {
-    flex: 1;
-    min-width: 200px;
-}
-
-.catatan-wrapper {
-    flex: 2;
-    min-width: 250px;
-}
-
-.status-select,
-.catatan-input {
-    width: 100%;
-    padding: 0.6rem 1rem;
-    border: 2px solid #e2e8f0;
-    border-radius: 10px;
-    background: white;
-}
-
-/* ===== OPPONENTS LIST ===== */
-.opponents-list {
-    max-height: 400px;
-    overflow-y: auto;
-    margin-top: 1rem;
-}
-
-.opponent-item {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    padding: 0.85rem 1rem;
-    margin-bottom: 0.5rem;
-    background: #f8fafc;
-    border-radius: 10px;
+    gap: 3px;
 }
 
-.opponent-number {
-    width: 28px;
-    height: 28px;
-    background: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 12px;
-    border: 1px solid #e2e8f0;
+.freq-badge i {
+    font-size: 0.6rem;
 }
 
-/* ===== ACTION BUTTONS ===== */
-.action-buttons {
-    display: flex;
-    gap: 1rem;
-    justify-content: space-between;
-    margin-top: 1.5rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid #eef2f6;
-}
-
-/* ===== PROGRESS MODAL ===== */
-.progress-modal {
-    display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: white;
-    padding: 2rem;
-    border-radius: var(--border-radius-lg);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-    z-index: 9999;
-    text-align: center;
-    min-width: 320px;
-}
-
-.progress-overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-    z-index: 9998;
-}
-
-/* ===== IMAGE PREVIEW MODAL - FIX ===== */
+/* Preview Modal */
 .preview-modal {
     display: none;
     position: fixed;
@@ -363,321 +255,361 @@
     color: #dc3545;
 }
 
-/* ===== HIDDEN CHECKBOX ===== */
-.delete-checkbox {
-    display: none !important;
-}
-
-/* ===== DELETED IMAGE STYLE ===== */
-.current-image-card.deleted {
-    display: none !important;
-}
-
-/* ===== FREKUENSI BADGE ===== */
-.freq-badge {
-    background: #e3f2fd;
-    color: #0d47a1;
-    font-size: 0.7rem;
-    padding: 3px 8px;
+/* Opponent Status */
+.opponent-status-card {
+    background: #f8fafc;
     border-radius: 12px;
-    font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    border: 1px solid #eef2f6;
 }
 
-.freq-badge i {
-    font-size: 0.6rem;
+.opponent-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.opponent-name {
+    font-weight: 600;
+    margin-right: 1rem;
+}
+
+.opponent-status-row {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.status-select-wrapper {
+    flex: 1;
+    min-width: 200px;
+}
+
+.catatan-wrapper {
+    flex: 2;
+    min-width: 250px;
+}
+
+.status-select,
+.catatan-input {
+    width: 100%;
+    padding: 0.6rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    background: white;
+}
+
+/* Opponents List */
+.opponents-list {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-top: 1rem;
+}
+
+.opponent-item {
+    display: flex;
+    align-items: center;
+    padding: 0.85rem 1rem;
+    margin-bottom: 0.5rem;
+    background: #f8fafc;
+    border-radius: 10px;
+}
+
+.opponent-number {
+    width: 28px;
+    height: 28px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    border: 1px solid #e2e8f0;
 }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="edit-container">
-    <!-- HEADER -->
-    <div class="edit-header">
-        <div class="d-flex justify-content-between align-items-start align-items-md-center flex-column flex-md-row">
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="mb-1">
+                <i class="bi bi-pencil-square text-primary"></i> Edit Grup - {{ station.stasiun_name }}
+            </h4>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{{ url_for('user_operator_dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('user_operator_stasiun') }}">Stasiun</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('user_operator_detail_stasiun', station_id=station.id) }}">{{ station.stasiun_name|truncate(20) }}</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('user_operator_grup_stasiun', station_id=station.id) }}">Grup IDU</a></li>
+                    <li class="breadcrumb-item active">Edit Grup</li>
+                </ol>
+            </nav>
+        </div>
+        <div>
+            <a href="{{ url_for('user_operator_grup_stasiun', station_id=station.id) }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Kembali
+            </a>
+        </div>
+    </div>
+
+    <!-- Info Grup -->
+    <div class="alert alert-info bg-light border-0 rounded-3 mb-4">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-info-circle-fill me-3 fs-4"></i>
             <div>
-                <h4 class="mb-2 fw-bold">
-                    <i class="bi bi-pencil-square me-2"></i>Edit Grup
-                </h4>
-                <p class="mb-0 opacity-75">
-                    <i class="bi bi-broadcast me-1"></i>Stasiun: <strong>{{ station.stasiun_name }}</strong> • 
-                    <span class="badge bg-white text-primary px-3 py-1 rounded-pill">{{ group_label }}</span>
-                </p>
-            </div>
-            <div class="mt-3 mt-md-0">
-                <a href="{{ url_for('user_operator_detail_stasiun', station_id=station.id) }}" 
-                   class="btn btn-light btn-sm px-4 rounded-pill">
-                    <i class="bi bi-arrow-left me-1"></i> Kembali
-                </a>
+                <strong>{{ group_label }}</strong> • 
+                {{ opponents|length }} stasiun lawan • 
+                {{ current_uploads|length }} gambar
             </div>
         </div>
     </div>
 
-    <!-- GROUP INFO -->
-    <div class="group-info-card">
-        <div class="row">
-            <div class="col-md-3 col-6 mb-2 mb-md-0">
-                <h6 class="opacity-75 small mb-1">STASIUN</h6>
-                <p class="fw-bold mb-0">{{ station.stasiun_name }}</p>
-            </div>
-            <div class="col-md-3 col-6 mb-2 mb-md-0">
-                <h6 class="opacity-75 small mb-1">KOTA</h6>
-                <p class="fw-bold mb-0">{{ station.kota|title }}</p>
-            </div>
-            <div class="col-md-3 col-6">
-                <h6 class="opacity-75 small mb-1">NAMA GRUP</h6>
-                <p class="fw-bold mb-0">{{ group_label }}</p>
-            </div>
-            <div class="col-md-3 col-6">
-                <h6 class="opacity-75 small mb-1">STASIUN LAWAN</h6>
-                <p class="fw-bold mb-0">{{ opponents|length }} Stasiun</p>
-            </div>
-        </div>
-    </div>
-
+    <!-- Form Upload -->
     <form method="POST" action="{{ url_for('user_operator_edit_grup', station_id=station.id, group_key=group_key) }}" 
           enctype="multipart/form-data" id="editForm">
         
-        <!-- ============ SECTION 1: GAMBAR SAAT INI ============ -->
-        <div class="section-card">
-            <div class="section-title">
-                <i class="bi bi-images text-primary"></i>
-                Gambar Saat Ini
-                <span class="badge bg-primary ms-2 rounded-pill" id="imageCount">{{ current_uploads|length }}</span>
+        <!-- ===== SECTION 1: GAMBAR SAAT INI ===== -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-images me-2"></i>Gambar Saat Ini
+                    <span class="badge bg-light text-dark ms-2" id="imageCount">{{ current_uploads|length }}</span>
+                </h5>
             </div>
-            
-            {% if current_uploads %}
-            <div class="current-images-grid" id="imageGrid">
-                {% for upload in current_uploads %}
-                <div class="current-image-card" id="card_{{ upload.id }}" data-upload-id="{{ upload.id }}">
-                    <!-- DELETE BUTTON - LANGSUNG HILANG -->
-                    <button type="button" 
-                            class="delete-btn" 
-                            onclick="deleteSingleImage({{ upload.id }}, this)"
-                            title="Hapus gambar">
-                        <i class="bi bi-trash3"></i>
-                    </button>
-                    <input type="checkbox" 
-                           name="delete_files[]" 
-                           value="{{ upload.id }}" 
-                           id="chk_{{ upload.id }}" 
-                           class="delete-checkbox">
-                    
-                    <!-- GAMBAR DARI CLOUDINARY -->
-                    <img src="{{ upload.public_id | cloudinary_thumbnail(200, 150) }}" 
-                         alt="{{ upload.original_filename }}"
-                         onclick="showPreview('{{ upload.cloudinary_url }}')">
-                    
-                    <div class="current-image-info">
-                        <div class="current-image-name" title="{{ upload.original_filename }}">
-                            {{ upload.original_filename|truncate(20) }}
+            <div class="card-body">
+                {% if current_uploads %}
+                <div class="current-images-grid" id="imageGrid">
+                    {% for upload in current_uploads %}
+                    <div class="current-image-card" id="card_{{ upload.id }}" data-upload-id="{{ upload.id }}">
+                        <!-- DELETE BUTTON -->
+                        <button type="button" 
+                                class="delete-btn" 
+                                onclick="deleteSingleImage({{ upload.id }}, this)"
+                                title="Hapus gambar">
+                            <i class="bi bi-trash3"></i>
+                        </button>
+                        <input type="checkbox" 
+                               name="delete_files[]" 
+                               value="{{ upload.id }}" 
+                               id="chk_{{ upload.id }}" 
+                               class="delete-checkbox">
+                        
+                        <!-- GAMBAR DARI CLOUDINARY -->
+                        <img src="{{ upload.public_id | cloudinary_thumbnail(200, 150) }}" 
+                             alt="{{ upload.original_filename }}"
+                             onclick="showPreview('{{ upload.cloudinary_url }}')">
+                        
+                        <div class="current-image-info">
+                            <div class="current-image-name" title="{{ upload.original_filename }}">
+                                {{ upload.original_filename|truncate(20) }}
+                            </div>
+                            <small class="text-muted">
+                                <i class="bi bi-calendar3 me-1"></i>
+                                {{ upload.uploaded_at.strftime('%d/%m/%Y') }}
+                            </small>
                         </div>
-                        <small class="text-muted">
-                            <i class="bi bi-calendar3 me-1"></i>
-                            {{ upload.uploaded_at.strftime('%d/%m/%Y') }}
-                        </small>
-                        <small class="text-muted d-block">
-                            {{ upload.bytes_size | filesizeformat }}
-                        </small>
                     </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
-            </div>
-            
-            <div class="d-flex align-items-center justify-content-between mt-3 pt-3 border-top">
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="selectAllCheckbox">
-                    <label class="form-check-label small" for="selectAllCheckbox">
-                        <i class="bi bi-check2-square me-1"></i>Pilih semua untuk dihapus
-                    </label>
+                
+                <div class="d-flex align-items-center justify-content-between mt-3 pt-3 border-top">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="selectAllCheckbox">
+                        <label class="form-check-label small" for="selectAllCheckbox">
+                            <i class="bi bi-check2-square me-1"></i>Pilih semua untuk dihapus
+                        </label>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteAllImages()">
+                        <i class="bi bi-trash3 me-1"></i>Hapus Semua
+                    </button>
                 </div>
-                <button type="button" class="btn btn-sm btn-danger" onclick="deleteAllImages()">
-                    <i class="bi bi-trash3 me-1"></i>Hapus Semua
-                </button>
+                {% else %}
+                <div class="alert alert-info bg-light border-0 rounded-3 py-3 mb-0">
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    <span class="fw-semibold">Belum ada gambar</span> di grup ini.
+                </div>
+                {% endif %}
             </div>
-            {% else %}
-            <div class="alert alert-info bg-light border-0 rounded-3 py-3 mb-0">
-                <i class="bi bi-info-circle-fill me-2"></i>
-                <span class="fw-semibold">Belum ada gambar</span> di grup ini. 
-                Upload gambar baru melalui form di bawah.
-            </div>
-            {% endif %}
         </div>
 
-        <!-- ============ SECTION 2: TAMBAH GAMBAR BARU ============ -->
-        <div class="section-card">
-            <div class="section-title">
-                <i class="bi bi-cloud-arrow-up text-success"></i>
-                Tambah Gambar Baru
+        <!-- ===== SECTION 2: TAMBAH GAMBAR BARU ===== -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-cloud-arrow-up me-2"></i>Tambah Gambar Baru
+                </h5>
             </div>
-            
-            <div class="upload-area" id="dropzone">
-                <i class="bi bi-cloud-arrow-up-fill"></i>
-                <h5 class="mt-2">Drag & Drop atau Klik untuk Upload</h5>
-                <div class="mt-2">
-                    <span class="badge bg-success rounded-pill px-3 py-2 me-1">MULTIPLE FILES</span>
-                    <span class="badge bg-info rounded-pill px-3 py-2">MAX 5MB</span>
+            <div class="card-body">
+                <!-- Upload Area dengan Drag & Drop -->
+                <div class="upload-box border rounded p-4 text-center mb-3" 
+                     id="dropzone"
+                     ondragover="handleDragOver(event)"
+                     ondragleave="handleDragLeave(event)"
+                     ondrop="handleDrop(event)"
+                     onclick="document.getElementById('fileInput').click()"
+                     style="cursor: pointer; border: 2px dashed #ccc; background: #f8f9fa; transition: all 0.3s;">
+                    <i class="bi bi-cloud-arrow-up display-4 text-muted mb-3"></i>
+                    <h5 class="text-muted">Klik untuk Pilih Gambar</h5>
+                    <p class="text-muted small mb-2">Atau drag & drop file di sini</p>
+                    <p class="text-muted small mb-0">
+                        <i class="bi bi-files me-1"></i> Bisa copy paste dari folder
+                    </p>
+                    <p class="text-muted small">Format: JPG, PNG, GIF, WEBP • Max 5MB per file</p>
                 </div>
-                <p class="small text-muted mt-2 mb-0">
-                    Format: JPG, PNG, GIF, WEBP
-                </p>
+                
+                <!-- Hidden File Input -->
                 <input type="file" 
+                       class="d-none" 
                        id="fileInput"
                        name="new_files[]"
                        accept=".png,.jpg,.jpeg,.gif,.webp"
                        multiple
-                       style="display: none;">
-            </div>
-            
-            <div id="imagePreviewContainer" class="new-images-preview"></div>
-            
-            <div class="mt-3 small text-muted">
-                <i class="bi bi-info-circle me-1"></i>
-                Gambar baru akan ditambahkan ke <strong>SEMUA {{ opponents|length }} stasiun lawan</strong> dalam grup ini.
-            </div>
-        </div>
-
-        <!-- ============ SECTION 3: STATUS PER STASIUN LAWAN ============ -->
-        <div class="section-card">
-            <div class="section-title">
-                <i class="bi bi-tags text-warning"></i>
-                Status Stasiun Lawan
-                <span class="badge bg-warning text-dark ms-2 rounded-pill">PER STASIUN</span>
-            </div>
-            
-            {% for opponent in opponents %}
-            <div class="opponent-status-card">
-                <div class="opponent-header">
-                    <div class="opponent-icon bg-white rounded-circle p-2 me-2">
-                        <i class="bi bi-building"></i>
-                    </div>
-                    <span class="opponent-name">{{ opponent.nama }}</span>
-                    
-                    <!-- FREKUENSI -->
-                    {% if opponent.freq_tx or opponent.freq_rx %}
-                        {% if opponent.freq_tx %}
-                        <span class="freq-badge">
-                            <i class="bi bi-arrow-up"></i> {{ opponent.freq_tx }}
-                        </span>
-                        {% endif %}
-                        {% if opponent.freq_rx %}
-                        <span class="freq-badge">
-                            <i class="bi bi-arrow-down"></i> {{ opponent.freq_rx }}
-                        </span>
-                        {% endif %}
-                    {% endif %}
-                    
-                    {% if opponent.current_status %}
-                    <span class="opponent-status-badge status-{{ opponent.current_status }}">
-                        {{ opponent.status_display }}
-                    </span>
-                    {% else %}
-                    <span class="opponent-status-badge bg-secondary text-white">
-                        Belum Ada Status
-                    </span>
-                    {% endif %}
+                       onchange="handleFileSelect(this)">
+                
+                <!-- Paste Area - PERBAIKAN: Buat textarea terlihat tapi transparan -->
+                <textarea id="pasteArea" 
+                          style="position: fixed; top: -100px; left: -100px; width: 1px; height: 1px; opacity: 0;" 
+                          onpaste="handlePaste(event)"></textarea>
+                
+                <!-- Quick Paste Button - PERBAIKAN: Tambah event click -->
+                <div class="text-center mb-2">
+                    <button type="button" class="btn btn-sm btn-outline-primary" 
+                            onclick="focusPasteArea()"
+                            style="border-radius: 30px; padding: 8px 25px;">
+                        <i class="bi bi-clipboard-plus me-1"></i> 
+                        <strong>Klik di sini, lalu Ctrl+V untuk paste gambar</strong>
+                    </button>
                 </div>
                 
-                <div class="opponent-status-row">
-                    <div class="status-select-wrapper">
-                        <label class="form-label small fw-bold text-muted mb-1">
-                            <i class="bi bi-tag me-1"></i>Status
-                        </label>
-                        <select name="status_{{ opponent.id }}" class="status-select">
-                            <option value="">-- Pilih Status --</option>
-                            <option value="aktif" {% if opponent.current_status == 'aktif' %}selected{% endif %}>Aktif</option>
-                            <option value="tidak_aktif" {% if opponent.current_status == 'tidak_aktif' %}selected{% endif %}>Tidak Aktif</option>
-                            <option value="tidak_berizin" {% if opponent.current_status == 'tidak_berizin' %}selected{% endif %}>Tidak Berizin</option>
-                            <option value="tidak_sesuai" {% if opponent.current_status == 'tidak_sesuai' %}selected{% endif %}>Tidak Sesuai Parameter</option>
-                        </select>
+                <!-- File List Container -->
+                <div id="imagePreviewContainer" class="new-images-preview">
+                    <!-- Preview akan muncul di sini -->
+                </div>
+                
+                <!-- Info -->
+                <div class="mt-2 d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">
+                            <span id="fileCount">0</span> file • 
+                            <span id="totalSize">0 KB</span>
+                        </small>
                     </div>
-                    
-                    <div class="catatan-wrapper">
-                        <label class="form-label small fw-bold text-muted mb-1">
-                            <i class="bi bi-chat-left-text me-1"></i>Catatan
-                        </label>
-                        <textarea name="catatan_{{ opponent.id }}" 
-                                  class="catatan-input" 
-                                  rows="2" 
-                                  placeholder="Tambahkan catatan...">{{ opponent.catatan or '' }}</textarea>
+                    <div id="clearAllBtn" style="display: none;">
+                        <button type="button" class="btn btn-sm btn-outline-danger" 
+                                onclick="clearAllFiles()">
+                            <i class="bi bi-trash me-1"></i> Hapus Semua
+                        </button>
                     </div>
                 </div>
-            </div>
-            {% endfor %}
-        </div>
-
-        <!-- ============ SECTION 4: DAFTAR STASIUN LAWAN ============ -->
-        <div class="section-card">
-            <div class="section-title">
-                <i class="bi bi-people-fill text-info"></i>
-                Stasiun Lawan dalam Grup
-                <span class="badge bg-primary ms-2 rounded-pill">{{ opponents|length }}</span>
-            </div>
-            
-            <div class="opponents-list">
-                {% for opponent in opponents %}
-                <div class="opponent-item">
-                    <span class="opponent-number">{{ loop.index }}</span>
-                    <span class="opponent-name flex-grow-1">{{ opponent.nama }}</span>
-                    
-                    <!-- FREKUENSI -->
-                    {% if opponent.freq_tx %}
-                    <span class="freq-badge me-2">{{ opponent.freq_tx }}</span>
-                    {% endif %}
-                    {% if opponent.freq_rx %}
-                    <span class="freq-badge me-2">{{ opponent.freq_rx }}</span>
-                    {% endif %}
-                    
-                    {% if opponent.current_status %}
-                        {% if opponent.current_status == 'aktif' %}
-                        <span class="badge bg-success">{{ opponent.status_display }}</span>
-                        {% elif opponent.current_status == 'tidak_aktif' %}
-                        <span class="badge bg-danger">{{ opponent.status_display }}</span>
-                        {% elif opponent.current_status == 'tidak_berizin' %}
-                        <span class="badge bg-warning text-dark">{{ opponent.status_display }}</span>
-                        {% elif opponent.current_status == 'tidak_sesuai' %}
-                        <span class="badge bg-info">{{ opponent.status_display }}</span>
-                        {% endif %}
-                    {% else %}
-                    <span class="badge bg-secondary">Belum Ada Status</span>
-                    {% endif %}
+                
+                <div class="mt-3 small text-muted">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Gambar baru akan ditambahkan ke <strong>SEMUA {{ opponents|length }} stasiun lawan</strong> dalam grup ini.
                 </div>
-                {% endfor %}
             </div>
         </div>
 
-        <!-- ============ SECTION 5: ACTION BUTTONS ============ -->
-        <div class="action-buttons">
-            <a href="{{ url_for('user_operator_detail_stasiun', station_id=station.id) }}" 
-               class="btn btn-outline-secondary rounded-3 px-4">
-                <i class="bi bi-x-lg me-1"></i> Batal
-            </a>
-            <div>
-                <button type="button" 
-                        class="btn btn-outline-danger rounded-3 px-4 me-2" 
-                        onclick="deleteAllImages()" 
-                        {% if not current_uploads %}disabled{% endif %}>
-                    <i class="bi bi-trash3 me-1"></i> Hapus Semua
-                </button>
-                <button type="submit" class="btn btn-primary rounded-3 px-4" id="submitBtn">
-                    <i class="bi bi-check-lg me-1"></i> Simpan Perubahan
-                </button>
+        <!-- ===== SECTION 3: STATUS STASIUN LAWAN ===== -->
+        <div class="card mb-4">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                    <i class="bi bi-tags me-2"></i>Status Stasiun Lawan
+                    <span class="badge bg-dark text-white ms-2">PER STASIUN</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th width="35%">Nama Stasiun Lawan</th>
+                                <th width="15%">Frekuensi Tx</th>
+                                <th width="15%">Frekuensi Rx</th>
+                                <th width="20%">Status</th>
+                                <th width="15%">Catatan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for opponent in opponents %}
+                            <tr>
+                                <td>
+                                    <strong>{{ opponent.nama }}</strong>
+                                </td>
+                                <td>
+                                    {% if opponent.freq_tx %}
+                                        <span class="badge bg-primary">{{ opponent.freq_tx }}</span>
+                                    {% else %}
+                                        <span class="badge bg-light text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if opponent.freq_rx %}
+                                        <span class="badge bg-success">{{ opponent.freq_rx }}</span>
+                                    {% else %}
+                                        <span class="badge bg-light text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <select class="form-select form-select-sm" 
+                                            name="status_{{ opponent.id }}">
+                                        <option value="">-- Pilih Status --</option>
+                                        <option value="aktif" {% if opponent.current_status == 'aktif' %}selected{% endif %}>Aktif</option>
+                                        <option value="tidak_aktif" {% if opponent.current_status == 'tidak_aktif' %}selected{% endif %}>Tidak Aktif</option>
+                                        <option value="tidak_berizin" {% if opponent.current_status == 'tidak_berizin' %}selected{% endif %}>Tidak Berizin</option>
+                                        <option value="tidak_sesuai" {% if opponent.current_status == 'tidak_sesuai' %}selected{% endif %}>Tidak Sesuai Parameter</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="text" 
+                                           class="form-control form-control-sm" 
+                                           name="catatan_{{ opponent.id }}"
+                                           placeholder="Catatan..."
+                                           value="{{ opponent.catatan or '' }}">
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between">
+                    <a href="{{ url_for('user_operator_grup_stasiun', station_id=station.id) }}" 
+                       class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle"></i> Batal
+                    </a>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                        <i class="bi bi-check-circle"></i> Simpan Perubahan
+                    </button>
+                </div>
             </div>
         </div>
     </form>
 </div>
 
-<!-- PROGRESS MODAL -->
-<div class="progress-overlay" id="progressOverlay"></div>
-<div class="progress-modal" id="progressModal">
-    <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;"></div>
-    <h5 class="fw-semibold">Menyimpan Perubahan...</h5>
-    <p class="text-muted small">Harap tunggu sebentar</p>
+<!-- Loading Modal -->
+<div class="modal fade" id="loadingModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center py-4">
+                <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;"></div>
+                <h5>Menyimpan...</h5>
+                <p class="text-muted small mb-0">Harap tunggu, perubahan sedang diproses</p>
+            </div>
+        </div>
+    </div>
 </div>
 
-<!-- IMAGE PREVIEW MODAL -->
+<!-- Preview Modal -->
 <div class="preview-modal" id="previewModal" onclick="hidePreview()">
     <span class="close-preview" onclick="hidePreview()">&times;</span>
     <div class="preview-modal-content">
@@ -686,101 +618,348 @@
 </div>
 
 <script>
-// ============ SCRIPT UNTUK EDIT GRUP ============
-
-// VARIABEL GLOBAL
+// Store files
 let selectedFiles = [];
-let deletedCount = 0;
 
-// ============ 1. HAPUS SATU GAMBAR - LANGSUNG HILANG ============
-function deleteSingleImage(uploadId, button) {
-    if (!confirm('🗑️ Hapus gambar ini?')) {
+// ========== DRAG & DROP FUNCTIONS ==========
+function handleDragOver(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    e.currentTarget.style.background = '#e3f2fd';
+    e.currentTarget.style.borderColor = '#0d6efd';
+}
+
+function handleDragLeave(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    e.currentTarget.style.background = '#f8f9fa';
+    e.currentTarget.style.borderColor = '#ccc';
+}
+
+function handleDrop(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const dropZone = e.currentTarget;
+    dropZone.style.background = '#f8f9fa';
+    dropZone.style.borderColor = '#ccc';
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+        processFiles(files);
+    }
+}
+
+// ========== FILE SELECT FUNCTIONS ==========
+function handleFileSelect(input) {
+    const files = input.files;
+    if (files.length > 0) {
+        processFiles(files);
+    }
+    input.value = ''; // Reset input
+}
+
+// ========== PASTE FUNCTIONS ==========
+function focusPasteArea() {
+    const pasteArea = document.getElementById('pasteArea');
+    pasteArea.style.opacity = '1';
+    pasteArea.style.top = '0';
+    pasteArea.style.left = '0';
+    pasteArea.style.width = '100px';
+    pasteArea.style.height = '30px';
+    pasteArea.style.position = 'fixed';
+    pasteArea.focus();
+    pasteArea.select();
+    
+    // Show temporary message
+    const dropZone = document.getElementById('dropzone');
+    const originalText = dropZone.innerHTML;
+    dropZone.innerHTML = '<i class="bi bi-clipboard-check display-4 text-success mb-3"></i><h5 class="text-success">Siap untuk paste!</h5><p class="text-muted small">Tekan Ctrl+V untuk paste gambar</p>';
+    setTimeout(() => {
+        dropZone.innerHTML = originalText;
+        // Sembunyikan lagi
+        pasteArea.style.opacity = '0';
+        pasteArea.style.top = '-100px';
+        pasteArea.style.left = '-100px';
+        pasteArea.style.width = '1px';
+        pasteArea.style.height = '1px';
+    }, 3000);
+}
+
+function handlePaste(e) {
+    e.preventDefault();
+    console.log('Paste event triggered!');
+    
+    const items = e.clipboardData.items;
+    console.log('Clipboard items:', items.length);
+    
+    const files = [];
+    
+    for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        console.log('Item kind:', item.kind, 'type:', item.type);
+        
+        if (item.kind === 'file') {
+            const file = item.getAsFile();
+            if (file && file.type.startsWith('image/')) {
+                console.log('Found image file:', file.name, file.type, file.size);
+                files.push(file);
+            }
+        }
+    }
+    
+    if (files.length > 0) {
+        // Panggil processFiles dengan array files
+        processFiles(files);
+        
+        // Show success message
+        const dropZone = document.getElementById('dropzone');
+        const originalText = dropZone.innerHTML;
+        dropZone.innerHTML = `<i class="bi bi-check-circle-fill text-success display-4 mb-3"></i><h5 class="text-success">${files.length} file berhasil di-paste!</h5>`;
+        setTimeout(() => {
+            dropZone.innerHTML = originalText;
+        }, 2000);
+    } else {
+        alert('Tidak ada gambar yang ditemukan di clipboard. Pastikan Anda sudah meng-copy gambar (Ctrl+C) terlebih dahulu.');
+    }
+    
+    // Clear paste area
+    e.target.value = '';
+}
+
+// ========== FILE PROCESSING ==========
+function processFiles(files) {
+    console.log('Processing files:', files.length);
+    const fileArray = Array.from(files);
+    let addedCount = 0;
+    
+    fileArray.forEach(file => {
+        console.log('Processing file:', file.name, file.size, file.type);
+        
+        // Check file size (5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            alert(`File ${file.name} terlalu besar (max 5MB)`);
+            return;
+        }
+        
+        // Check file type
+        const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp'];
+        if (!validTypes.includes(file.type)) {
+            alert(`File ${file.name} format tidak didukung`);
+            return;
+        }
+        
+        // Check if file already exists
+        const exists = selectedFiles.some(f => 
+            f.name === file.name && f.size === file.size
+        );
+        
+        if (!exists) {
+            // Tambah ke array selectedFiles
+            selectedFiles.push(file);
+            
+            // Buat preview URL
+            const previewUrl = URL.createObjectURL(file);
+            console.log('Preview URL created:', previewUrl);
+            
+            // Panggil fungsi addImagePreview
+            addImagePreview(file, previewUrl);
+            addedCount++;
+            console.log('File added to selectedFiles, total:', selectedFiles.length);
+        } else {
+            alert(`File ${file.name} sudah dipilih sebelumnya`);
+        }
+    });
+    
+    if (addedCount > 0) {
+        updateFileInfo();
+        console.log('File info updated');
+    }
+}
+
+// Fungsi addImagePreview dengan parameter file dan previewUrl
+function addImagePreview(file, previewUrl) {
+    const container = document.getElementById('imagePreviewContainer');
+    if (!container) {
+        console.error('Preview container not found!');
         return;
     }
+    
+    const previewId = 'preview_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    console.log('Adding preview with id:', previewId);
+    
+    const previewDiv = document.createElement('div');
+    previewDiv.className = 'new-image-preview';
+    previewDiv.id = previewId;
+    
+    previewDiv.innerHTML = `
+        <img src="${previewUrl}" alt="${file.name}">
+        <button type="button" class="remove-new-image" onclick="removeFile('${previewId}', '${file.name}')">
+            <i class="bi bi-x"></i>
+        </button>
+        <div style="padding: 0.5rem;">
+            <div style="font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${file.name}">
+                ${file.name.length > 20 ? file.name.substring(0, 17) + '...' : file.name}
+            </div>
+            <div style="font-size: 0.65rem; color: #64748b;">
+                ${(file.size / 1024).toFixed(1)} KB
+            </div>
+        </div>
+    `;
+    
+    container.appendChild(previewDiv);
+    console.log('Preview added to container');
+}
+
+// Remove file
+function removeFile(previewId, fileName) {
+    console.log('Removing file:', fileName);
+    
+    // Remove preview
+    const preview = document.getElementById(previewId);
+    if (preview) {
+        preview.remove();
+        console.log('Preview removed');
+    }
+    
+    // Remove from array
+    selectedFiles = selectedFiles.filter(f => f.name !== fileName);
+    console.log('File removed from array, remaining:', selectedFiles.length);
+    
+    updateFileInfo();
+}
+
+// Update file info
+function updateFileInfo() {
+    const fileCount = document.getElementById('fileCount');
+    const totalSize = document.getElementById('totalSize');
+    const clearAllBtn = document.getElementById('clearAllBtn');
+    
+    const totalBytes = selectedFiles.reduce((sum, f) => sum + f.size, 0);
+    
+    fileCount.textContent = selectedFiles.length;
+    totalSize.textContent = formatBytes(totalBytes);
+    
+    if (selectedFiles.length > 0) {
+        clearAllBtn.style.display = 'block';
+    } else {
+        clearAllBtn.style.display = 'none';
+    }
+}
+
+// Clear all files
+function clearAllFiles() {
+    if (selectedFiles.length === 0) return;
+    
+    if (confirm(`Hapus semua ${selectedFiles.length} file yang dipilih?`)) {
+        // Remove all previews
+        document.getElementById('imagePreviewContainer').innerHTML = '';
+        
+        // Clear array
+        selectedFiles = [];
+        
+        updateFileInfo();
+    }
+}
+
+// Format bytes
+function formatBytes(bytes, decimals = 1) {
+    if (bytes === 0) return '0 KB';
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
+
+// ========== IMAGE DELETE FUNCTIONS ==========
+let deletedCount = 0;
+
+function deleteSingleImage(uploadId, button) {
+    if (!confirm('Hapus gambar ini?')) return;
     
     const checkbox = document.getElementById(`chk_${uploadId}`);
     const card = document.getElementById(`card_${uploadId}`);
     
     if (checkbox && card) {
-        // Check checkbox
         checkbox.checked = true;
-        
-        // LANGSUNG HILANGKAN CARD DARI TAMPILAN
         card.style.display = 'none';
         card.classList.add('deleted');
-        
-        // Update counter
         deletedCount++;
         updateImageCount();
-        
-        console.log(`✅ Image ${uploadId} deleted from view`);
     }
 }
 
-// ============ 2. HAPUS SEMUA GAMBAR - LANGSUNG HILANG ============
 function deleteAllImages() {
-    if (!confirm('⚠️ YAKIN HAPUS SEMUA GAMBAR?\n\nSemua gambar akan langsung hilang dari tampilan!')) {
-        return;
-    }
+    const cards = document.querySelectorAll('.current-image-card');
+    if (cards.length === 0) return;
     
-    // Check semua checkbox dan hilangkan semua card
-    document.querySelectorAll('.current-image-card').forEach(card => {
+    if (!confirm(`Hapus semua ${cards.length} gambar?`)) return;
+    
+    cards.forEach(card => {
         const checkbox = card.querySelector('input[name="delete_files[]"]');
-        if (checkbox) {
-            checkbox.checked = true;
-        }
-        
-        // LANGSUNG HILANGKAN
+        if (checkbox) checkbox.checked = true;
         card.style.display = 'none';
         card.classList.add('deleted');
     });
     
-    // Check select all
     const selectAll = document.getElementById('selectAllCheckbox');
     if (selectAll) selectAll.checked = true;
     
-    // Update counter
-    const totalCards = document.querySelectorAll('.current-image-card').length;
-    deletedCount = totalCards;
+    deletedCount = cards.length;
     updateImageCount();
-    
-    alert('✅ Semua gambar telah dihapus dari tampilan');
 }
 
-// ============ 3. UPDATE JUMLAH GAMBAR ============
 function updateImageCount() {
     const visibleCards = document.querySelectorAll('.current-image-card:not([style*="display: none"])').length;
     const counter = document.getElementById('imageCount');
-    if (counter) {
-        counter.textContent = visibleCards;
-    }
+    if (counter) counter.textContent = visibleCards;
 }
 
-// ============ 4. PREVIEW GAMBAR ============
+// ========== PREVIEW FUNCTIONS ==========
 function showPreview(imageSrc) {
     const modal = document.getElementById('previewModal');
     const previewImg = document.getElementById('previewImage');
-    
     previewImg.src = imageSrc;
     modal.style.display = 'block';
-    
-    // Prevent body scrolling
     document.body.style.overflow = 'hidden';
 }
 
 function hidePreview() {
-    const modal = document.getElementById('previewModal');
-    modal.style.display = 'none';
-    
-    // Restore body scrolling
+    document.getElementById('previewModal').style.display = 'none';
     document.body.style.overflow = 'auto';
 }
 
-// ============ 5. SETUP UPLOAD GAMBAR ============
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('Edit grup loaded - CLOUDINARY VERSION');
+// ========== FORM SUBMIT ==========
+document.getElementById('editForm').addEventListener('submit', function(e) {
+    // Transfer files to hidden input
+    if (selectedFiles.length > 0) {
+        console.log('Transferring files to form:', selectedFiles.length);
+        const fileInput = document.getElementById('fileInput');
+        const dataTransfer = new DataTransfer();
+        
+        selectedFiles.forEach(file => {
+            dataTransfer.items.add(file);
+        });
+        
+        fileInput.files = dataTransfer.files;
+        console.log('Files transferred to input');
+    }
     
-    // ===== SELECT ALL CHECKBOX =====
+    // Show loading modal
+    const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
+    loadingModal.show();
+    
+    // Disable submit button
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Menyimpan...';
+    
+    return true;
+});
+
+// ========== SELECT ALL CHECKBOX ==========
+document.addEventListener('DOMContentLoaded', function() {
     const selectAll = document.getElementById('selectAllCheckbox');
     if (selectAll) {
         selectAll.addEventListener('change', function() {
@@ -789,8 +968,6 @@ document.addEventListener('DOMContentLoaded', function() {
             
             checkboxes.forEach((cb, index) => {
                 cb.checked = this.checked;
-                
-                // Preview mode only, tidak hilangkan
                 if (cards[index]) {
                     if (this.checked) {
                         cards[index].style.borderColor = '#dc3545';
@@ -804,195 +981,24 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // ===== FILE UPLOAD SETUP =====
-    const dropzone = document.getElementById('dropzone');
-    const fileInput = document.getElementById('fileInput');
-    
-    if (dropzone && fileInput) {
-        // KLIK UNTUK UPLOAD
-        dropzone.onclick = function() {
-            fileInput.click();
-        };
-        
-        // DRAG OVER
-        dropzone.ondragover = function(e) {
-            e.preventDefault();
-            this.style.borderColor = '#2a5298';
-            this.style.background = '#f0f7ff';
-        };
-        
-        // DRAG LEAVE
-        dropzone.ondragleave = function(e) {
-            e.preventDefault();
-            this.style.borderColor = '#e2e8f0';
-            this.style.background = '#f8fafc';
-        };
-        
-        // DROP
-        dropzone.ondrop = function(e) {
-            e.preventDefault();
-            this.style.borderColor = '#e2e8f0';
-            this.style.background = '#f8fafc';
-            
-            if (e.dataTransfer.files.length) {
-                handleFiles(e.dataTransfer.files);
-            }
-        };
-        
-        // FILE INPUT CHANGE
-        fileInput.onchange = function(e) {
-            if (this.files.length) {
-                handleFiles(this.files);
-                this.value = ''; // Reset biar bisa pilih file yang sama lagi
-            }
-        };
+    // Debug: cek apakah paste area ada
+    const pasteArea = document.getElementById('pasteArea');
+    if (pasteArea) {
+        console.log('Paste area found');
+    } else {
+        console.error('Paste area not found!');
     }
-    
-    // ===== FORM SUBMIT - DENGAN TRANSFER FILE =====
-const form = document.getElementById('editForm');
-if (form) {
-    form.onsubmit = function(e) {
-        // 1. CEK DELETE FILES
-        const deleteChecked = document.querySelectorAll('input[name="delete_files[]"]:checked').length;
-        console.log(`Submitting with ${deleteChecked} images to delete`);
-        
-        // 2. TRANSFER FILE DARI selectedFiles KE FILE INPUT
-        if (selectedFiles.length > 0) {
-            console.log(`📤 Transferring ${selectedFiles.length} files to form...`);
-            
-            const fileInput = document.getElementById('fileInput');
-            const dataTransfer = new DataTransfer();
-            
-            selectedFiles.forEach((file, index) => {
-                dataTransfer.items.add(file);
-                console.log(`  - File ${index + 1}: ${file.name} (${(file.size/1024).toFixed(1)} KB)`);
-            });
-            
-            // Assign files ke input
-            fileInput.files = dataTransfer.files;
-            
-            console.log(`✅ Files assigned to input. Input now has: ${fileInput.files.length} files`);
-        } else {
-            console.log('No files to upload');
-            
-            // Optional: cek apakah ada file di input langsung
-            const fileInput = document.getElementById('fileInput');
-            if (fileInput.files.length > 0) {
-                console.log(`⚠️ Found ${fileInput.files.length} files directly in input!`);
-            }
-        }
-        
-        // 3. DEBUG: CEK SEMUA DATA YANG AKAN DIKIRIM
-        console.log('📋 Form data yang akan dikirim:');
-        console.log('  - action:', form.action);
-        console.log('  - method:', form.method);
-        console.log('  - enctype:', form.enctype);
-        
-        const fileInput = document.getElementById('fileInput');
-        console.log(`  - files in input: ${fileInput.files.length}`);
-        for (let i = 0; i < fileInput.files.length; i++) {
-            console.log(`    * ${fileInput.files[i].name}`);
-        }
-        
-        // 4. TAMPILKAN LOADING MODAL
-        document.getElementById('progressOverlay').style.display = 'block';
-        document.getElementById('progressModal').style.display = 'block';
-        
-        return true;
-    };
-}
 });
 
-// ============ 6. HANDLE FILES UPLOAD ============
-function handleFiles(files) {
-    console.log(`Processing ${files.length} files...`);
-    
-    for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        
-        // Validasi ukuran
-        if (file.size > 5 * 1024 * 1024) {
-            alert(`File "${file.name}" terlalu besar (maks 5MB)`);
-            continue;
-        }
-        
-        // Validasi format
-        const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp'];
-        if (!validTypes.includes(file.type)) {
-            alert(`File "${file.name}" format tidak didukung`);
-            continue;
-        }
-        
-        // Cek duplikat
-        if (selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
-            alert(`File "${file.name}" sudah dipilih`);
-            continue;
-        }
-        
-        // Tambah ke array
-        selectedFiles.push(file);
-        
-        // Preview
-        addImagePreview(file);
-    }
-    
-    console.log(`Total files ready to upload: ${selectedFiles.length}`);
-}
+// Clean up object URLs
+window.addEventListener('beforeunload', function() {
+    selectedFiles = [];
+});
 
-// ============ 7. ADD IMAGE PREVIEW ============
-function addImagePreview(file) {
-    const reader = new FileReader();
-    
-    reader.onload = function(e) {
-        const container = document.getElementById('imagePreviewContainer');
-        if (!container) return;
-        
-        const previewId = 'preview_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
-        
-        const previewDiv = document.createElement('div');
-        previewDiv.className = 'new-image-preview';
-        previewDiv.id = previewId;
-        
-        previewDiv.innerHTML = `
-            <img src="${e.target.result}" alt="${file.name}">
-            <button type="button" class="remove-new-image" onclick="removeFile('${previewId}', '${file.name}')">
-                <i class="bi bi-x"></i>
-            </button>
-            <div style="padding: 0.5rem;">
-                <div style="font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${file.name}">
-                    ${file.name.length > 15 ? file.name.substring(0,12) + '...' : file.name}
-                </div>
-                <div style="font-size: 0.65rem; color: #64748b;">
-                    ${(file.size / 1024).toFixed(1)} KB
-                </div>
-            </div>
-        `;
-        
-        container.appendChild(previewDiv);
-    };
-    
-    reader.readAsDataURL(file);
-}
-
-// ============ 8. REMOVE FILE ============
-function removeFile(previewId, fileName) {
-    // Hapus preview
-    const preview = document.getElementById(previewId);
-    if (preview) preview.remove();
-    
-    // Hapus dari array
-    selectedFiles = selectedFiles.filter(f => f.name !== fileName);
-}
-
-// ============ 9. ESC KEY UNTUK TUTUP PREVIEW ============
+// ESC key to close preview
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
-        // Tutup preview
         hidePreview();
-        
-        // Tutup progress modal
-        document.getElementById('progressModal').style.display = 'none';
-        document.getElementById('progressOverlay').style.display = 'none';
     }
 });
 </script>

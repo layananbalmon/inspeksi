@@ -1090,7 +1090,7 @@ def get_optimized_image_url(public_id, width=None, height=None, crop="fill", qua
 # ============================================================================
 
 def generate_admin_master_template():
-    """Generate template Excel untuk admin master dengan 6 kolom"""
+    """Generate template Excel untuk admin master dengan 6 kolom (FREQ TX dan FREQ RX opsional)"""
     wb = Workbook()
     ws = wb.active
     ws.title = "Template"
@@ -1100,7 +1100,7 @@ def generate_admin_master_template():
         std = wb['Sheet']
         wb.remove(std)
     
-    # Header tabel - 6 KOLOM (OPERATOR, STASIUN NAME, STASIUN LAWAN, FREQ TX, FREQ RX, KOTA/KAB)
+    # Header tabel - 6 KOLOM (tanpa tanda kurung di header)
     headers = ['OPERATOR', 'STASIUN NAME', 'STASIUN LAWAN', 'FREQ TX', 'FREQ RX', 'KOTA/KAB']
     ws.append(headers)
     
@@ -1114,17 +1114,17 @@ def generate_admin_master_template():
     contoh_data = [
         # OPERATOR, STASIUN NAME, STASIUN LAWAN, FREQ TX, FREQ RX, KOTA/KAB
         ['TELKOM', 'TELKOM_STN_01', 'TELKOM_LAWAN_01', '1800 MHz', '1800 MHz', 'Kota Samarinda'],
-        ['', '', 'TELKOM_LAWAN_02', '2100 MHz', '2100 MHz', ''],
+        ['', '', 'TELKOM_LAWAN_02', '', '', ''],
         ['', '', 'TELKOM_LAWAN_03', '900 MHz', '900 MHz', ''],
         
-        ['TELKOMSEL', 'TELKOMSEL_STN_01', 'TELKOMSEL_LAWAN_01', '1800 MHz', '1800 MHz', 'Kota Balikpapan'],
+        ['TELKOMSEL', 'TELKOMSEL_STN_01', 'TELKOMSEL_LAWAN_01', '', '', 'Kota Balikpapan'],
         ['', '', 'TELKOMSEL_LAWAN_02', '2100 MHz', '2100 MHz', ''],
         
-        ['INDOSAT', 'INDOSAT_STN_01', 'INDOSAT_LAWAN_01', '1800 MHz', '1800 MHz', 'Kota Bontang'],
-        ['', '', 'INDOSAT_LAWAN_02', '900 MHz', '900 MHz', ''],
+        ['INDOSAT', 'INDOSAT_STN_01', 'INDOSAT_LAWAN_01', '', '', 'Kota Bontang'],
+        ['', '', 'INDOSAT_LAWAN_02', '', '', ''],
         
         ['XL', 'XL_STN_01', 'XL_LAWAN_01', '2100 MHz', '2100 MHz', 'Kutai Kartanegara'],
-        ['', '', 'XL_LAWAN_02', '1800 MHz', '1800 MHz', ''],
+        ['', '', 'XL_LAWAN_02', '', '', ''],
         ['', '', 'XL_LAWAN_03', '900 MHz', '900 MHz', ''],
     ]
     
@@ -1176,56 +1176,47 @@ def generate_admin_master_template():
     
     instruksi = [
         ["INSTRUKSI PENGISIAN - ADMIN MASTER"],
-        ["=" * 70],
+        ["------------------------------------"],
         ["PERHATIAN: File ini untuk Admin Master (SEMUA OPERATOR)"],
-        [],
+        [""],
         ["FORMAT KOLOM (6 KOLOM):"],
-        ["1. OPERATOR      : Nama operator (telkom/telkomsel/indosat/xl)"],
-        ["2. STASIUN NAME  : Nama stasiun utama"],
-        ["3. STASIUN LAWAN : Nama stasiun lawan"],
-        ["4. FREQ TX       : Frekuensi Transmit"],
-        ["5. FREQ RX       : Frekuensi Receive"],
-        ["6. KOTA/KAB      : Nama kota/kabupaten"],
-        [],
+        ["1. OPERATOR      : Nama operator (telkom/telkomsel/indosat/xl) - WAJIB"],
+        ["2. STASIUN NAME  : Nama stasiun utama - WAJIB"],
+        ["3. STASIUN LAWAN : Nama stasiun lawan - WAJIB"],
+        ["4. FREQ TX       : Frekuensi Tx - OPSIONAL (boleh dikosongkan)"],
+        ["5. FREQ RX       : Frekuensi Rx - OPSIONAL (boleh dikosongkan)"],
+        ["6. KOTA/KAB      : Nama kota/kabupaten - WAJIB"],
+        [""],
+        ["CATATAN PENTING:"],
+        ["- Kolom FREQ TX dan FREQ RX bersifat OPSIONAL - boleh dikosongkan"],
+        ["- Jika tidak diisi, akan dibiarkan kosong di database"],
+        ["- Bisa diisi nanti melalui halaman edit"],
+        [""],
         ["CARA PENGISIAN:"],
         ["1. OPERATOR:"],
         ["   - Tulis sekali untuk setiap stasiun dengan banyak lawan"],
         ["   - Gunakan merge cell (contoh: A2:A4 untuk stasiun dengan 3 lawan)"],
         ["   - Pilihan: telkom, telkomsel, indosat, xl"],
-        [],
+        [""],
         ["2. STASIUN NAME:"],
         ["   - Tulis sekali untuk setiap stasiun dengan banyak lawan"],
         ["   - Gunakan merge cell seperti OPERATOR"],
-        [],
+        [""],
         ["3. STASIUN LAWAN:"],
         ["   - Satu baris untuk satu lawan"],
         ["   - Tidak perlu merge cell"],
-        [],
-        ["4. FREQ TX (Transmit):"],
-        ["   - Opsional, bisa dikosongkan"],
+        [""],
+        ["4. FREQ TX  - OPSIONAL:"],
+        ["   - Bisa dikosongkan jika tidak ada data"],
         ["   - Contoh format: 1800 MHz, 2100 MHz, 900 MHz, 850 MHz"],
-        [],
-        ["5. FREQ RX (Receive):"],
-        ["   - Opsional, bisa dikosongkan"],
+        [""],
+        ["5. FREQ RX - OPSIONAL:"],
+        ["   - Bisa dikosongkan jika tidak ada data"],
         ["   - Contoh format: 1800 MHz, 2100 MHz, 900 MHz, 850 MHz"],
-        [],
+        [""],
         ["6. KOTA/KAB:"],
         ["   - Tulis sekali untuk setiap stasiun"],
         ["   - Gunakan merge cell seperti OPERATOR dan STASIUN NAME"],
-        [],
-        ["CONTOH:"],
-        ["OPERATOR   | STASIUN NAME     | STASIUN LAWAN     | FREQ TX   | FREQ RX   | KOTA/KAB"],
-        ["TELKOM     | TELKOM_STN_01    | TELKOM_LAWAN_01   | 1800 MHz  | 1800 MHz  | Kota Samarinda"],
-        ["           |                   | TELKOM_LAWAN_02   | 2100 MHz  | 2100 MHz  |"],
-        ["           |                   | TELKOM_LAWAN_03   | 900 MHz   | 900 MHz   |"],
-        ["TELKOMSEL  | TELKOMSEL_STN_01 | TELKOMSEL_LAWAN_01| 1800 MHz  | 1800 MHz  | Kota Balikpapan"],
-        [],
-        ["CATATAN PENTING:"],
-        ["1. HAPUS CONTOH SEBELUM UPLOAD!"],
-        ["2. Gunakan merge cell seperti contoh"],
-        ["3. Format file: .xlsx atau .xls"],
-        ["4. Maksimal 1000 baris per upload"],
-        ["5. Operator akan otomatis terdeteksi dari kolom OPERATOR"],
     ]
     
     for row in instruksi:
@@ -1236,19 +1227,13 @@ def generate_admin_master_template():
     ws_inst['A1'].font = Font(bold=True, size=14)
     ws_inst['A2'].font = Font(bold=True)
     
-    # Tambahkan apostrophe (') sebelum baris yang berisi karakter khusus
-    special_rows = [2]  # Baris dengan garis pemisah
-    for row_idx in special_rows:
-        cell = ws_inst[f'A{row_idx}']
-        cell.value = "'" + str(cell.value)
-    
     # =================== SHEET DAFTAR OPERATOR ===================
     ws_op = wb.create_sheet(title="Daftar Operator")
     
     ws_op.append(["DAFTAR OPERATOR YANG TERSEDIA"])
-    ws_op.append(["-" * 30])
+    ws_op.append(["------------------------------"])
     ws_op.append(["Gunakan nama persis seperti di bawah:"])
-    ws_op.append([])
+    ws_op.append([""])
     
     # Daftar operator
     operator_list = ["telkom", "telkomsel", "indosat", "xl"]
@@ -1262,9 +1247,9 @@ def generate_admin_master_template():
     ws_kota = wb.create_sheet(title="Daftar Kota")
     
     ws_kota.append(["DAFTAR KOTA/KAB YANG TERSEDIA"])
-    ws_kota.append(["-" * 40])
+    ws_kota.append(["-------------------------------"])
     ws_kota.append(["Gunakan nama persis seperti di bawah:"])
-    ws_kota.append([])
+    ws_kota.append([""])
     
     # Daftar kota
     kota_list_display = [
@@ -1298,7 +1283,7 @@ def generate_admin_master_template():
     )
 
 def process_excel_upload_admin_master(file_path, user, kota_default='samarinda'):
-    """Process Excel upload untuk admin master dengan kolom FREQ TX dan FREQ RX"""
+    """Process Excel upload untuk admin master dengan kolom FREQ TX dan FREQ RX opsional"""
     try:
         # Baca Excel dengan pandas
         df = pd.read_excel(file_path, dtype=str)
@@ -1309,34 +1294,29 @@ def process_excel_upload_admin_master(file_path, user, kota_default='samarinda')
             if col not in df.columns:
                 raise ValueError(f"Kolom '{col}' tidak ditemukan dalam file Excel")
         
-        # Cek apakah ada kolom FREQ TX, FREQ RX, dan KOTA/KAB
-        has_freq_tx_column = 'FREQ TX' in df.columns or 'FREQ_TX' in df.columns or 'FREQ-TX' in df.columns
-        has_freq_rx_column = 'FREQ RX' in df.columns or 'FREQ_RX' in df.columns or 'FREQ-RX' in df.columns
-        has_kota_column = 'KOTA/KAB' in df.columns or 'KOTA' in df.columns or 'KAB' in df.columns
+        # Deteksi kolom FREQ TX, FREQ RX, dan KOTA/KAB (opsional)
+        has_freq_tx_column = False
+        has_freq_rx_column = False
+        has_kota_column = False
         
         # Normalisasi nama kolom
-        if not has_freq_tx_column:
-            # Coba cari kolom dengan nama mirip
-            for col in df.columns:
-                col_upper = str(col).upper().replace(' ', '')
-                if 'FREQTX' in col_upper or 'FREQ_TX' in col_upper or 'FREQ-TX' in col_upper:
-                    has_freq_tx_column = True
-                    break
-        
-        if not has_freq_rx_column:
-            for col in df.columns:
-                col_upper = str(col).upper().replace(' ', '')
-                if 'FREQRX' in col_upper or 'FREQ_RX' in col_upper or 'FREQ-RX' in col_upper:
-                    has_freq_rx_column = True
-                    break
-        
-        if not has_kota_column:
-            for col in df.columns:
-                col_upper = str(col).upper().replace(' ', '')
-                if 'KOTA' in col_upper or 'KAB' in col_upper:
-                    has_kota_column = True
-                    kota_col = col
-                    break
+        for col in df.columns:
+            col_upper = str(col).upper().replace(' ', '')
+            
+            # Cek FREQ TX
+            if any(x in col_upper for x in ['FREQTX', 'FREQ_TX', 'FREQ-TX', 'TX']):
+                has_freq_tx_column = True
+                print(f"DEBUG - Kolom FREQ TX ditemukan: {col}")
+            
+            # Cek FREQ RX
+            if any(x in col_upper for x in ['FREQRX', 'FREQ_RX', 'FREQ-RX', 'RX']):
+                has_freq_rx_column = True
+                print(f"DEBUG - Kolom FREQ RX ditemukan: {col}")
+            
+            # Cek KOTA
+            if any(x in col_upper for x in ['KOTA', 'KAB']):
+                has_kota_column = True
+                print(f"DEBUG - Kolom KOTA ditemukan: {col}")
         
         # Forward fill untuk merge cell
         df['OPERATOR'] = df['OPERATOR'].ffill()
@@ -1360,12 +1340,12 @@ def process_excel_upload_admin_master(file_path, user, kota_default='samarinda')
         for idx, row in df.iterrows():
             if row['STASIUN NAME'] and row['STASIUN LAWAN']:
                 # Tentukan kota yang akan digunakan
-                if has_kota_column and row['KOTA/KAB']:
-                    kota = row['KOTA/KAB'].lower()
+                if has_kota_column and 'KOTA/KAB' in df.columns and row['KOTA/KAB']:
+                    kota = str(row['KOTA/KAB']).strip().lower()
                 else:
                     kota = kota_default.lower()
                 
-                # Ambil freq_tx dan freq_rx jika ada
+                # Ambil freq_tx dan freq_rx (opsional - boleh kosong)
                 freq_tx = None
                 freq_rx = None
                 
@@ -1373,16 +1353,16 @@ def process_excel_upload_admin_master(file_path, user, kota_default='samarinda')
                     # Coba dapatkan dari berbagai kemungkinan nama kolom
                     for col in df.columns:
                         col_upper = str(col).upper().replace(' ', '')
-                        if 'FREQTX' in col_upper or 'FREQ_TX' in col_upper or 'FREQ-TX' in col_upper:
-                            if row[col] and str(row[col]).strip():
+                        if any(x in col_upper for x in ['FREQTX', 'FREQ_TX', 'FREQ-TX', 'TX']):
+                            if pd.notna(row[col]) and str(row[col]).strip():
                                 freq_tx = str(row[col]).strip()
                                 break
                 
                 if has_freq_rx_column:
                     for col in df.columns:
                         col_upper = str(col).upper().replace(' ', '')
-                        if 'FREQRX' in col_upper or 'FREQ_RX' in col_upper or 'FREQ-RX' in col_upper:
-                            if row[col] and str(row[col]).strip():
+                        if any(x in col_upper for x in ['FREQRX', 'FREQ_RX', 'FREQ-RX', 'RX']):
+                            if pd.notna(row[col]) and str(row[col]).strip():
                                 freq_rx = str(row[col]).strip()
                                 break
                 
@@ -1426,7 +1406,7 @@ def process_excel_upload_admin_master(file_path, user, kota_default='samarinda')
                         if lawan_data['nama'] not in existing_lawan_map:
                             new_lawans.append(lawan_data)
                         else:
-                            # Update freq_tx dan freq_rx jika ada dan berbeda
+                            # Update freq_tx dan freq_rx hanya jika ada nilai baru
                             existing_lawan = existing_lawan_map[lawan_data['nama']]
                             
                             if lawan_data['freq_tx'] and existing_lawan.freq_tx != lawan_data['freq_tx']:
@@ -1443,8 +1423,8 @@ def process_excel_upload_admin_master(file_path, user, kota_default='samarinda')
                             new_lawan = StasiunLawan(
                                 stasiun_id=existing.id,
                                 nama_stasiun_lawan=lawan_data['nama'],
-                                freq_tx=lawan_data['freq_tx'],
-                                freq_rx=lawan_data['freq_rx'],
+                                freq_tx=lawan_data['freq_tx'],  # Bisa None
+                                freq_rx=lawan_data['freq_rx'],  # Bisa None
                                 group_id=None,
                                 urutan=urutan
                             )
@@ -1473,20 +1453,23 @@ def process_excel_upload_admin_master(file_path, user, kota_default='samarinda')
                 db.session.add(new_station)
                 db.session.flush()
                 
-                # Tambah stasiun lawan dengan freq_tx dan freq_rx
+                # Tambah stasiun lawan dengan freq_tx dan freq_rx (boleh kosong)
+                lawan_added = 0
                 for i, lawan_data in enumerate(lawan_list):
                     if lawan_data['nama']:
                         new_lawan = StasiunLawan(
                             stasiun_id=new_station.id,
                             nama_stasiun_lawan=lawan_data['nama'],
-                            freq_tx=lawan_data['freq_tx'],
-                            freq_rx=lawan_data['freq_rx'],
+                            freq_tx=lawan_data['freq_tx'],  # Bisa None
+                            freq_rx=lawan_data['freq_rx'],  # Bisa None
                             group_id=None,
                             urutan=i
                         )
                         db.session.add(new_lawan)
+                        lawan_added += 1
                 
                 success_count += 1
+                messages.append(f"Stasiun baru '{stasiun_name}' ditambahkan dengan {lawan_added} lawan")
                 
             except Exception as e:
                 error_count += 1
@@ -1507,6 +1490,7 @@ def process_excel_upload_admin_master(file_path, user, kota_default='samarinda')
         return 0, 0, [f"Error processing file: {str(e)}"]
 
 def process_excel_upload_admin_operator(file_path, user, kota_default=None):
+    """Process Excel upload untuk admin operator dengan FREQ TX dan FREQ RX opsional"""
     try:
         operator = user.operator_type
         
@@ -1516,87 +1500,45 @@ def process_excel_upload_admin_operator(file_path, user, kota_default=None):
         print(f"DEBUG - Jumlah kolom: {len(df.columns)}")
         print(f"DEBUG - Nama kolom: {list(df.columns)}")
         
-        # Identifikasi kolom yang ada
-        has_freq_tx_column = False
-        has_freq_rx_column = False
-        freq_tx_column_name = None
-        freq_rx_column_name = None
-        has_kota_column = False
-        kota_column_name = None
-        
-        # Daftar kemungkinan nama kolom
-        possible_freq_tx_names = ['FREQ TX', 'FREQ_TX', 'FREQ-TX', 'TX FREQ', 'TX', 'TRANSMIT']
-        possible_freq_rx_names = ['FREQ RX', 'FREQ_RX', 'FREQ-RX', 'RX FREQ', 'RX', 'RECEIVE']
-        possible_kota_names = ['KOTA/KAB', 'KOTA', 'KAB', 'KOTA_KAB', 'KOTA KAB', 'KABUPATEN/KOTA']
-        
-        for col in df.columns:
-            col_upper = str(col).upper().strip()
-            
-            # Cek kolom FREQ TX
-            for freq_name in possible_freq_tx_names:
-                if freq_name in col_upper:
-                    has_freq_tx_column = True
-                    freq_tx_column_name = col
-                    print(f"DEBUG - Kolom FREQ TX ditemukan: {col}")
-                    break
-            
-            # Cek kolom FREQ RX
-            for freq_name in possible_freq_rx_names:
-                if freq_name in col_upper:
-                    has_freq_rx_column = True
-                    freq_rx_column_name = col
-                    print(f"DEBUG - Kolom FREQ RX ditemukan: {col}")
-                    break
-            
-            # Cek kolom KOTA/KAB
-            for kota_name in possible_kota_names:
-                if kota_name in col_upper:
-                    has_kota_column = True
-                    kota_column_name = col
-                    print(f"DEBUG - Kolom KOTA ditemukan: {col}")
-                    break
-        
-        # Validasi minimal 2 kolom
-        if len(df.columns) < 2:
-            raise ValueError("File harus memiliki minimal 2 kolom: STASIUN NAME dan STASIUN LAWAN")
-        
-        # Rename kolom sesuai yang diharapkan
-        new_columns = []
+        # Identifikasi kolom yang ada (semua opsional kecuali STASIUN NAME dan STASIUN LAWAN)
+        column_mapping = {}
         
         for i, col in enumerate(df.columns):
-            col_upper = str(col).upper()
+            col_upper = str(col).upper().strip()
             
-            # Identifikasi kolom berdasarkan posisi atau nama
+            # Identifikasi STASIUN NAME (prioritas kolom pertama atau yang mengandung NAME)
             if i == 0 or 'STASIUN NAME' in col_upper or 'NAME' in col_upper:
-                new_columns.append('STASIUN NAME')
-            elif freq_tx_column_name and col == freq_tx_column_name:
-                new_columns.append('FREQ TX')
-            elif freq_rx_column_name and col == freq_rx_column_name:
-                new_columns.append('FREQ RX')
-            elif 'STASIUN LAWAN' in col_upper or 'LAWAN' in col_upper:
-                new_columns.append('STASIUN LAWAN')
-            elif kota_column_name and col == kota_column_name:
-                new_columns.append('KOTA/KAB')
-            elif i == 1 and has_freq_tx_column and not freq_tx_column_name:
-                # Jika ada kolom FREQ TX tapi tidak terdeteksi, asumsikan kolom ke-2 adalah FREQ TX
-                new_columns.append('FREQ TX')
-                has_freq_tx_column = True
-            elif i == 2 and has_freq_rx_column and not freq_rx_column_name:
-                new_columns.append('FREQ RX')
-                has_freq_rx_column = True
-            elif i == 1:
-                new_columns.append('STASIUN LAWAN')
-            elif i == 2 and has_kota_column:
-                new_columns.append('KOTA/KAB')
+                column_mapping[col] = 'STASIUN NAME'
+            
+            # Identifikasi STASIUN LAWAN (prioritas kolom kedua atau yang mengandung LAWAN)
+            elif i == 1 or 'STASIUN LAWAN' in col_upper or 'LAWAN' in col_upper:
+                column_mapping[col] = 'STASIUN LAWAN'
+            
+            # Identifikasi FREQ TX (opsional)
+            elif any(x in col_upper for x in ['FREQ TX', 'FREQ_TX', 'FREQ-TX', 'TX']):
+                column_mapping[col] = 'FREQ TX'
+            
+            # Identifikasi FREQ RX (opsional)
+            elif any(x in col_upper for x in ['FREQ RX', 'FREQ_RX', 'FREQ-RX', 'RX']):
+                column_mapping[col] = 'FREQ RX'
+            
+            # Identifikasi KOTA/KAB (opsional)
+            elif any(x in col_upper for x in ['KOTA', 'KAB']):
+                column_mapping[col] = 'KOTA/KAB'
+            
             else:
-                new_columns.append(f'COL{i}')
+                column_mapping[col] = f'COL{i}'
         
-        # Pastikan panjangnya sama
-        if len(new_columns) != len(df.columns):
-            new_columns = new_columns[:len(df.columns)]
-        
-        df.columns = new_columns
+        # Rename kolom sesuai mapping
+        df = df.rename(columns=column_mapping)
         print(f"DEBUG - Columns after rename: {list(df.columns)}")
+        
+        # Validasi kolom minimal
+        if 'STASIUN NAME' not in df.columns:
+            return 0, 0, ["Kolom STASIUN NAME tidak ditemukan dalam file Excel"]
+        
+        if 'STASIUN LAWAN' not in df.columns:
+            return 0, 0, ["Kolom STASIUN LAWAN tidak ditemukan dalam file Excel"]
         
         # Forward fill untuk merge cell
         df['STASIUN NAME'] = df['STASIUN NAME'].ffill()
@@ -1604,20 +1546,11 @@ def process_excel_upload_admin_operator(file_path, user, kota_default=None):
         if 'KOTA/KAB' in df.columns:
             df['KOTA/KAB'] = df['KOTA/KAB'].ffill()
         
-        if 'FREQ TX' in df.columns:
-            df['FREQ TX'] = df['FREQ TX'].ffill()
-        
-        if 'FREQ RX' in df.columns:
-            df['FREQ RX'] = df['FREQ RX'].ffill()
-        
         # Bersihkan data menggunakan fungsi clean_dataframe
         df = clean_dataframe(df)
         
         # Filter baris yang valid (stasiun lawan tidak boleh kosong)
-        if 'STASIUN LAWAN' in df.columns:
-            df = df[df['STASIUN LAWAN'] != '']
-        else:
-            return 0, 0, ["Kolom STASIUN LAWAN tidak ditemukan dalam file Excel"]
+        df = df[df['STASIUN LAWAN'] != '']
         
         if df.empty:
             return 0, 0, ["File Excel tidak mengandung data stasiun lawan yang valid"]
@@ -1630,11 +1563,11 @@ def process_excel_upload_admin_operator(file_path, user, kota_default=None):
         grouped = {}
         for idx, row in df.iterrows():
             if row['STASIUN NAME']:
-                # Tentukan kota yang akan digunakan
+                # Tentukan kota yang akan digunakan (opsional)
                 kota_used = None
                 
                 # 1. Cek dari kolom KOTA/KAB di Excel
-                if 'KOTA/KAB' in df.columns and row['KOTA/KAB'] and str(row['KOTA/KAB']).strip():
+                if 'KOTA/KAB' in df.columns and pd.notna(row['KOTA/KAB']) and str(row['KOTA/KAB']).strip():
                     kota_used = str(row['KOTA/KAB']).strip()
                 
                 # 2. Jika tidak ada di Excel, cek dari form upload
@@ -1649,14 +1582,14 @@ def process_excel_upload_admin_operator(file_path, user, kota_default=None):
                 # Normalisasi kota ke lowercase
                 kota_used = kota_used.lower()
                 
-                # Ambil freq_tx dan freq_rx jika ada
+                # Ambil freq_tx dan freq_rx (opsional - boleh kosong)
                 freq_tx = None
                 freq_rx = None
                 
-                if 'FREQ TX' in df.columns and row['FREQ TX'] and str(row['FREQ TX']).strip():
+                if 'FREQ TX' in df.columns and pd.notna(row['FREQ TX']) and str(row['FREQ TX']).strip():
                     freq_tx = str(row['FREQ TX']).strip()
                 
-                if 'FREQ RX' in df.columns and row['FREQ RX'] and str(row['FREQ RX']).strip():
+                if 'FREQ RX' in df.columns and pd.notna(row['FREQ RX']) and str(row['FREQ RX']).strip():
                     freq_rx = str(row['FREQ RX']).strip()
                 
                 key = (row['STASIUN NAME'], kota_used)
@@ -1715,7 +1648,7 @@ def process_excel_upload_admin_operator(file_path, user, kota_default=None):
                         if lawan_data['nama'] not in existing_lawan_map:
                             new_lawans.append(lawan_data)
                         else:
-                            # Update freq_tx dan freq_rx jika ada dan berbeda
+                            # Update freq_tx dan freq_rx hanya jika ada nilai baru
                             existing_lawan = existing_lawan_map[lawan_data['nama']]
                             
                             if lawan_data['freq_tx'] and existing_lawan.freq_tx != lawan_data['freq_tx']:
@@ -1732,8 +1665,8 @@ def process_excel_upload_admin_operator(file_path, user, kota_default=None):
                             new_lawan = StasiunLawan(
                                 stasiun_id=existing.id,
                                 nama_stasiun_lawan=lawan_data['nama'],
-                                freq_tx=lawan_data['freq_tx'],
-                                freq_rx=lawan_data['freq_rx'],
+                                freq_tx=lawan_data['freq_tx'],  # Bisa None
+                                freq_rx=lawan_data['freq_rx'],  # Bisa None
                                 group_id=None,
                                 urutan=urutan
                             )
@@ -1766,15 +1699,15 @@ def process_excel_upload_admin_operator(file_path, user, kota_default=None):
                 db.session.add(new_station)
                 db.session.flush()
                 
-                # Tambah stasiun lawan dengan freq_tx dan freq_rx
+                # Tambah stasiun lawan dengan freq_tx dan freq_rx (boleh kosong)
                 lawan_added = 0
                 for i, lawan_data in enumerate(lawan_list):
                     if lawan_data['nama']:
                         new_lawan = StasiunLawan(
                             stasiun_id=new_station.id,
                             nama_stasiun_lawan=lawan_data['nama'],
-                            freq_tx=lawan_data['freq_tx'],
-                            freq_rx=lawan_data['freq_rx'],
+                            freq_tx=lawan_data['freq_tx'],  # Bisa None
+                            freq_rx=lawan_data['freq_rx'],  # Bisa None
                             group_id=None,
                             urutan=i
                         )
@@ -1809,34 +1742,19 @@ def process_excel_upload_admin_operator(file_path, user, kota_default=None):
         return 0, 0, [f"❌ Error processing file: {str(e)}"]
 
 def generate_admin_operator_template(operator):
-    """Generate template Excel untuk admin operator dengan kolom FREQ TX dan FREQ RX"""
+    """Generate template Excel untuk admin operator dengan FREQ TX dan FREQ RX opsional"""
     wb = Workbook()
     ws = wb.active
     ws.title = "Template"
     
-    # Hapus sheet default yang tidak digunakan
     if 'Sheet' in wb.sheetnames:
         std = wb['Sheet']
         wb.remove(std)
     
     # Tentukan operator name
-    if operator == 'telkom':
-        operator_name = "TELKOM"
-        prefix = "TELKOM"
-    elif operator == 'telkomsel':
-        operator_name = "TELKOMSEL"
-        prefix = "TELKOMSEL"
-    elif operator == 'indosat':
-        operator_name = "INDOSAT"
-        prefix = "INDOSAT"
-    elif operator == 'xl':
-        operator_name = "XL"
-        prefix = "XL"
-    else:
-        operator_name = operator.upper()
-        prefix = operator.upper()
+    operator_name = operator.upper()
     
-    # Header tabel - 5 KOLOM (STASIUN NAME, STASIUN LAWAN, FREQ TX, FREQ RX, KOTA/KAB)
+    # Header tabel - 5 KOLOM (tanpa tanda kurung)
     headers = ['STASIUN NAME', 'STASIUN LAWAN', 'FREQ TX', 'FREQ RX', 'KOTA/KAB']
     ws.append(headers)
     
@@ -1846,38 +1764,33 @@ def generate_admin_operator_template(operator):
         cell.alignment = Alignment(horizontal="center", vertical="center")
         cell.fill = PatternFill(start_color="C6E0B4", end_color="C6E0B4", fill_type="solid")
     
-    # =================== DATA CONTOH DENGAN FREQ TX DAN FREQ RX ===================
+    # =================== DATA CONTOH ===================
     contoh_data = [
         # STASIUN NAME, STASIUN LAWAN, FREQ TX, FREQ RX, KOTA/KAB
-        [f'{prefix}_STN_01', f'{prefix}_LAWAN_01', '1800 MHz', '1800 MHz', 'Kota Samarinda'],
-        ['', f'{prefix}_LAWAN_02', '2100 MHz', '2100 MHz', ''],
-        ['', f'{prefix}_LAWAN_03', '900 MHz', '900 MHz', ''],
+        [f'{operator_name}_STN_01', f'{operator_name}_LAWAN_01', '1800 MHz', '1800 MHz', 'Kota Samarinda'],
+        ['', f'{operator_name}_LAWAN_02', '', '', ''],
+        ['', f'{operator_name}_LAWAN_03', '900 MHz', '900 MHz', ''],
         
-        [f'{prefix}_STN_02', f'{prefix}_LAWAN_04', '1800 MHz', '1800 MHz', 'Kota Balikpapan'],
+        [f'{operator_name}_STN_02', f'{operator_name}_LAWAN_04', '', '', 'Kota Balikpapan'],
         
-        [f'{prefix}_STN_03', f'{prefix}_LAWAN_05', '2100 MHz', '2100 MHz', 'Kota Bontang'],
-        ['', f'{prefix}_LAWAN_06', '900 MHz', '900 MHz', ''],
-        
-        [f'{prefix}_STN_04', f'{prefix}_LAWAN_07', '1800 MHz', '1800 MHz', 'Kutai Barat'],
+        [f'{operator_name}_STN_03', f'{operator_name}_LAWAN_05', '2100 MHz', '2100 MHz', 'Kota Bontang'],
+        ['', f'{operator_name}_LAWAN_06', '', '', ''],
     ]
     
-    # Tambahkan data
     for row in contoh_data:
         ws.append(row)
     
     # =================== MERGE CELL ===================
-    # Merge untuk STN_01 (baris 2-4, 3 lawan)
-    if ws.max_row >= 4:
+    if ws.max_row >= 3:
         ws.merge_cells(start_row=2, start_column=1, end_row=4, end_column=1)  # STASIUN NAME
         ws.merge_cells(start_row=2, start_column=5, end_row=4, end_column=5)  # KOTA/KAB
     
-    # Merge untuk STN_03 (baris 6-7, 2 lawan)
-    if ws.max_row >= 7:
-        ws.merge_cells(start_row=6, start_column=1, end_row=7, end_column=1)  # STASIUN NAME
-        ws.merge_cells(start_row=6, start_column=5, end_row=7, end_column=5)  # KOTA/KAB
+    if ws.max_row >= 6:
+        ws.merge_cells(start_row=5, start_column=1, end_row=6, end_column=1)  # STASIUN NAME
+        ws.merge_cells(start_row=5, start_column=5, end_row=6, end_column=5)  # KOTA/KAB
     
     # Center alignment untuk merge cells
-    merge_cells = ['A2', 'E2', 'A6', 'E6']
+    merge_cells = ['A2', 'E2', 'A5', 'E5']
     for cell_ref in merge_cells:
         if cell_ref in ws:
             ws[cell_ref].alignment = Alignment(vertical='center', horizontal='center')
@@ -1894,107 +1807,76 @@ def generate_admin_operator_template(operator):
     
     instruksi = [
         [f"INSTRUKSI PENGISIAN - OPERATOR {operator_name}"],
-        ["-" * 70],
+        ["----------------------------------------"],
         [f"PERHATIAN: File ini khusus untuk operator {operator_name}"],
-        ["Semua data akan otomatis masuk ke operator " + operator_name],
-        [],
-        ["FORMAT KOLOM (5 KOLOM):"],
-        ["1. STASIUN NAME  : Nama stasiun utama Anda"],
-        ["2. STASIUN LAWAN : Nama stasiun lawan/kompetitor"],
-        ["3. FREQ TX       : Frekuensi Transmit (opsional)"],
-        ["4. FREQ RX       : Frekuensi Receive (opsional)"],
-        ["5. KOTA/KAB      : Nama kota (lihat sheet Daftar Kota)"],
-        [],
+        [""],
+        ["FORMAT KOLOM:"],
+        ["1. STASIUN NAME  : Nama stasiun utama Anda - WAJIB"],
+        ["2. STASIUN LAWAN : Nama stasiun lawan/kompetitor - WAJIB"],
+        ["3. FREQ TX       : Frekuensi Tx - OPSIONAL (boleh dikosongkan)"],
+        ["4. FREQ RX       : Frekuensi Rx - OPSIONAL (boleh dikosongkan)"],
+        ["5. KOTA/KAB      : Nama kota/kabupaten - WAJIB"],
+        [""],
+        ["CATATAN PENTING:"],
+        ["- Kolom FREQ TX dan FREQ RX bersifat OPSIONAL"],
+        ["- Boleh dikosongkan jika belum ada data frekuensi"],
+        ["- Data frekuensi bisa diisi nanti melalui halaman edit"],
+        [""],
         ["CARA PENGISIAN:"],
         ["1. STASIUN NAME:"],
         ["   - Tulis sekali untuk setiap stasiun dengan banyak lawan"],
-        ["   - Gunakan merge cell (contoh: A2:A4 untuk stasiun dengan 3 lawan)"],
-        ["   - Contoh format: " + prefix + "_STN_01, TOWER_01, BTS_01"],
-        [],
+        ["   - Gunakan merge cell jika diperlukan"],
+        ["   - Contoh: " + operator_name + "_STN_01, TOWER_01"],
+        [""],
         ["2. STASIUN LAWAN:"],
         ["   - Satu baris untuk satu lawan"],
         ["   - Tidak perlu merge cell"],
-        ["   - Contoh format: " + prefix + "_LAWAN_01, COMPETITOR_01"],
-        [],
-        ["3. FREQ TX (Transmit):"],
-        ["   - Opsional, bisa dikosongkan"],
-        ["   - Contoh format: 1800 MHz, 2100 MHz, 900 MHz, 850 MHz"],
-        [],
-        ["4. FREQ RX (Receive):"],
-        ["   - Opsional, bisa dikosongkan"],
-        ["   - Contoh format: 1800 MHz, 2100 MHz, 900 MHz, 850 MHz"],
-        [],
+        ["   - Contoh: " + operator_name + "_LAWAN_01, COMPETITOR_01"],
+        [""],
+        ["3. FREQ TX (Opsional):"],
+        ["   - Bisa dikosongkan jika tidak ada data"],
+        ["   - Contoh: 1800 MHz, 2100 MHz, 900 MHz"],
+        [""],
+        ["4. FREQ RX (Opsional):"],
+        ["   - Bisa dikosongkan jika tidak ada data"],
+        ["   - Contoh: 1800 MHz, 2100 MHz, 900 MHz"],
+        [""],
         ["5. KOTA/KAB:"],
         ["   - Tulis sekali untuk setiap stasiun"],
         ["   - Gunakan merge cell seperti STASIUN NAME"],
-        ["   - Jika kosong, akan pakai kota default dari form upload"],
-        [],
-        ["CONTOH:"],
-        ["STASIUN NAME    | STASIUN LAWAN    | FREQ TX   | FREQ RX   | KOTA/KAB"],
-        [prefix + "_STN_01 | " + prefix + "_LAWAN_01 | 1800 MHz  | 1800 MHz  | Kota Samarinda"],
-        ["               | " + prefix + "_LAWAN_02 | 2100 MHz  | 2100 MHz  |"],
-        ["               | " + prefix + "_LAWAN_03 | 900 MHz   | 900 MHz   |"],
-        [prefix + "_STN_02 | " + prefix + "_LAWAN_04 | 1800 MHz  | 1800 MHz  | Kota Balikpapan"],
-        [],
-        ["CATATAN FREKUENSI:"],
-        ["- Kolom FREQ TX dan FREQ RX bersifat opsional, boleh dikosongkan"],
-        ["- Frekuensi bisa diisi nanti melalui halaman edit"],
-        ["- Gunakan format yang konsisten (contoh: 1800 MHz, 2100 MHz)"],
-        [],
-        ["CATATAN UMUM:"],
-        ["1. HAPUS CONTOH SEBELUM UPLOAD!"],
-        ["2. Gunakan merge cell seperti contoh"],
-        ["3. Format file: .xlsx atau .xls"],
-        ["4. Maksimal 1000 baris per upload"],
     ]
     
     for row in instruksi:
         ws_inst.append(row)
     
-    # Format untuk sheet instruksi
     ws_inst.column_dimensions['A'].width = 80
     ws_inst['A1'].font = Font(bold=True, size=14)
-    ws_inst['A2'].font = Font(bold=True)
-    
-    # Tambahkan apostrophe (') sebelum baris yang berisi karakter khusus
-    special_rows = [2]  # Baris dengan garis pemisah
-    for row_idx in special_rows:
-        cell = ws_inst[f'A{row_idx}']
-        cell.value = "'" + str(cell.value)
     
     # =================== SHEET DAFTAR KOTA ===================
     ws_kota = wb.create_sheet(title="Daftar Kota")
     
     ws_kota.append(["DAFTAR KOTA/KAB UNTUK OPERATOR " + operator_name])
-    ws_kota.append(["-" * 40])
+    ws_kota.append(["---------------------------------"])
     ws_kota.append(["Gunakan nama persis seperti di bawah:"])
-    ws_kota.append([])
+    ws_kota.append([""])
     
-    # Daftar kota
     kota_list_display = [
         "Kota Samarinda", "Kota Balikpapan", "Kota Bontang", "Kutai Kartanegara", 
         "Kutai Barat", "Kutai Timur", "Penajam Paser Utara", "Paser",
         "Berau", "Mahakam Ulu"
     ]
     
-    kota_list_sorted = sorted(kota_list_display, key=lambda x: x.lower())
-    for kota in kota_list_sorted:
+    for kota in sorted(kota_list_display, key=lambda x: x.lower()):
         ws_kota.append([kota])
     
     ws_kota.column_dimensions['A'].width = 30
     ws_kota['A1'].font = Font(bold=True, size=12)
-    ws_kota['A2'].font = Font(bold=True)
-    
-    # Tambahkan apostrophe untuk mencegah error
-    ws_kota['A2'].value = "'" + str(ws_kota['A2'].value)
     
     # Atur sheet order
     wb.active = wb['Template']
     
     # =================== SAVE FILE ===================
     output = BytesIO()
-    
-    # Simpan workbook
     wb.save(output)
     output.seek(0)
     
@@ -2210,12 +2092,18 @@ def logout():
 # ============================================================================
 # ADMIN MASTER ROUTES
 # ============================================================================
-
 @app.route('/admin-master/dashboard')
 @login_required
 @admin_master_required
 def admin_master_dashboard():
     total_stations = Stasiun.query.count()
+    total_opponents = StasiunLawan.query.count()
+    
+    telkom_opponents = StasiunLawan.query.join(Stasiun).filter(Stasiun.operator == 'telkom').count()
+    telkomsel_opponents = StasiunLawan.query.join(Stasiun).filter(Stasiun.operator == 'telkomsel').count()
+    indosat_opponents = StasiunLawan.query.join(Stasiun).filter(Stasiun.operator == 'indosat').count()
+    xl_opponents = StasiunLawan.query.join(Stasiun).filter(Stasiun.operator == 'xl').count()
+    
     telkom_stations = Stasiun.query.filter_by(operator='telkom').count()
     telkomsel_stations = Stasiun.query.filter_by(operator='telkomsel').count()
     indosat_stations = Stasiun.query.filter_by(operator='indosat').count()
@@ -2234,10 +2122,16 @@ def admin_master_dashboard():
     
     return render_template('admin_master/dashboard.html',
                          total_stations=total_stations,
+                         total_opponents=total_opponents,  # WAJIB: Total semua stasiun lawan
                          telkom_stations=telkom_stations,
                          telkomsel_stations=telkomsel_stations,
                          indosat_stations=indosat_stations,
                          xl_stations=xl_stations,
+                         # Opsional: kirim juga per operator
+                         telkom_opponents=telkom_opponents,
+                         telkomsel_opponents=telkomsel_opponents,
+                         indosat_opponents=indosat_opponents,
+                         xl_opponents=xl_opponents,
                          recent_stations=recent_stations,
                          recent_users=recent_users,
                          user_stats=user_stats,
@@ -2382,6 +2276,239 @@ def admin_master_delete_user(user_id):
         flash(f'Error: {str(e)}', 'error')
     
     return redirect(url_for('admin_master_manage_users'))
+
+# ============================================================================
+# HAPUS SEMUA DATA (BULK DELETE)
+# ============================================================================
+
+@app.route('/admin-master/hapus-semua-data', methods=['POST'])
+@login_required
+@admin_master_required
+def admin_master_hapus_semua_data():
+    """Hapus semua data stasiun untuk Admin Master"""
+    try:
+        # Validasi konfirmasi
+        confirm = request.form.get('confirm_delete')
+        if confirm != 'HAPUS SEMUA':
+            flash('Konfirmasi tidak valid! Ketik "HAPUS SEMUA" untuk melanjutkan.', 'error')
+            return redirect(url_for('admin_master_daftar_stasiun'))
+        
+        # Hitung jumlah data sebelum dihapus
+        total_stations = Stasiun.query.count()
+        total_opponents = StasiunLawan.query.count()
+        total_uploads = UploadGambar.query.count()
+        total_status = StatusUpdate.query.count()
+        total_groups = GrupStasiun.query.count()
+        
+        print(f"🗑️ MEMULAI PROSES HAPUS SEMUA DATA - ADMIN MASTER")
+        print(f"   - Stasiun: {total_stations}")
+        print(f"   - Stasiun Lawan: {total_opponents}")
+        print(f"   - Upload Gambar: {total_uploads}")
+        print(f"   - Status Update: {total_status}")
+        print(f"   - Grup Stasiun: {total_groups}")
+        
+        # ===== 1. HAPUS SEMUA FILE DARI CLOUDINARY =====
+        all_uploads = UploadGambar.query.all()
+        cloudinary_deleted = 0
+        cloudinary_failed = 0
+        
+        # Koleksi public_id unik
+        unique_public_ids = set()
+        for upload in all_uploads:
+            unique_public_ids.add(upload.public_id)
+        
+        print(f"   - File unik di Cloudinary: {len(unique_public_ids)}")
+        
+        for public_id in unique_public_ids:
+            try:
+                success, msg = delete_from_cloudinary(public_id)
+                if success:
+                    cloudinary_deleted += 1
+                    print(f"     ✓ {public_id}")
+                else:
+                    cloudinary_failed += 1
+                    print(f"     ✗ {public_id}: {msg}")
+            except Exception as e:
+                cloudinary_failed += 1
+                print(f"     ✗ {public_id}: {e}")
+        
+        # ===== 2. HAPUS SEMUA DATA DARI DATABASE =====
+        # Hapus status updates
+        StatusUpdate.query.delete()
+        
+        # Hapus upload gambar
+        UploadGambar.query.delete()
+        
+        # Hapus stasiun lawan
+        StasiunLawan.query.delete()
+        
+        # Hapus grup stasiun
+        GrupStasiun.query.delete()
+        
+        # Hapus stasiun
+        Stasiun.query.delete()
+        
+        # Commit perubahan
+        db.session.commit()
+        
+        # ===== 3. TAMPILKAN HASIL =====
+        message = f"""
+        ✅ BERHASIL MENGHAPUS SEMUA DATA!
+        
+        📊 RINCIAN PENGHAPUSAN:
+        • Stasiun: {total_stations} data
+        • Stasiun Lawan: {total_opponents} data
+        • Upload Gambar: {total_uploads} data
+        • Status Update: {total_status} data
+        • Grup Stasiun: {total_groups} data
+        
+        ☁️ CLOUDINARY:
+        • File berhasil dihapus: {cloudinary_deleted} file
+        • File gagal dihapus: {cloudinary_failed} file
+        """
+        
+        flash(message, 'success')
+        
+    except Exception as e:
+        db.session.rollback()
+        error_msg = f"❌ ERROR: {str(e)}"
+        print(error_msg)
+        import traceback
+        traceback.print_exc()
+        flash(error_msg, 'error')
+    
+    return redirect(url_for('admin_master_daftar_stasiun'))
+
+@app.route('/admin-operator/hapus-semua-data', methods=['POST'])
+@login_required
+@admin_operator_required
+def admin_operator_hapus_semua_data():
+    """Hapus semua data stasiun untuk operator tertentu"""
+    try:
+        operator = current_user.operator_type
+        
+        # Validasi konfirmasi
+        confirm = request.form.get('confirm_delete')
+        expected_confirm = f'HAPUS {operator.upper()}'
+        if confirm != expected_confirm:
+            flash(f'Konfirmasi tidak valid! Ketik "{expected_confirm}" untuk melanjutkan.', 'error')
+            return redirect(url_for('admin_operator_daftar_stasiun'))
+        
+        # Hitung jumlah data sebelum dihapus
+        stations = Stasiun.query.filter_by(operator=operator).all()
+        station_ids = [s.id for s in stations]
+        
+        total_stations = len(stations)
+        total_opponents = StasiunLawan.query.filter(StasiunLawan.stasiun_id.in_(station_ids)).count() if station_ids else 0
+        
+        # Hitung upload dan status
+        total_uploads = 0
+        total_status = 0
+        total_groups = 0
+        
+        if station_ids:
+            total_uploads = UploadGambar.query.filter(UploadGambar.stasiun_id.in_(station_ids)).count()
+            total_groups = GrupStasiun.query.filter(GrupStasiun.stasiun_id.in_(station_ids)).count()
+            
+            # Hitung status updates
+            opponent_ids = [o.id for o in StasiunLawan.query.filter(StasiunLawan.stasiun_id.in_(station_ids)).all()]
+            if opponent_ids:
+                total_status = StatusUpdate.query.filter(StatusUpdate.stasiun_lawan_id.in_(opponent_ids)).count()
+        
+        print(f"🗑️ MEMULAI PROSES HAPUS SEMUA DATA - OPERATOR {operator.upper()}")
+        print(f"   - Stasiun: {total_stations}")
+        print(f"   - Stasiun Lawan: {total_opponents}")
+        print(f"   - Upload Gambar: {total_uploads}")
+        print(f"   - Status Update: {total_status}")
+        print(f"   - Grup Stasiun: {total_groups}")
+        
+        if not station_ids:
+            flash(f'Tidak ada data untuk operator {operator.upper()}', 'info')
+            return redirect(url_for('admin_operator_daftar_stasiun'))
+        
+        # ===== 1. HAPUS SEMUA FILE DARI CLOUDINARY =====
+        all_uploads = UploadGambar.query.filter(UploadGambar.stasiun_id.in_(station_ids)).all()
+        cloudinary_deleted = 0
+        cloudinary_failed = 0
+        
+        # Koleksi public_id unik
+        unique_public_ids = set()
+        for upload in all_uploads:
+            unique_public_ids.add(upload.public_id)
+        
+        print(f"   - File unik di Cloudinary: {len(unique_public_ids)}")
+        
+        for public_id in unique_public_ids:
+            try:
+                # Cek apakah public_id ini masih digunakan oleh operator lain
+                other_refs = UploadGambar.query\
+                    .filter(UploadGambar.public_id == public_id,
+                           ~UploadGambar.stasiun_id.in_(station_ids))\
+                    .count()
+                
+                if other_refs == 0:
+                    success, msg = delete_from_cloudinary(public_id)
+                    if success:
+                        cloudinary_deleted += 1
+                        print(f"     ✓ {public_id}")
+                    else:
+                        cloudinary_failed += 1
+                        print(f"     ✗ {public_id}: {msg}")
+                else:
+                    print(f"     ⚠ {public_id} masih digunakan operator lain, dilewati")
+                    cloudinary_deleted += 1  # Hitung sebagai berhasil karena tidak perlu dihapus
+            except Exception as e:
+                cloudinary_failed += 1
+                print(f"     ✗ {public_id}: {e}")
+        
+        # ===== 2. HAPUS DATA DARI DATABASE =====
+        # Hapus status updates
+        if opponent_ids:
+            StatusUpdate.query.filter(StatusUpdate.stasiun_lawan_id.in_(opponent_ids)).delete()
+        
+        # Hapus upload gambar
+        UploadGambar.query.filter(UploadGambar.stasiun_id.in_(station_ids)).delete()
+        
+        # Hapus stasiun lawan
+        StasiunLawan.query.filter(StasiunLawan.stasiun_id.in_(station_ids)).delete()
+        
+        # Hapus grup stasiun
+        GrupStasiun.query.filter(GrupStasiun.stasiun_id.in_(station_ids)).delete()
+        
+        # Hapus stasiun
+        for station in stations:
+            db.session.delete(station)
+        
+        # Commit perubahan
+        db.session.commit()
+        
+        # ===== 3. TAMPILKAN HASIL =====
+        message = f"""
+        ✅ BERHASIL MENGHAPUS SEMUA DATA OPERATOR {operator.upper()}!
+        
+        📊 RINCIAN PENGHAPUSAN:
+        • Stasiun: {total_stations} data
+        • Stasiun Lawan: {total_opponents} data
+        • Upload Gambar: {total_uploads} data
+        • Status Update: {total_status} data
+        • Grup Stasiun: {total_groups} data
+        
+        ☁️ CLOUDINARY:
+        • File berhasil dihapus: {cloudinary_deleted} file
+        • File gagal dihapus: {cloudinary_failed} file
+        """
+        
+        flash(message, 'success')
+        
+    except Exception as e:
+        db.session.rollback()
+        error_msg = f"❌ ERROR: {str(e)}"
+        print(error_msg)
+        import traceback
+        traceback.print_exc()
+        flash(error_msg, 'error')
+    
+    return redirect(url_for('admin_operator_daftar_stasiun'))
 
 @app.route('/admin-master/tambah-data', methods=['GET', 'POST'])
 @login_required
@@ -2995,6 +3122,17 @@ def admin_operator_dashboard():
     
     total_stations = Stasiun.query.filter_by(operator=operator).count()
     
+    # PERBAIKAN: Hitung SEMUA stasiun lawan (sama seperti user operator)
+    total_opponents = StasiunLawan.query\
+        .join(Stasiun)\
+        .filter(Stasiun.operator == operator)\
+        .count()
+    
+    # Hitung stasiun yang sudah upload
+    stations_with_uploads = Stasiun.query\
+        .filter(Stasiun.operator == operator, Stasiun.uploads.any())\
+        .count()
+    
     recent_stations = Stasiun.query\
         .filter_by(operator=operator)\
         .order_by(Stasiun.created_at.desc())\
@@ -3013,6 +3151,8 @@ def admin_operator_dashboard():
                          operator_name=operator.upper(),
                          current_date=current_date,
                          total_stations=total_stations,
+                         total_opponents=total_opponents,  # SEKARANG SAMA
+                         stations_with_uploads=stations_with_uploads,
                          recent_stations=recent_stations,
                          kota_list=kota_list_operator)
 
@@ -4186,6 +4326,7 @@ def user_operator_grup_stasiun(station_id):
         try:
             action = request.form.get('action')
             
+            # ===== 1. CREATE GROUP =====
             if action == 'create_group':
                 group_name = request.form.get('group_name')
                 selected_opponents = request.form.getlist('selected_opponents[]')
@@ -4208,13 +4349,15 @@ def user_operator_grup_stasiun(station_id):
                         lawan.grup_id = new_grup.id
                 
                 db.session.commit()
-                flash(f'Grup "{group_name}" berhasil dibuat!', 'success')
+                flash(f'Grup "{group_name}" berhasil dibuat dengan {len(selected_opponents)} lawan!', 'success')
                 
+            # ===== 2. DELETE GROUP =====
             elif action == 'delete_group':
                 group_id = request.form.get('group_id')
                 if group_id:
                     grup = GrupStasiun.query.get(group_id)
                     if grup and grup.stasiun_id == station_id:
+                        # Pindahkan semua lawan ke ungrouped
                         StasiunLawan.query\
                             .filter_by(stasiun_id=station_id, grup_id=group_id)\
                             .update({
@@ -4222,21 +4365,142 @@ def user_operator_grup_stasiun(station_id):
                                 'grup_id': None
                             })
                         
+                        # Update upload yang terkait
                         UploadGambar.query\
-                            .filter_by(stasiun_id=station_id, group_id=group_id)\
+                            .filter_by(stasiun_id=station_id, group_id=int(group_id))\
                             .update({'group_id': None})
                         
                         db.session.delete(grup)
                         db.session.commit()
-                        flash('Grup berhasil dihapus!', 'success')
+                        flash('Grup berhasil dihapus! Semua anggota dipindahkan ke "Tanpa Grup".', 'success')
+            
+            # ===== 3. REMOVE FROM GROUP (KELUARKAN DARI GRUP) =====
+            elif action == 'remove_from_group':
+                opponent_id = request.form.get('opponent_id')
+                if opponent_id:
+                    lawan = StasiunLawan.query.get(opponent_id)
+                    if lawan and lawan.stasiun_id == station_id:
+                        nama_lawan = lawan.nama_stasiun_lawan
+                        
+                        # Keluarkan dari grup
+                        lawan.group_id = None
+                        lawan.grup_id = None
+                        
+                        # Update upload yang terkait
+                        UploadGambar.query.filter_by(
+                            stasiun_lawan_id=lawan.id
+                        ).update({'group_id': None})
+                        
+                        db.session.commit()
+                        flash(f'Stasiun lawan "{nama_lawan}" berhasil dikeluarkan dari grup!', 'success')
+                    else:
+                        flash('Stasiun lawan tidak ditemukan!', 'error')
+            
+            # ===== 4. EDIT SINGLE OPPONENT (PERBAIKAN) =====
+            elif action == 'edit_lawan':
+                lawan_id = request.form.get('lawan_id')
+                nama_lawan = request.form.get('nama_lawan')
+                freq_tx = request.form.get('freq_tx', '').strip()
+                freq_rx = request.form.get('freq_rx', '').strip()
+                new_group_id = request.form.get('new_group_id')
+                
+                # Validasi input
+                if not lawan_id or not nama_lawan:
+                    flash('Data tidak lengkap!', 'error')
+                    return redirect(url_for('user_operator_grup_stasiun', station_id=station_id))
+                
+                # Cari lawan
+                lawan = StasiunLawan.query.get(lawan_id)
+                if not lawan or lawan.stasiun_id != station_id:
+                    flash('Stasiun lawan tidak ditemukan!', 'error')
+                    return redirect(url_for('user_operator_grup_stasiun', station_id=station_id))
+                
+                # Catat perubahan untuk pesan
+                changes = []
+                
+                # Update nama
+                if lawan.nama_stasiun_lawan != nama_lawan:
+                    changes.append(f"Nama: '{lawan.nama_stasiun_lawan}' → '{nama_lawan}'")
+                    lawan.nama_stasiun_lawan = nama_lawan
+                
+                # Update freq_tx (boleh kosong)
+                old_freq_tx = lawan.freq_tx or ''
+                new_freq_tx = freq_tx if freq_tx else None
+                if old_freq_tx != (new_freq_tx or ''):
+                    if old_freq_tx and new_freq_tx:
+                        changes.append(f"Freq Tx: '{old_freq_tx}' → '{new_freq_tx}'")
+                    elif new_freq_tx and not old_freq_tx:
+                        changes.append(f"Freq Tx ditambahkan: '{new_freq_tx}'")
+                    elif old_freq_tx and not new_freq_tx:
+                        changes.append(f"Freq Tx dihapus (sebelumnya '{old_freq_tx}')")
+                    lawan.freq_tx = new_freq_tx
+                
+                # Update freq_rx (boleh kosong)
+                old_freq_rx = lawan.freq_rx or ''
+                new_freq_rx = freq_rx if freq_rx else None
+                if old_freq_rx != (new_freq_rx or ''):
+                    if old_freq_rx and new_freq_rx:
+                        changes.append(f"Freq Rx: '{old_freq_rx}' → '{new_freq_rx}'")
+                    elif new_freq_rx and not old_freq_rx:
+                        changes.append(f"Freq Rx ditambahkan: '{new_freq_rx}'")
+                    elif old_freq_rx and not new_freq_rx:
+                        changes.append(f"Freq Rx dihapus (sebelumnya '{old_freq_rx}')")
+                    lawan.freq_rx = new_freq_rx
+                
+                # Update grup
+                old_group = lawan.group_id
+                if new_group_id and new_group_id.strip():
+                    new_group_int = int(new_group_id)
+                    if old_group != new_group_int:
+                        # Cari nama grup baru
+                        grup_baru = GrupStasiun.query.get(new_group_int)
+                        grup_baru_nama = grup_baru.nama_grup if grup_baru else f'Grup {new_group_int}'
+                        
+                        if old_group:
+                            grup_lama = GrupStasiun.query.get(old_group)
+                            grup_lama_nama = grup_lama.nama_grup if grup_lama else f'Grup {old_group}'
+                            changes.append(f"Grup: '{grup_lama_nama}' → '{grup_baru_nama}'")
+                        else:
+                            changes.append(f"Grup: 'Tanpa Grup' → '{grup_baru_nama}'")
+                        
+                        lawan.group_id = new_group_int
+                        lawan.grup_id = new_group_int
+                else:
+                    if old_group is not None:
+                        grup_lama = GrupStasiun.query.get(old_group)
+                        grup_lama_nama = grup_lama.nama_grup if grup_lama else f'Grup {old_group}'
+                        changes.append(f"Grup: '{grup_lama_nama}' → 'Tanpa Grup'")
+                        lawan.group_id = None
+                        lawan.grup_id = None
+                
+                # Update upload yang terkait dengan group_id baru
+                if 'group_id' in changes or 'grup' in str(changes):
+                    UploadGambar.query.filter_by(
+                        stasiun_lawan_id=lawan.id
+                    ).update({'group_id': lawan.group_id})
+                
+                # Commit perubahan
+                db.session.commit()
+                
+                # Tampilkan pesan
+                if changes:
+                    flash(f'✅ Stasiun lawan "{nama_lawan}" berhasil diperbarui!', 'success')
+                    for change in changes:
+                        flash(f'  • {change}', 'info')
+                else:
+                    flash(f'ℹ️ Tidak ada perubahan pada "{nama_lawan}".', 'info')
             
             return redirect(url_for('user_operator_grup_stasiun', station_id=station_id))
             
         except Exception as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            flash(f'❌ Error: {str(e)}', 'error')
+            print(f"ERROR in user_operator_grup_stasiun: {str(e)}")
+            import traceback
+            traceback.print_exc()
             return redirect(url_for('user_operator_grup_stasiun', station_id=station_id))
     
+    # ===== GET REQUEST - TAMPILKAN HALAMAN =====
     stasiun_lawan = StasiunLawan.query\
         .filter_by(stasiun_id=station_id)\
         .order_by(StasiunLawan.urutan)\
@@ -4270,7 +4534,8 @@ def user_operator_grup_stasiun(station_id):
             'id': lawan.id,
             'nama_stasiun_lawan': lawan.nama_stasiun_lawan,
             'freq_tx': lawan.freq_tx,
-            'freq_rx': lawan.freq_rx
+            'freq_rx': lawan.freq_rx,
+            'group_id': lawan.group_id
         }
         groups_with_names[group_key]['lawans'].append(lawan_data)
     
@@ -4459,7 +4724,7 @@ def user_operator_upload(station_id):
             if upload_count > 0 or status_count > 0:
                 message = f"✅ Berhasil! "
                 if upload_count > 0:
-                    message += f"{upload_count} gambar ke Cloudinary. "
+                     " Tambah gambar, "
                 if status_count > 0:
                     message += f"{status_count} status diperbarui."
                 flash(message, 'success')
@@ -4734,8 +4999,6 @@ def user_operator_edit_grup(station_id, group_key):
             print(f"  - Status updated: {status_count}")
             print("="*80)
             
-            if uploaded_count > 0:
-                flash(f'✅ Berhasil: {uploaded_count} file diupload!', 'success')
             if status_count > 0:
                 flash(f'✅ {status_count} status diperbarui', 'success')
             

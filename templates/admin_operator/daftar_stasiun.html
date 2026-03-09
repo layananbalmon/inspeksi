@@ -7,9 +7,14 @@
     <h3 class="mb-0">
         <i class="bi bi-table"></i> Daftar Stasiun {{ operator_name }}
     </h3>
-    <a href="{{ url_for('admin_operator_tambah_data') }}" class="btn btn-operator">
-        <i class="bi bi-plus-circle"></i> Tambah Baru
-    </a>
+    <div>
+        <button type="button" class="btn btn-danger me-2" data-bs-toggle="modal" data-bs-target="#deleteAllModal">
+            <i class="bi bi-trash3"></i> Hapus Semua Data
+        </button>
+        <a href="{{ url_for('admin_operator_tambah_data') }}" class="btn btn-operator">
+            <i class="bi bi-plus-circle"></i> Tambah Baru
+        </a>
+    </div>
 </div>
 
 <!-- Filter Section -->
@@ -461,7 +466,7 @@
     </div>
 </div>
 
-<!-- Modal Konfirmasi Hapus -->
+<!-- Modal Konfirmasi Hapus (Satu Data) -->
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -492,6 +497,188 @@
                     <i class="bi bi-trash"></i> Ya, Hapus
                 </a>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Hapus Semua Data - ADMIN OPERATOR (VERSI FIX) -->
+<div class="modal fade" id="deleteAllModal" tabindex="-1" aria-labelledby="deleteAllModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteAllModalLabel">
+                    <i class="bi bi-exclamation-triangle-fill"></i> HAPUS SEMUA DATA - {{ operator_name }}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <form method="POST" action="{{ url_for('admin_operator_hapus_semua_data') }}" id="deleteAllForm">
+                <div class="modal-body">
+                    <!-- PERINGATAN KERAS -->
+                    <div class="alert alert-danger border-2 border-danger mb-4">
+                        <div class="d-flex">
+                            <div class="flex-shrink-0">
+                                <i class="bi bi-exclamation-octagon-fill fs-1 text-danger"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h4 class="alert-heading text-danger fw-bold">⚠️ PERINGATAN!</h4>
+                                <p class="mb-2">Anda akan menghapus <strong class="text-decoration-underline">SEMUA DATA</strong> untuk operator <strong class="text-danger">{{ operator_name }}</strong>:</p>
+                                <ul class="mb-0">
+                                    <li><strong>SEMUA stasiun</strong> milik {{ operator_name }}</li>
+                                    <li><strong>SEMUA stasiun lawan</strong> dari stasiun {{ operator_name }}</li>
+                                    <li><strong>SEMUA gambar</strong> yang diupload untuk {{ operator_name }}</li>
+                                    <li><strong>SEMUA riwayat status</strong> update</li>
+                                    <li><strong>SEMUA grup</strong> yang telah dibuat</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- STATISTIK YANG AKAN DIHAPUS - VERSI AMAN TANPA NAMESPACE -->
+                    <div class="card border-danger mb-4">
+                        <div class="card-header bg-danger text-white">
+                            <i class="bi bi-bar-chart"></i> Data {{ operator_name }} yang Akan Dihapus
+                        </div>
+                        <div class="card-body">
+                            {% set total_stasiun = stations|length %}
+                            
+                            {# Hitung stasiun lawan #}
+                            {% set opponent_list = [] %}
+                            {% for station in stations %}
+                                {% for lawan in station.stasiun_lawan_list %}
+                                    {% set _ = opponent_list.append(lawan) %}
+                                {% endfor %}
+                            {% endfor %}
+                            
+                            {# Hitung upload #}
+                            {% set upload_list = [] %}
+                            {% for station in stations %}
+                                {% for upload in station.uploads %}
+                                    {% set _ = upload_list.append(upload) %}
+                                {% endfor %}
+                            {% endfor %}
+                            
+                            {# Hitung status #}
+                            {% set status_list = [] %}
+                            {% for station in stations %}
+                                {% for lawan in station.stasiun_lawan_list %}
+                                    {% for status in lawan.status_updates %}
+                                        {% set _ = status_list.append(status) %}
+                                    {% endfor %}
+                                {% endfor %}
+                            {% endfor %}
+                            
+                            {# Hitung grup #}
+                            {% set group_list = [] %}
+                            {% for station in stations %}
+                                {% for group in station.grup_list %}
+                                    {% set _ = group_list.append(group) %}
+                                {% endfor %}
+                            {% endfor %}
+                            
+                            {# Hitung file unik di Cloudinary #}
+                            {% set unique_files = [] %}
+                            {% for station in stations %}
+                                {% for upload in station.uploads %}
+                                    {% if upload.public_id not in unique_files %}
+                                        {% set _ = unique_files.append(upload.public_id) %}
+                                    {% endif %}
+                                {% endfor %}
+                            {% endfor %}
+                            
+                            <div class="row text-center">
+                                <div class="col-4 mb-3">
+                                    <div class="p-3 bg-light rounded">
+                                        <h3 class="text-danger mb-0">{{ total_stasiun }}</h3>
+                                        <small class="text-muted">Stasiun</small>
+                                    </div>
+                                </div>
+                                <div class="col-4 mb-3">
+                                    <div class="p-3 bg-light rounded">
+                                        <h3 class="text-danger mb-0">{{ opponent_list|length }}</h3>
+                                        <small class="text-muted">Stasiun Lawan</small>
+                                    </div>
+                                </div>
+                                <div class="col-4 mb-3">
+                                    <div class="p-3 bg-light rounded">
+                                        <h3 class="text-danger mb-0">{{ upload_list|length }}</h3>
+                                        <small class="text-muted">Record Gambar</small>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="p-3 bg-light rounded">
+                                        <h3 class="text-danger mb-0">{{ status_list|length }}</h3>
+                                        <small class="text-muted">Status Update</small>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="p-3 bg-light rounded">
+                                        <h3 class="text-danger mb-0">{{ group_list|length }}</h3>
+                                        <small class="text-muted">Grup</small>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="p-3 bg-light rounded">
+                                        <h3 class="text-danger mb-0">{{ unique_files|length }}</h3>
+                                        <small class="text-muted">File di Cloudinary</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- FORM KONFIRMASI -->
+                    <div class="mb-3">
+                        <label for="confirm_delete" class="form-label fw-bold text-danger">
+                            <i class="bi bi-key"></i> Konfirmasi Penghapusan
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">Ketik:</span>
+                            <input type="text" 
+                                   class="form-control form-control-lg border-danger" 
+                                   id="confirm_delete" 
+                                   name="confirm_delete" 
+                                   placeholder="HAPUS {{ operator_name|upper }}"
+                                   required
+                                   pattern="HAPUS {{ operator_name|upper }}"
+                                   autocomplete="off">
+                        </div>
+                        <div class="form-text text-danger mt-2">
+                            <i class="bi bi-info-circle"></i> 
+                            Ketik <strong class="text-danger">HAPUS {{ operator_name|upper }}</strong> (huruf kapital) untuk mengonfirmasi
+                        </div>
+                    </div>
+                    
+                    <!-- KOTAK CENTANG TAMBAHAN -->
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="understand" required>
+                        <label class="form-check-label" for="understand">
+                            Saya memahami bahwa tindakan ini <strong class="text-danger">TIDAK DAPAT DIBATALKAN</strong>
+                        </label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="backup" required>
+                        <label class="form-check-label" for="backup">
+                            Saya telah melakukan backup data jika diperlukan
+                        </label>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="confirm" required>
+                        <label class="form-check-label" for="confirm">
+                            Saya yakin ingin menghapus <strong>SEMUA DATA {{ operator_name|upper }}</strong>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i> Batal
+                    </button>
+                    <button type="submit" class="btn btn-danger" id="deleteAllBtn" disabled>
+                        <i class="bi bi-trash3"></i> Ya, Hapus Semua Data
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -572,24 +759,82 @@
     color: #94a3b8;
 }
 
-/* Info pagination text */
-.text-muted small {
-    color: #64748b !important;
+/* Style untuk modal hapus semua */
+.modal-lg {
+    max-width: 700px;
 }
 
-/* Responsive untuk pagination info */
-@media (max-width: 768px) {
-    .d-flex.justify-content-between {
-        flex-direction: column;
-        gap: 10px;
-        text-align: center;
-    }
+.modal-content {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+}
+
+.modal-header {
+    border-radius: 16px 16px 0 0;
+    padding: 1rem 1.5rem;
+}
+
+.modal-header .btn-close {
+    filter: brightness(0) invert(1);
+}
+
+.modal-body {
+    padding: 2rem;
+}
+
+.modal-footer {
+    border-top: 1px solid #eef2f6;
+    padding: 1rem 1.5rem;
+    border-radius: 0 0 16px 16px;
+}
+
+.alert-danger {
+    background-color: #fff2f2;
+    border-color: #ffb3b3;
+}
+
+.alert-danger .fs-1 {
+    font-size: 2.5rem !important;
+}
+
+.card.border-danger {
+    border-width: 2px;
+    border-color: #dc3545 !important;
+}
+
+.card-header.bg-danger {
+    background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%) !important;
+    border-bottom: none;
+    padding: 1rem;
+}
+
+#confirm_delete {
+    font-family: monospace;
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-align: center;
+}
+
+#confirm_delete.is-valid {
+    background-color: #d4edda;
+    border-color: #28a745;
+}
+
+#confirm_delete.is-invalid {
+    background-color: #f8d7da;
+    border-color: #dc3545;
+}
+
+.form-check-input:checked {
+    background-color: #dc3545;
+    border-color: #dc3545;
 }
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Tangani klik tombol hapus
+    // Tangani klik tombol hapus satu data
     const deleteButtons = document.querySelectorAll('.btn-delete');
     const stationNameElement = document.getElementById('stationName');
     const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
@@ -619,6 +864,66 @@ document.addEventListener('DOMContentLoaded', function() {
             if (e.key === 'Enter') {
                 e.preventDefault();
                 document.getElementById('filterForm').submit();
+            }
+        });
+    }
+    
+    // Validasi form hapus semua
+    const deleteAllForm = document.getElementById('deleteAllForm');
+    const confirmInput = document.getElementById('confirm_delete');
+    const understandCheck = document.getElementById('understand');
+    const backupCheck = document.getElementById('backup');
+    const confirmCheck = document.getElementById('confirm');
+    const deleteAllBtn = document.getElementById('deleteAllBtn');
+    
+    function validateDeleteAll() {
+        const confirmValue = confirmInput ? confirmInput.value.trim() : '';
+        const expectedValue = 'HAPUS {{ operator_name|upper }}';
+        const isConfirmValid = confirmValue === expectedValue;
+        const isChecksValid = understandCheck && understandCheck.checked && 
+                              backupCheck && backupCheck.checked && 
+                              confirmCheck && confirmCheck.checked;
+        
+        if (deleteAllBtn) {
+            deleteAllBtn.disabled = !(isConfirmValid && isChecksValid);
+        }
+        
+        // Styling feedback
+        if (confirmInput && confirmValue) {
+            if (isConfirmValid) {
+                confirmInput.classList.remove('is-invalid');
+                confirmInput.classList.add('is-valid');
+            } else {
+                confirmInput.classList.remove('is-valid');
+                confirmInput.classList.add('is-invalid');
+            }
+        } else if (confirmInput) {
+            confirmInput.classList.remove('is-valid', 'is-invalid');
+        }
+    }
+    
+    if (confirmInput) {
+        confirmInput.addEventListener('input', validateDeleteAll);
+    }
+    
+    if (understandCheck) {
+        understandCheck.addEventListener('change', validateDeleteAll);
+    }
+    
+    if (backupCheck) {
+        backupCheck.addEventListener('change', validateDeleteAll);
+    }
+    
+    if (confirmCheck) {
+        confirmCheck.addEventListener('change', validateDeleteAll);
+    }
+    
+    // Konfirmasi sebelum submit
+    if (deleteAllForm) {
+        deleteAllForm.addEventListener('submit', function(e) {
+            if (!confirm('APAKAH ANDA BENAR-BENAR YAKIN?\n\nIni akan menghapus SEMUA DATA {{ operator_name|upper }} secara permanen!\n\nKlik OK untuk melanjutkan.')) {
+                e.preventDefault();
+                return false;
             }
         });
     }
