@@ -3599,34 +3599,117 @@ def admin_operator_edit_stasiun(station_id):
 def admin_operator_hapus_stasiun(station_id):
     station = Stasiun.query.get_or_404(station_id)
     
+    # Validasi kepemilikan
     if station.operator != current_user.operator_type:
-        flash('Stasiun ini bukan milik operator Anda!', 'error')
+        flash('❌ Stasiun ini bukan milik operator Anda!', 'error')
         return redirect(url_for('admin_operator_dashboard'))
     
     try:
+        print(f"\n{'='*60}")
+        print(f"🗑️  MENGHAPUS STASIUN: {station.stasiun_name} (ID: {station_id})")
+        print(f"   Operator: {station.operator}")
+        print(f"{'='*60}")
+        
+        # ===== 1. AMBIL SEMUA DATA TERKAIT =====
+        # Ambil semua grup
+        groups = GrupStasiun.query.filter_by(stasiun_id=station_id).all()
+        group_ids = [g.id for g in groups]
+        print(f"   📦 Grup ditemukan: {len(group_ids)}")
+        
+        # Ambil semua lawan
         opponents = StasiunLawan.query.filter_by(stasiun_id=station_id).all()
-        opponent_ids = [opponent.id for opponent in opponents]
+        opponent_ids = [o.id for o in opponents]
+        print(f"   👥 Stasiun lawan: {len(opponent_ids)}")
         
-        if opponent_ids:
-            StatusUpdate.query.filter(StatusUpdate.stasiun_lawan_id.in_(opponent_ids)).delete()
-        
-        # Hapus upload dari Cloudinary dulu
+        # Ambil semua upload
         all_uploads = UploadGambar.query.filter_by(stasiun_id=station_id).all()
+        print(f"   🖼️ Upload gambar: {len(all_uploads)}")
+        
+        # ===== 2. HAPUS STATUS UPDATES =====
+        if opponent_ids:
+            deleted_status = StatusUpdate.query.filter(
+                StatusUpdate.stasiun_lawan_id.in_(opponent_ids)
+            ).delete(synchronize_session=False)
+            print(f"   ✅ Status updates dihapus: {deleted_status}")
+        
+        # ===== 3. HAPUS UPLOAD GAMBAR =====
+        cloudinary_deleted = 0
         for upload in all_uploads:
-            delete_from_cloudinary(upload.public_id)
+            try:
+                # Cek apakah file masih digunakan oleh stasiun lain
+                other_refs = UploadGambar.query.filter(
+                    UploadGambar.public_id == upload.public_id,
+                    UploadGambar.stasiun_id != station_id
+                ).count()
+                
+                if other_refs == 0:
+                    # Hapus dari Cloudinary
+                    success, msg = delete_from_cloudinary(upload.public_id)
+                    if success:
+                        cloudinary_deleted += 1
+                        print(f"      ✓ Cloudinary: {upload.public_id}")
+                    else:
+                        print(f"      ⚠ Cloudinary: {msg}")
+                
+                # Hapus record dari database
+                db.session.delete(upload)
+                
+            except Exception as e:
+                print(f"      ✗ Error hapus upload {upload.id}: {e}")
+                continue
         
-        # Hapus upload dari database
-        UploadGambar.query.filter_by(stasiun_id=station_id).delete()
+        print(f"   ✅ Upload gambar dihapus: {len(all_uploads)} (Cloudinary: {cloudinary_deleted})")
         
-        # Hapus lawan dan stasiun
-        StasiunLawan.query.filter_by(stasiun_id=station_id).delete()
+        # ===== 4. HAPUS GRUP STASIUN (URUTAN PENTING!) =====
+        if group_ids:
+            # PERTAMA: Putuskan relasi lawan ke grup
+            for group_id in group_ids:
+                updated = StasiunLawan.query.filter_by(
+                    stasiun_id=station_id, 
+                    grup_id=group_id
+                ).update({
+                    'group_id': None,
+                    'grup_id': None
+                })
+                print(f"      ⤴️ Relasi grup {group_id} diputus: {updated} lawan")
+            
+            # KEDUA: Update upload yang terkait grup
+            for group_id in group_ids:
+                UploadGambar.query.filter_by(
+                    stasiun_id=station_id,
+                    group_id=group_id
+                ).update({'group_id': None})
+            
+            # KETIGA: Hapus grup
+            deleted_groups = GrupStasiun.query.filter_by(stasiun_id=station_id).delete()
+            print(f"   ✅ Grup dihapus: {deleted_groups}")
+        
+        # ===== 5. HAPUS STASIUN LAWAN =====
+        if opponent_ids:
+            deleted_opponents = StasiunLawan.query.filter_by(stasiun_id=station_id).delete()
+            print(f"   ✅ Stasiun lawan dihapus: {deleted_opponents}")
+        
+        # ===== 6. TERAKHIR, HAPUS STASIUN =====
         db.session.delete(station)
+        
+        # ===== 7. COMMIT SEMUA PERUBAHAN =====
         db.session.commit()
         
-        flash(f'Stasiun "{station.stasiun_name}" berhasil dihapus!', 'success')
+        print(f"\n{'='*60}")
+        print(f"✅  BERHASIL MENGHAPUS STASIUN!")
+        print(f"{'='*60}")
+        
+        flash(f'✅ Stasiun "{station.stasiun_name}" berhasil dihapus!', 'success')
+        
     except Exception as e:
         db.session.rollback()
-        flash(f'Error: {str(e)}', 'error')
+        error_msg = f"❌ Error menghapus stasiun: {str(e)}"
+        print(f"\n{'='*60}")
+        print(f"❌  ERROR: {error_msg}")
+        print(f"{'='*60}")
+        import traceback
+        traceback.print_exc()
+        flash(error_msg, 'error')
     
     return redirect(url_for('admin_operator_daftar_stasiun'))
 
