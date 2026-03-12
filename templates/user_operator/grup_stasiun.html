@@ -875,12 +875,12 @@
                                 <strong title="{{ lawan.nama_stasiun_lawan }}">{{ lawan.nama_stasiun_lawan }}</strong>
                                 <div class="freq-container">
                                     {% if lawan.freq_tx %}
-                                        <span class="freq-tx-badge" title="Frekuensi Transmit">
+                                        <span class="freq-tx-badge" title="Freq Tx">
                                             <i class="bi bi-arrow-up-short"></i> {{ lawan.freq_tx }}
                                         </span>
                                     {% endif %}
                                     {% if lawan.freq_rx %}
-                                        <span class="freq-rx-badge" title="Frekuensi Receive">
+                                        <span class="freq-rx-badge" title="Freq Rx">
                                             <i class="bi bi-arrow-down-short"></i> {{ lawan.freq_rx }}
                                         </span>
                                     {% endif %}
@@ -1052,7 +1052,7 @@
                                 </div>
                                 
                                 <div class="mb-2 row">
-                                    <div class="col-4 text-muted small">Frekuensi Tx:</div>
+                                    <div class="col-4 text-muted small">Freq Tx:</div>
                                     <div class="col-8">
                                         {% if lawan.freq_tx %}
                                             <span class="badge bg-info">{{ lawan.freq_tx }}</span>
