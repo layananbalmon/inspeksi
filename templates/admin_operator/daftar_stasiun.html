@@ -43,7 +43,7 @@
                     <i class="bi bi-geo-alt"></i> Kota/Kabupaten
                 </label>
                 <select class="form-select" id="kota" name="kota">
-                    <option value="all">Semua Kota/Kab</option>
+                    <option value="all">Semua Kota/kab/Kab</option>
                     {% for kota in kota_list %}
                     <option value="{{ kota }}" {% if request.args.get('kota') == kota %}selected{% endif %}>
                         {{ kota|title }}
@@ -85,7 +85,7 @@
                 <span class="badge bg-info me-2">Nama: "{{ request.args.get('search_stasiun') }}"</span>
             {% endif %}
             {% if request.args.get('kota') and request.args.get('kota') != 'all' %}
-                <span class="badge bg-info me-2">Kota: {{ request.args.get('kota')|title }}</span>
+                <span class="badge bg-info me-2">Kota/Kab: {{ request.args.get('kota')|title }}</span>
             {% endif %}
             <span class="badge bg-secondary">Menampilkan {{ pagination.total }} data</span>
         </div>

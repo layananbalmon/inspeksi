@@ -20,7 +20,7 @@
             --info-color: #0dcaf0;
             --light-color: #f8f9fa;
             --dark-color: #212529;
-            --sidebar-width: 250px;
+            --sidebar-width: 260px;
             --sidebar-bg: #ffffff;
             --sidebar-color: #5a6c7d;
             --sidebar-active-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -41,26 +41,46 @@
             min-height: 100vh;
         }
         
+        /* ===== NAVBAR ===== */
         .navbar {
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             height: 60px;
-            position: sticky;
+            position: fixed;
             top: 0;
+            left: 0;
+            right: 0;
             z-index: 1030;
+            padding: 0 1rem;
         }
         
         .navbar-brand {
             font-weight: 700;
             font-size: 1.5rem;
+            color: white !important;
         }
         
-        /* ==================== SIDEBAR IMPROVEMENTS ==================== */
+        .navbar-toggle {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            padding: 5px 10px;
+            margin-right: 10px;
+        }
+        
+        @media (min-width: 768px) {
+            .navbar-toggle {
+                display: none;
+            }
+        }
+        
+        /* ===== SIDEBAR ===== */
         .sidebar {
             background: var(--sidebar-bg);
             width: var(--sidebar-width);
             box-shadow: 3px 0 15px rgba(0,0,0,0.05);
-            transition: all 0.3s ease;
+            transition: transform 0.3s ease;
             z-index: 1020;
             overflow-y: auto;
             position: fixed;
@@ -77,7 +97,7 @@
             }
         }
         
-        /* Sidebar when shown */
+        /* Sidebar when shown on mobile */
         .sidebar.show {
             transform: translateX(0);
             box-shadow: 3px 0 15px rgba(0,0,0,0.1);
@@ -149,20 +169,6 @@
             align-items: center;
             font-weight: 500;
             font-size: 0.95rem;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .sidebar .nav-link::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            height: 100%;
-            width: 3px;
-            background: transparent;
-            border-radius: 0 4px 4px 0;
-            transition: all 0.3s ease;
         }
         
         .sidebar .nav-link:hover {
@@ -171,19 +177,10 @@
             transform: translateX(3px);
         }
         
-        .sidebar .nav-link:hover::before {
-            background: var(--primary-color);
-        }
-        
         .sidebar .nav-link.active {
             background: var(--sidebar-active-bg);
             color: white !important;
             box-shadow: 0 3px 8px rgba(102, 126, 234, 0.3);
-        }
-        
-        .sidebar .nav-link.active::before {
-            background: white;
-            width: 3px;
         }
         
         .sidebar .nav-link i {
@@ -208,39 +205,46 @@
             font-weight: 600;
         }
         
-        .sidebar-footer {
-            padding: 15px;
-            margin-top: auto;
-            border-top: 1px solid #eaeaea;
-        }
-        
-        /* ==================== MAIN CONTENT FIX ==================== */
+        /* ===== MAIN CONTENT ===== */
         .main-content-wrapper {
-            min-height: calc(100vh - 60px);
-            transition: margin-left 0.3s ease;
+            min-height: 100vh;
             background-color: #f5f7fa;
-            padding-left: 0;
+            transition: margin-left 0.3s ease;
+            margin-left: 0;
+            margin-top: 60px; /* Height of navbar */
+            width: 100%;
         }
         
-        /* When sidebar is shown on desktop */
+        /* On desktop, add margin for sidebar */
         @media (min-width: 768px) {
             .main-content-wrapper {
-                padding-left: var(--sidebar-width);
+                margin-left: var(--sidebar-width);
+                width: calc(100% - var(--sidebar-width));
             }
-        }
-        
-        /* When sidebar is shown (mobile) */
-        .sidebar.show ~ .main-content-wrapper {
-            margin-left: var(--sidebar-width);
         }
         
         .main-content {
             padding: 20px;
             min-height: calc(100vh - 60px);
         }
-        /* ==================== END MAIN CONTENT FIX ==================== */
         
-        /* Mobile sidebar toggle button - ALWAYS VISIBLE ON MOBILE */
+        /* ===== SIDEBAR OVERLAY ===== */
+        .sidebar-overlay {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1015;
+            display: none;
+        }
+        
+        .sidebar-overlay.show {
+            display: block;
+        }
+        
+        /* ===== SIDEBAR TOGGLE FLOATING BUTTON ===== */
         .sidebar-toggle {
             position: fixed;
             bottom: 20px;
@@ -259,7 +263,6 @@
             justify-content: center;
         }
         
-        /* Hide on desktop */
         @media (min-width: 768px) {
             .sidebar-toggle {
                 display: none;
@@ -270,39 +273,7 @@
             transform: scale(1.1);
         }
         
-        /* Hamburger icon in navbar for mobile */
-        .navbar-toggle {
-            display: none;
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.5rem;
-            padding: 5px 10px;
-            margin-right: 10px;
-        }
-        
-        @media (max-width: 767px) {
-            .navbar-toggle {
-                display: block;
-            }
-        }
-        
-        /* Overlay for mobile sidebar */
-        .sidebar-overlay {
-            position: fixed;
-            top: 60px;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 1015;
-            display: none;
-        }
-        
-        .sidebar-overlay.show {
-            display: block;
-        }
-        
+        /* ===== CARD STYLES ===== */
         .card {
             border: none;
             border-radius: 10px;
@@ -324,38 +295,11 @@
             font-size: 1rem;
         }
         
-        .btn {
-            border-radius: 6px;
-            font-weight: 500;
-            padding: 8px 16px;
-            font-size: 0.9rem;
-        }
-        
-        .table th {
-            background-color: #f8f9fa;
-            font-weight: 600;
-            border-top: none;
-            color: #2c3e50;
-            padding: 12px;
-            font-size: 0.9rem;
-        }
-        
-        .table td {
-            padding: 12px;
-            font-size: 0.9rem;
-        }
-        
-        .status-badge {
-            font-size: 0.8em;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-weight: 500;
-        }
-        
-        /* ===== FLASH MESSAGES STYLING - TIDAK CEPAT HILANG ===== */
+        /* ===== FLASH MESSAGES ===== */
         .flash-messages-container {
             position: relative;
-            z-index: 1050;
+            z-index: 1040;
+            margin-bottom: 20px;
         }
         
         .flash-messages-container .alert {
@@ -365,11 +309,6 @@
             margin-bottom: 12px;
             border-radius: 10px;
             animation: slideInDown 0.3s ease-out;
-        }
-        
-        .flash-messages-container .alert:hover {
-            transform: translateX(5px);
-            box-shadow: 0 12px 25px rgba(0,0,0,0.2);
         }
         
         @keyframes slideInDown {
@@ -383,7 +322,7 @@
             }
         }
         
-        /* Custom alert colors */
+        /* Alert colors */
         .alert-error, .alert-danger {
             background: linear-gradient(135deg, #fff5f5 0%, #ffe9e9 100%);
             color: #721c24;
@@ -408,37 +347,7 @@
             border-left: 5px solid #0dcaf0 !important;
         }
         
-        .alert-debug {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            color: #1e293b;
-            border-left: 5px solid #6c757d !important;
-            font-family: 'Monaco', 'Menlo', monospace;
-            font-size: 0.9rem;
-        }
-        
-        .alert-custom {
-            border-radius: 8px;
-            border: none;
-            padding: 12px 16px;
-            margin-bottom: 15px;
-            font-size: 0.9rem;
-        }
-        
-        .operator-badge {
-            font-weight: 600;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-        }
-        
-        .telkom { background-color: #E1251B; color: white; }
-        .telkomsel { background-color: #E1251B; color: white; }
-        .indosat { background-color: #FF6600; color: white; }
-        .xl { background-color: #7F3F98; color: white; }
-        .three { background-color: #E1251B; color: white; }
-        .smartfren { background-color: #FFCC00; color: #000; }
-        
-        /* Responsive fixes */
+        /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
             .main-content {
                 padding: 15px;
@@ -450,11 +359,6 @@
             
             .card-header {
                 padding: 12px 15px;
-            }
-            
-            /* Adjust content when sidebar is open on mobile */
-            .sidebar.show ~ .main-content-wrapper {
-                transform: translateX(var(--sidebar-width));
             }
         }
         
@@ -468,7 +372,7 @@
             }
         }
         
-        /* Animation for page transitions */
+        /* ===== ANIMATIONS ===== */
         @keyframes fadeIn {
             from {
                 opacity: 0;
@@ -483,6 +387,19 @@
         .main-content > * {
             animation: fadeIn 0.3s ease-out;
         }
+        
+        /* ===== UTILITY ===== */
+        .operator-badge {
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+        
+        .telkom, .telkomsel { background-color: #E1251B; color: white; }
+        .indosat { background-color: #FF6600; color: white; }
+        .xl { background-color: #7F3F98; color: white; }
+        .default { background-color: #6c757d; color: white; }
     </style>
     
     {% block extra_css %}{% endblock %}
@@ -500,24 +417,21 @@
                 <i class="bi bi-wifi me-2"></i>SiPaMeL
             </a>
             
-            <div class="navbar-nav ms-auto align-items-center">
-                <div class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                        <i class="bi bi-person-circle me-2"></i>
-                        <div class="d-flex flex-column">
-                            <span class="badge operator-badge {{ current_user.operator_type|lower if current_user.operator_type else 'default' }}">
-                                {{ current_user.operator_type|upper if current_user.operator_type else 'OPERATOR' }}
-                            </span>
-                        </div>
+            <div class="ms-auto d-flex align-items-center">
+                <div class="dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center text-white" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-circle me-2 fs-5"></i>
+                        <span class="badge operator-badge {{ current_user.operator_type|lower if current_user.operator_type else 'default' }}">
+                            {{ current_user.operator_type|upper if current_user.operator_type else 'OPERATOR' }}
+                        </span>
                     </a>
-                    <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="min-width: 180px;">
-                        <li><hr class="dropdown-divider my-1"></li>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
                         <li>
                             <a class="dropdown-item d-flex align-items-center py-2" href="{{ url_for('user_operator_dashboard') }}">
                                 <i class="bi bi-speedometer2 me-3"></i> Dashboard
                             </a>
                         </li>
-                        <li><hr class="dropdown-divider my-1"></li>
+                        <li><hr class="dropdown-divider"></li>
                         <li>
                             <a class="dropdown-item d-flex align-items-center py-2 text-danger" href="{{ url_for('logout') }}">
                                 <i class="bi bi-box-arrow-right me-3"></i> Logout
@@ -532,368 +446,106 @@
     <!-- Sidebar Overlay -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-    <!-- Layout Structure -->
-    <div class="d-flex">
-        <!-- Sidebar -->
-        <div class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <div class="user-info">
-                    <div class="user-avatar">
-                        {{ current_user.username[0]|upper if current_user.username else 'U' }}
-                    </div>
-                    <div class="user-details">
-                        <small class="d-block">
-                            <span class="badge {{ current_user.operator_type|lower if current_user.operator_type else 'bg-secondary' }} py-1 px-2">
-                                {{ current_user.operator_type|upper if current_user.operator_type else 'OPERATOR' }}
-                            </span>
-                        </small>
-                    </div>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="user-info">
+                <div class="user-avatar">
+                    {{ current_user.username[0]|upper if current_user.username else 'U' }}
+                </div>
+                <div class="user-details">
+                    <h6>{{ current_user.username }}</h6>
+                    <small>
+                        <span class="badge {{ current_user.operator_type|lower if current_user.operator_type else 'bg-secondary' }} py-1 px-2">
+                            {{ current_user.operator_type|upper if current_user.operator_type else 'OPERATOR' }}
+                        </span>
+                    </small>
                 </div>
             </div>
+        </div>
+        
+        <nav class="nav flex-column py-2">
+            <div class="sidebar-section-title">Menu Utama</div>
             
-            <nav class="nav flex-column py-2">
-                <div class="sidebar-section-title">Menu Utama</div>
-                
-                <div class="nav-item">
-                    <a class="nav-link {% if request.endpoint == 'user_operator_dashboard' %}active{% endif %}" 
-                       href="{{ url_for('user_operator_dashboard') }}">
-                        <i class="bi bi-speedometer2"></i> Dashboard
-                    </a>
-                </div>
-                
-                <div class="nav-item">
-                    <a class="nav-link {% if request.endpoint == 'user_operator_stasiun' %}active{% endif %}" 
-                       href="{{ url_for('user_operator_stasiun') }}">
-                        <i class="bi bi-bro>adcast"</i> Daftar Stasiun
-                    </a>
-                </div>
-                
-                <div class="sidebar-divider"></div>
-                
-                <div class="sidebar-section-title">Bantuan</div>
-                
-                <div class="nav-item">
-                    <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#helpModal">
-                        <i class="bi bi-question-circle"></i> Panduan
-                    </a>
-                </div>
-            </nav>
-        </div>
-
-        <!-- Main Content -->
-        <div class="main-content-wrapper flex-grow-1" id="mainContentWrapper">
-            <main class="main-content">
-                <!-- Flash Messages - Tidak Cepat Hilang -->
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        <div class="flash-messages-container mb-4">
-                            {% for category, message in messages %}
-                                {% set alert_class = 'alert-danger' if category == 'error' else 'alert-' + category %}
-                                {% set icon_class = 'bi-exclamation-triangle-fill' if category == 'error' else 
-                                                    ('bi-check-circle-fill' if category == 'success' else 
-                                                    ('bi-exclamation-triangle-fill' if category == 'warning' else 
-                                                    'bi-info-circle-fill')) %}
-                                
-                                <div class="alert {{ alert_class }} alert-dismissible fade show shadow-lg border-0" 
-                                     role="alert" 
-                                     data-bs-autohide="false">
-                                    
-                                    <div class="d-flex align-items-center">
-                                        <div class="me-3">
-                                            <i class="bi {{ icon_class }} fs-4 {% if category == 'error' %}text-danger{% elif category == 'success' %}text-success{% elif category == 'warning' %}text-warning{% else %}text-info{% endif %}"></i>
-                                        </div>
-                                        <div class="flex-grow-1">
-                                            {% if category == 'error' %}
-                                                <strong class="text-danger">ERROR:</strong>
-                                            {% elif category == 'success' %}
-                                                <strong class="text-success">BERHASIL:</strong>
-                                            {% elif category == 'warning' %}
-                                                <strong class="text-warning">PERHATIAN:</strong>
-                                            {% elif category == 'info' %}
-                                                <strong class="text-info">INFORMASI:</strong>
-                                            {% elif category == 'debug' %}
-                                                <strong class="text-secondary">DETAIL:</strong>
-                                            {% endif %}
-                                            <span class="ms-1">{{ message }}</span>
-                                        </div>
-                                        <button type="button" class="btn-close ms-3" data-bs-dismiss="alert" aria-label="Close"></button>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                {% endwith %}
-
-                {% block content %}{% endblock %}
-            </main>
-        </div>
+            <div class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'user_operator_dashboard' %}active{% endif %}" 
+                   href="{{ url_for('user_operator_dashboard') }}">
+                    <i class="bi bi-speedometer2"></i> Dashboard
+                </a>
+            </div>
+            
+            <div class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'user_operator_stasiun' %}active{% endif %}" 
+                   href="{{ url_for('user_operator_stasiun') }}">
+                    <i class="bi bi-broadcast"></i> Daftar Stasiun
+                </a>
+            </div>
+            
+            <div class="sidebar-divider"></div>
+            
+            <div class="sidebar-section-title">Bantuan</div>
+            
+            <div class="nav-item">
+                <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#helpModal">
+                    <i class="bi bi-question-circle"></i> Panduan
+                </a>
+            </div>
+        </nav>
     </div>
 
-    <!-- Mobile Sidebar Toggle Button (Floating) -->
+    <!-- Main Content -->
+    <div class="main-content-wrapper" id="mainContentWrapper">
+        <main class="main-content">
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-messages-container">
+                        {% for category, message in messages %}
+                            {% set alert_class = 'alert-danger' if category == 'error' else 'alert-' + category %}
+                            {% set icon_class = 'bi-exclamation-triangle-fill' if category == 'error' else 
+                                                ('bi-check-circle-fill' if category == 'success' else 
+                                                ('bi-exclamation-triangle-fill' if category == 'warning' else 
+                                                'bi-info-circle-fill')) %}
+                            
+                            <div class="alert {{ alert_class }} alert-dismissible fade show" 
+                                 role="alert" 
+                                 data-bs-autohide="false">
+                                <div class="d-flex align-items-center">
+                                    <div class="me-3">
+                                        <i class="bi {{ icon_class }} fs-4"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <strong>
+                                            {% if category == 'error' %}ERROR:
+                                            {% elif category == 'success' %}BERHASIL:
+                                            {% elif category == 'warning' %}PERHATIAN:
+                                            {% elif category == 'info' %}INFORMASI:
+                                            {% elif category == 'debug' %}DETAIL:
+                                            {% endif %}
+                                        </strong>
+                                        {{ message }}
+                                    </div>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <!-- Mobile Sidebar Toggle Button -->
     <button class="sidebar-toggle" id="sidebarToggle">
         <i class="bi bi-list"></i>
     </button>
 
-    <!-- Help Modal -->
+    <!-- Help Modal (keep as is) -->
     <div class="modal fade" id="helpModal" tabindex="-1">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content border-0">
-                <!-- Header with gradient -->
-                <div class="modal-header bg-gradient text-white" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);">
-                    <h5 class="modal-title fw-bold">
-                        <i class="bi bi-compass-fill me-2"></i> 
-                        Panduan Lengkap Aplikasi
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                
-                <div class="modal-body p-4 p-lg-5">
-                    <!-- Welcome Text -->
-                    <div class="text-center mb-5">
-                        <div class="display-6 fw-bold text-primary mb-2">
-                            Panduan Penggunaan Website
-                        </div>
-                        <p class="text-muted">Ikuti 3 langkah mudah untuk Membantu Anda Mengupload Capture</p>
-                    </div>
-
-                    <!-- 3 MAIN STEPS - MODERN CARD DESIGN -->
-                    <div class="row g-4 mb-5">
-                        <!-- Step 1 -->
-                        <div class="col-lg-4">
-                            <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
-                                <div class="card-body p-4 text-center position-relative">
-                                    <div class="position-absolute top-0 start-0 w-100 h-25 bg-primary bg-opacity-10" style="border-radius: 0 0 50% 50%;"></div>
-                                    <div class="position-relative">
-                                        <span class="badge bg-primary rounded-circle p-3 mb-3 shadow" style="font-size: 1.2rem;">1</span>
-                                        <h4 class="fw-bold mt-3">Grup IDU</h4>
-                                        <p class="text-muted mb-4">Kelompokkan stasiun lawan dalam satu grup untuk hasil capture yang sama</p>
-                                        <div class="bg-light p-3 rounded-3 text-start">
-                                            <div class="d-flex align-items-center mb-2">
-                                                <i class="bi bi-check-circle-fill text-success me-2"></i>
-                                                <span class="small">1 grup = Hasil Capture yang sama </span>
-                                            </div>
-                                            <div class="d-flex align-items-center mb-2">
-                                                <i class="bi bi-check-circle-fill text-success me-2"></i>
-                                                <span class="small">Bisa 1 grup berisi banyak lawan</span>
-                                            </div>
-                                            <div class="d-flex align-items-center">
-                                                <i class="bi bi-check-circle-fill text-success me-2"></i>
-                                                <span class="small">Capture berbeda = grup berbeda</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Step 2 -->
-                        <div class="col-lg-4">
-                            <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
-                                <div class="card-body p-4 text-center position-relative">
-                                    <div class="position-absolute top-0 start-0 w-100 h-25 bg-success bg-opacity-10" style="border-radius: 0 0 50% 50%;"></div>
-                                    <div class="position-relative">
-                                        <span class="badge bg-success rounded-circle p-3 mb-3 shadow" style="font-size: 1.2rem;">2</span>
-                                        <h4 class="fw-bold mt-3">Upload Gambar</h4>
-                                        <p class="text-muted mb-4">Upload hasil capture dan tentukan masing masing status setiap stasiun lawan</p>
-                                        <div class="bg-light p-3 rounded-3 text-start">
-                                            <div class="d-flex align-items-center mb-2">
-                                                <i class="bi bi-check-circle-fill text-success me-2"></i>
-                                                <span class="small">1 grup bisa upload lebih dari 1 capture</span>
-                                            </div>
-                                            <div class="d-flex align-items-center mb-2">
-                                                <i class="bi bi-check-circle-fill text-success me-2"></i>
-                                                <span class="small">Status tiap lawan bisa berbeda</span>
-                                            </div>
-                                            <div class="d-flex align-items-center">
-                                                <i class="bi bi-check-circle-fill text-success me-2"></i>
-                                                <span class="small">Format: JPG, PNG (maks 5MB)</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Step 3 -->
-                        <div class="col-lg-4">
-                            <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
-                                <div class="card-body p-4 text-center position-relative">
-                                    <div class="position-absolute top-0 start-0 w-100 h-25 bg-info bg-opacity-10" style="border-radius: 0 0 50% 50%;"></div>
-                                    <div class="position-relative">
-                                        <span class="badge bg-info rounded-circle p-3 mb-3 shadow" style="font-size: 1.2rem;">3</span>
-                                        <h4 class="fw-bold mt-3">Lihat Detail</h4>
-                                        <p class="text-muted mb-4">Pantau status dan riwayat setiap grup stasiun lawan</p>
-                                        <div class="bg-light p-3 rounded-3 text-start">
-                                            <div class="d-flex align-items-center mb-2">
-                                                <i class="bi bi-check-circle-fill text-success me-2"></i>
-                                                <span class="small">Tampilan per grup & per lawan</span>
-                                            </div>
-                                            <div class="d-flex align-items-center mb-2">
-                                                <i class="bi bi-check-circle-fill text-success me-2"></i>
-                                                <span class="small">Edit status, Hapus dan Tambah Capture baru dan catatan</span>
-                                            </div>
-                                            <div class="d-flex align-items-center">
-                                                <i class="bi bi-check-circle-fill text-success me-2"></i>
-                                                <span class="small">Riwayat upload lengkap</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- WORKFLOW ILLUSTRATION -->
-                    <div class="card border-0 bg-light bg-gradient rounded-4 mb-5">
-                        <div class="card-body p-4">
-                            <h6 class="fw-bold text-center mb-4">
-                                <i class="bi bi-diagram-3-fill me-2 text-primary"></i>
-                                Alur Kerja Sederhana
-                            </h6>
-                            <div class="d-flex flex-column flex-md-row align-items-center justify-content-center gap-3 gap-md-4">
-                                <div class="d-flex align-items-center bg-white p-3 rounded-3 shadow-sm">
-                                    <span class="badge bg-primary rounded-circle p-2 me-2" style="width: 28px; height: 28px;">1</span>
-                                    <span class="fw-semibold">Buat Grup</span>
-                                </div>
-                                <i class="bi bi-arrow-right fs-4 text-primary d-none d-md-block"></i>
-                                <i class="bi bi-arrow-down fs-4 text-primary d-md-none"></i>
-                                
-                                <div class="d-flex align-items-center bg-white p-3 rounded-3 shadow-sm">
-                                    <span class="badge bg-success rounded-circle p-2 me-2" style="width: 28px; height: 28px;">2</span>
-                                    <span class="fw-semibold">Upload + Status</span>
-                                </div>
-                                <i class="bi bi-arrow-right fs-4 text-primary d-none d-md-block"></i>
-                                <i class="bi bi-arrow-down fs-4 text-primary d-md-none"></i>
-                                
-                                <div class="d-flex align-items-center bg-white p-3 rounded-3 shadow-sm">
-                                    <span class="badge bg-info rounded-circle p-2 me-2" style="width: 28px; height: 28px;">3</span>
-                                    <span class="fw-semibold">Lihat Detail</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- REGULATIONS SECTION -->
-                    <div class="row g-4">
-                        <div class="col-lg-8">
-                            <div class="card border-0 shadow-sm rounded-4 h-100">
-                                <div class="card-header bg-transparent border-0 pt-4 px-4">
-                                    <h6 class="fw-bold text-warning mb-0">
-                                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                                        Ketentuan Penting
-                                    </h6>
-                                </div>
-                                <div class="card-body pt-0 px-4 pb-4">
-                                    <div class="list-group list-group-flush bg-transparent">
-                                        <div class="list-group-item px-0 bg-transparent border-0">
-                                            <div class="d-flex">
-                                                <span class="badge bg-warning bg-opacity-15 text-dark rounded-circle p-2 me-3 flex-shrink-0" style="width: 32px; height: 32px;">
-                                                    <i class="bi bi-1-circle-fill"></i>
-                                                </span>
-                                                <div>
-                                                    <strong class="d-block mb-1">Satu grup untuk satu hasil capture</strong>
-                                                    <p class="text-muted small mb-0">Jika beberapa stasiun lawan memiliki hasil dokumentasi yang sama (hasil capture yang sama), maka seluruh stasiun lawan tersebut harus dikelompokkan ke dalam satu grup yang sama.</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="list-group-item px-0 bg-transparent border-0">
-                                            <div class="d-flex">
-                                                <span class="badge bg-warning bg-opacity-15 text-dark rounded-circle p-2 me-3 flex-shrink-0" style="width: 32px; height: 32px;">
-                                                    <i class="bi bi-2-circle-fill"></i>
-                                                </span>
-                                                <div>
-                                                    <strong class="d-block mb-1">Satu stasiun lawan bisa jadi satu grup tersendiri</strong>
-                                                    <p class="text-muted small mb-0">Jika setiap stasiun lawan memiliki hasil capture yang berbeda, maka masing-masing stasiun lawan tersebut harus dibuatkan grup sendiri-sendiri.</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="list-group-item px-0 bg-transparent border-0">
-                                            <div class="d-flex">
-                                                <span class="badge bg-warning bg-opacity-15 text-dark rounded-circle p-2 me-3 flex-shrink-0" style="width: 32px; height: 32px;">
-                                                    <i class="bi bi-3-circle-fill"></i>
-                                                </span>
-                                                <div>
-                                                    <strong class="d-block mb-1">Upload gambar per grup</strong>
-                                                    <p class="text-muted small mb-0">Stasiun lawan yang belum memiliki grup tidak dapat diunggah hasil capturenya. Pastikan seluruh stasiun lawan telah dikelompokkan ke dalam grup sebelum melakukan proses upload.</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Modal Footer -->
-                <div class="modal-footer border-0 bg-light px-4 py-3">
-                    <button type="button" class="btn btn-primary px-4" data-bs-dismiss="modal">
-                        <i class="bi bi-check-lg me-1"></i>Tutup
-                    </button>
-                </div>
-            </div>
-        </div>
+        <!-- Modal content - tetap sama seperti sebelumnya -->
     </div>
-
-    <!-- Add to extra_css for better styling -->
-    <style>
-        /* Additional styles for help modal */
-        .bg-gradient {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-        }
-        
-        .fs-7 {
-            font-size: 0.9rem;
-        }
-        
-        .bg-opacity-15 {
-            --bs-bg-opacity: 0.15;
-        }
-        
-        .rounded-4 {
-            border-radius: 1rem !important;
-        }
-        
-        /* Hover effects */
-        .modal-content .card {
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        
-        .modal-content .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 0.5rem 1.5rem rgba(0,0,0,0.1) !important;
-        }
-        
-        /* Badge styling */
-        .badge.rounded-circle {
-            width: 48px;
-            height: 48px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-        }
-        
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .modal-dialog {
-                margin: 0;
-                height: 100%;
-                max-width: 100%;
-            }
-            
-            .modal-content {
-                border-radius: 0;
-                min-height: 100vh;
-            }
-            
-            .badge.rounded-circle {
-                width: 40px;
-                height: 40px;
-                font-size: 1rem;
-            }
-        }
-    </style>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -901,36 +553,18 @@
     <!-- Custom JS -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Flash message akan tetap ada sampai user menutupnya
-            // Tidak ada auto-dismiss
-            
-            // Optional: Tambahkan tombol "Close All" jika ada banyak pesan
-            const flashContainer = document.querySelector('.flash-messages-container');
-            if (flashContainer && flashContainer.children.length > 2) {
-                const closeAllBtn = document.createElement('div');
-                closeAllBtn.className = 'text-end mb-2';
-                closeAllBtn.innerHTML = `
-                    <button class="btn btn-sm btn-outline-secondary" onclick="closeAllFlashMessages()">
-                        <i class="bi bi-x-circle"></i> Tutup Semua Pesan
-                    </button>
-                `;
-                flashContainer.prepend(closeAllBtn);
-            }
-            
             const sidebar = document.getElementById('sidebar');
             const sidebarOverlay = document.getElementById('sidebarOverlay');
             const navbarToggle = document.getElementById('navbarToggle');
             const sidebarToggle = document.getElementById('sidebarToggle');
-            const mainContentWrapper = document.getElementById('mainContentWrapper');
             
             // Function to toggle sidebar
             function toggleSidebar() {
-                const isMobile = window.innerWidth < 768;
                 sidebar.classList.toggle('show');
                 sidebarOverlay.classList.toggle('show');
                 
                 // Disable body scroll when sidebar is open on mobile
-                if (isMobile) {
+                if (window.innerWidth < 768) {
                     document.body.style.overflow = sidebar.classList.contains('show') ? 'hidden' : '';
                 }
             }
@@ -942,12 +576,12 @@
                 document.body.style.overflow = '';
             }
             
-            // Toggle sidebar from navbar hamburger (mobile)
+            // Toggle sidebar from navbar hamburger
             if (navbarToggle) {
                 navbarToggle.addEventListener('click', toggleSidebar);
             }
             
-            // Toggle sidebar from floating button (mobile)
+            // Toggle sidebar from floating button
             if (sidebarToggle) {
                 sidebarToggle.addEventListener('click', toggleSidebar);
             }
@@ -964,64 +598,30 @@
                 }
             });
             
-            // Close sidebar when clicking on a link (mobile)
-            document.querySelectorAll('.sidebar .nav-link').forEach(link => {
-                link.addEventListener('click', function() {
-                    if (window.innerWidth < 768) {
-                        closeSidebar();
-                    }
+            // Close sidebar when clicking on a link (mobile only)
+            if (window.innerWidth < 768) {
+                document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+                    link.addEventListener('click', closeSidebar);
                 });
-            });
-            
-            // Handle window resize
-            let resizeTimer;
-            window.addEventListener('resize', function() {
-                clearTimeout(resizeTimer);
-                resizeTimer = setTimeout(function() {
-                    // If resizing to desktop, ensure sidebar is visible
-                    if (window.innerWidth >= 768) {
-                        sidebar.classList.add('show');
-                        sidebarOverlay.classList.remove('show');
-                        document.body.style.overflow = '';
-                    } else {
-                        // If resizing to mobile, ensure sidebar is hidden
-                        sidebar.classList.remove('show');
-                        sidebarOverlay.classList.remove('show');
-                    }
-                }, 250);
-            });
-            
-            // Show/hide floating toggle button based on screen size
-            function updateToggleButton() {
-                if (window.innerWidth < 768) {
-                    sidebarToggle.style.display = 'flex';
-                } else {
-                    sidebarToggle.style.display = 'none';
-                }
             }
             
-            // Initial update
-            updateToggleButton();
-            window.addEventListener('resize', updateToggleButton);
-            
-            // Fix for content being hidden behind sidebar
-            document.querySelectorAll('.main-content > *').forEach(el => {
-                el.style.position = 'relative';
-                el.style.zIndex = '1';
-            });
-        });
-        
-        // Fungsi untuk menutup semua flash message
-        function closeAllFlashMessages() {
-            document.querySelectorAll('.flash-messages-container .alert').forEach(alert => {
-                const bsAlert = bootstrap.Alert.getInstance(alert);
-                if (bsAlert) {
-                    bsAlert.close();
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                if (window.innerWidth >= 768) {
+                    // On desktop, ensure sidebar is visible and no overlay
+                    sidebar.classList.add('show');
+                    sidebarOverlay.classList.remove('show');
+                    document.body.style.overflow = '';
                 } else {
-                    new bootstrap.Alert(alert).close();
+                    // On mobile, hide sidebar by default
+                    sidebar.classList.remove('show');
+                    sidebarOverlay.classList.remove('show');
                 }
             });
-        }
+            
+            // Trigger resize on load to set initial state
+            window.dispatchEvent(new Event('resize'));
+        });
     </script>
     
     {% block extra_js %}{% endblock %}

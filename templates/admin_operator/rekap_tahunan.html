@@ -1,0 +1,537 @@
+{% extends "admin_operator/base.html" %}
+
+{% block title %}Rekap Tahunan - {{ operator_name }}{% endblock %}
+
+{% block styles %}
+<style>
+    :root {
+        --operator-color: {% if current_user.operator_type == 'telkom' or current_user.operator_type == 'telkomsel' %}#E1251B
+                         {% elif current_user.operator_type == 'indosat' %}#FF6600
+                         {% elif current_user.operator_type == 'xl' %}#7F3F98
+                         {% else %}#0d6efd{% endif %};
+        --operator-color-light: {% if current_user.operator_type == 'telkom' or current_user.operator_type == 'telkomsel' %}rgba(225, 37, 27, 0.1)
+                               {% elif current_user.operator_type == 'indosat' %}rgba(255, 102, 0, 0.1)
+                               {% elif current_user.operator_type == 'xl' %}rgba(127, 63, 152, 0.1)
+                               {% else %}rgba(13, 110, 253, 0.1){% endif %};
+        --operator-color-dark: {% if current_user.operator_type == 'telkom' or current_user.operator_type == 'telkomsel' %}#B71C1C
+                              {% elif current_user.operator_type == 'indosat' %}#E65100
+                              {% elif current_user.operator_type == 'xl' %}#4A1B6D
+                              {% else %}#0b5ed7{% endif %};
+        --border-radius: 16px;
+        --shadow: 0 8px 24px rgba(0,0,0,0.08);
+    }
+
+    .filter-card {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        border: 1px solid #eef2f6;
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+
+    .filter-header {
+        background: linear-gradient(135deg, var(--operator-color), var(--operator-color-dark));
+        color: white;
+        padding: 1.25rem 1.5rem;
+    }
+
+    .filter-header h5 {
+        margin: 0;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .filter-header h5 i {
+        font-size: 1.2rem;
+    }
+
+    .filter-body {
+        padding: 1.5rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .form-label i {
+        color: var(--operator-color);
+        margin-right: 0.4rem;
+    }
+
+    .form-select {
+        border-radius: 12px;
+        border: 1px solid #eef2f6;
+        padding: 0.6rem 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-select:focus {
+        border-color: var(--operator-color);
+        box-shadow: 0 0 0 3px var(--operator-color-light);
+        outline: none;
+    }
+
+    .btn-primary-custom {
+        background: var(--operator-color);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 0.6rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary-custom:hover {
+        background: var(--operator-color-dark);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(var(--operator-color-rgb), 0.3);
+    }
+
+    .btn-outline-custom {
+        background: white;
+        color: var(--operator-color);
+        border: 2px solid var(--operator-color-light);
+        border-radius: 12px;
+        padding: 0.6rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-outline-custom:hover {
+        background: var(--operator-color-light);
+        color: var(--operator-color-dark);
+        transform: translateY(-2px);
+    }
+
+    .info-card {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        border: 1px solid #eef2f6;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .info-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 16px;
+        background: var(--operator-color-light);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--operator-color);
+        font-size: 2rem;
+    }
+
+    .info-content {
+        flex: 1;
+    }
+
+    .info-content h6 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 0.25rem;
+    }
+
+    .info-content p {
+        color: #64748b;
+        margin-bottom: 0;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .info-badge {
+        background: var(--operator-color-light);
+        color: var(--operator-color);
+        padding: 0.4rem 1rem;
+        border-radius: 50px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .info-badge i {
+        font-size: 1rem;
+    }
+
+    .export-card {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        border: 1px solid #eef2f6;
+        overflow: hidden;
+        text-align: center;
+        padding: 3rem 2rem;
+    }
+
+    .export-icon {
+        width: 120px;
+        height: 120px;
+        border-radius: 60px;
+        background: var(--operator-color-light);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        font-size: 3.5rem;
+        color: var(--operator-color);
+        transition: all 0.3s ease;
+    }
+
+    .export-card:hover .export-icon {
+        transform: scale(1.1) rotate(5deg);
+        background: var(--operator-color);
+        color: white;
+    }
+
+    .export-card h3 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 0.5rem;
+    }
+
+    .export-card p {
+        color: #64748b;
+        margin-bottom: 2rem;
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .btn-export {
+        background: linear-gradient(135deg, #198754, #146c43);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 1rem 2.5rem;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        box-shadow: 0 8px 20px rgba(25, 135, 84, 0.3);
+    }
+
+    .btn-export:hover {
+        background: #146c43;
+        transform: translateY(-3px);
+        box-shadow: 0 12px 30px rgba(25, 135, 84, 0.4);
+        color: white;
+    }
+
+    .btn-export i {
+        font-size: 1.3rem;
+    }
+
+    .structure-card {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        border: 1px solid #eef2f6;
+        padding: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .structure-card h6 {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .structure-card h6 i {
+        color: var(--operator-color);
+    }
+
+    .structure-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+    }
+
+    .structure-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem;
+        background: #f8fafc;
+        border-radius: 12px;
+    }
+
+    .structure-number {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        background: var(--operator-color-light);
+        color: var(--operator-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.9rem;
+    }
+
+    .structure-text {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #1e293b;
+    }
+
+    @media (max-width: 768px) {
+        .info-card {
+            flex-direction: column;
+            text-align: center;
+            gap: 1rem;
+        }
+        
+        .info-content p {
+            justify-content: center;
+        }
+        
+        .export-card {
+            padding: 2rem 1rem;
+        }
+        
+        .export-card h3 {
+            font-size: 1.5rem;
+        }
+        
+        .structure-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 480px) {
+        .structure-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="mb-0">
+            <i class="bi bi-calendar-year-fill me-2" style="color: var(--operator-color);"></i>
+            Rekap Tahunan - {{ operator_name }}
+        </h3>
+        <a href="{{ url_for('admin_operator_dashboard') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Kembali ke Dashboard
+        </a>
+    </div>
+
+    <!-- Filter Card -->
+    <div class="filter-card">
+        <div class="filter-header">
+            <h5>
+                <i class="bi bi-funnel-fill"></i>
+                Filter Laporan Tahunan
+            </h5>
+        </div>
+        <div class="filter-body">
+            <form method="GET" action="{{ url_for('admin_operator_rekap_tahunan') }}" class="row g-4" id="filterForm">
+                <!-- Tahun -->
+                <div class="col-md-4">
+                    <label class="form-label">
+                        <i class="bi bi-calendar3"></i> Tahun
+                    </label>
+                    <select class="form-select" name="tahun" id="tahun">
+                        {% for y in range(2020, 2031) %}
+                        <option value="{{ y }}" {% if tahun == y %}selected{% endif %}>{{ y }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Kota (opsional) -->
+                <div class="col-md-4">
+                    <label class="form-label">
+                        <i class="bi bi-geo-alt"></i> Kota/Kabupaten
+                    </label>
+                    <select class="form-select" name="kota" id="kota">
+                        <option value="all" {% if kota == 'all' %}selected{% endif %}>Semua Kota/kab</option>
+                        {% for k in kota_list %}
+                        <option value="{{ k }}" {% if kota == k %}selected{% endif %}>{{ k|title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Tombol Aksi -->
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary-custom w-100">
+                        <i class="bi bi-search"></i> Tampilkan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Info Card -->
+    <div class="info-card">
+        <div class="info-icon">
+            <i class="bi bi-info-circle"></i>
+        </div>
+        <div class="info-content">
+            <h6>Periode Laporan Aktif</h6>
+            <p>
+                <span class="info-badge">
+                    <i class="bi bi-calendar3"></i> Tahun {{ tahun }}
+                </span>
+                <span class="info-badge">
+                    <i class="bi bi-hdd-stack"></i> {{ operator_name }}
+                </span>
+                {% if kota != 'all' %}
+                <span class="info-badge">
+                    <i class="bi bi-geo-alt"></i> {{ kota|title }}
+                </span>
+                {% else %}
+                <span class="info-badge">
+                    <i class="bi bi-globe"></i> Semua Kota/kab
+                </span>
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    <!-- Export Card -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="export-card">
+                <div class="export-icon">
+                    <i class="bi bi-file-earmark-word-fill"></i>
+                </div>
+                
+                <h3>Download Laporan Tahunan</h3>
+                <p>
+                    Laporan akan di-generate dalam format Microsoft Word (.docx) 
+                    dengan gambar besar per grup untuk setiap bulan yang memiliki data.
+                </p>
+                
+                <a href="{{ url_for('admin_operator_rekap_tahunan_word_gambar', tahun=tahun, kota=kota) }}" 
+                   class="btn-export" target="_blank">
+                    <i class="bi bi-file-word-fill"></i>
+                    Export Word dengan Gambar
+                </a>
+                
+                <div class="mt-4 pt-3 border-top">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-center justify-content-center">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                <small class="text-muted">Format .docx</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-center justify-content-center">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                <small class="text-muted">12 Bulan</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-center justify-content-center">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                <small class="text-muted">Gambar 5.0 inch</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Struktur Laporan -->
+    <div class="structure-card">
+        <h6>
+            <i class="bi bi-diagram-3"></i>
+            Struktur Laporan Tahunan
+        </h6>
+        <div class="structure-grid">
+            <div class="structure-item">
+                <div class="structure-number">1</div>
+                <div class="structure-text">Halaman Cover</div>
+            </div>
+            <div class="structure-item">
+                <div class="structure-number">2</div>
+                <div class="structure-text">Ringkasan Statistik</div>
+            </div>
+            <div class="structure-item">
+                <div class="structure-number">3</div>
+                <div class="structure-text">Data per Bulan</div>
+            </div>
+            <div class="structure-item">
+                <div class="structure-number">4</div>
+                <div class="structure-text">Gambar per Grup</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Tambahan -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 bg-light">
+                <div class="card-body py-3">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-lightbulb-fill text-warning me-3 fs-4"></i>
+                        <div>
+                            <small class="text-muted">
+                                <strong>Info:</strong> Laporan akan menampilkan data untuk 
+                                <strong>Tahun {{ tahun }}</strong> 
+                                dengan filter kota <strong>{% if kota != 'all' %}{{ kota|title }}{% else %}Semua Kota/kab{% endif %}</strong>.
+                                Hanya bulan yang memiliki data yang akan ditampilkan dalam dokumen.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto submit saat filter berubah
+    const tahun = document.getElementById('tahun');
+    const kota = document.getElementById('kota');
+    
+    function submitForm() {
+        const params = new URLSearchParams({
+            tahun: tahun.value,
+            kota: kota.value
+        });
+        window.location.href = "{{ url_for('admin_operator_rekap_tahunan') }}?" + params.toString();
+    }
+    
+    tahun.addEventListener('change', submitForm);
+    kota.addEventListener('change', submitForm);
+});
+</script>
+{% endblock %}

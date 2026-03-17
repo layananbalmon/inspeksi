@@ -4,7 +4,7 @@
 
 {% block extra_css %}
 <style>
-    /* ===== DASHBOARD STYLES - CLEAN & MODERN ===== */
+    /* ===== DASHBOARD STYLES ===== */
     .dashboard-header {
         background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
         color: white;
@@ -33,9 +33,6 @@
     .stat-card .card-body {
         padding: 1.25rem;
         position: relative;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
     }
 
     .stat-card .stat-icon {
@@ -69,7 +66,7 @@
     /* Card colors */
     .bg-primary-gradient { background: linear-gradient(145deg, #0d6efd, #0b5ed7); }
     .bg-success-gradient { background: linear-gradient(145deg, #198754, #146c43); }
-    .bg-warning-gradient { background: linear-gradient(145deg, #ffc107, #ffb000); color: #212529; }
+    .bg-warning-gradient { background: linear-gradient(145deg, #ffc107, #ffb000); }
     .bg-info-gradient { background: linear-gradient(145deg, #0dcaf0, #0bb2d4); }
 
     /* ===== QUICK ACTIONS ===== */
@@ -99,16 +96,11 @@
         font-weight: 500;
         border-radius: 12px;
         transition: all 0.2s;
-        border-width: 1.5px;
     }
 
     .quick-actions .btn:hover {
         transform: translateY(-2px);
         box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    }
-
-    .quick-actions .btn i {
-        font-size: 1rem;
     }
 
     /* ===== DATE BADGE ===== */
@@ -117,11 +109,6 @@
         border-radius: 100px;
         padding: 0.6rem 1.25rem;
         box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-
-    .date-badge i {
-        color: #2a5298;
-        font-size: 1.1rem;
     }
 
     .date-badge span {
@@ -151,10 +138,7 @@
         font-size: 0.95rem;
         font-weight: 600;
         margin: 0;
-    }
-
-    .warning-card .list-group {
-        background: transparent;
+        color: white;
     }
 
     .warning-card .list-group-item {
@@ -170,6 +154,11 @@
     .warning-card .list-group-item:hover {
         background: rgba(255,255,255,0.15);
         transform: translateX(3px);
+    }
+
+    .warning-card .list-group-item a {
+        color: white;
+        text-decoration: none;
     }
 
     /* ===== CITIES CARD ===== */
@@ -192,10 +181,6 @@
         font-weight: 600;
         color: #2c3e50;
         margin: 0;
-    }
-
-    .cities-card .card-body {
-        padding: 1.25rem;
     }
 
     /* ===== CITY BADGES ===== */
@@ -221,10 +206,6 @@
         box-shadow: 0 5px 10px rgba(30, 60, 114, 0.2);
     }
 
-    .city-badge i {
-        font-size: 0.8rem;
-    }
-
     /* ===== EMPTY STATES ===== */
     .empty-state {
         padding: 2rem 1rem;
@@ -236,11 +217,6 @@
         font-size: 2.5rem;
         opacity: 0.4;
         margin-bottom: 0.75rem;
-    }
-
-    .empty-state p {
-        font-size: 0.85rem;
-        margin-bottom: 0;
     }
 
     /* ===== ANIMATIONS ===== */
@@ -261,22 +237,12 @@
 
     /* ===== RESPONSIVE ===== */
     @media (max-width: 768px) {
-        .dashboard-header {
-            padding: 1rem 1.25rem;
-            border-radius: 12px;
-            margin-bottom: 1rem;
-        }
-        
         .stat-card {
             min-height: 110px;
         }
         
         .stat-card .stat-number {
             font-size: 1.6rem;
-        }
-        
-        .quick-actions .btn {
-            padding: 0.6rem;
         }
         
         .date-badge {
@@ -288,8 +254,7 @@
     .fs-7 { font-size: 0.8rem; }
     .fs-8 { font-size: 0.7rem; }
     .fw-500 { font-weight: 500; }
-    .rounded-16 { border-radius: 16px; }
-    .text-primary-dark { color: #1e3c72; }
+    .text-white-50 { color: rgba(255,255,255,0.7); }
 </style>
 {% endblock %}
 
@@ -302,34 +267,26 @@
         </h1>
         <p class="mb-0 opacity-75 fs-7">
             <i class="bi bi-person-circle me-1"></i>Selamat datang, 
-            {% if current_user.operator_type %}
             <span class="badge bg-white text-primary px-3 py-1 rounded-pill">{{ current_user.operator_type|upper }}</span>
-            {% endif %}
         </p>
     </div>
     <div class="mt-2 mt-md-0">
         <div class="date-badge d-flex align-items-center">
-            <i class="bi bi-calendar3 me-2 fs-6"></i>
-            <span class="fw-semibold">
-                {% if current_date %}
-                    {{ current_date }}
-                {% elif now %}
-                    {{ now.strftime('%d %B %Y') }}
-                {% endif %}
-            </span>
+            <i class="bi bi-calendar3 me-2"></i>
+            <span>{{ current_date }}</span>
         </div>
     </div>
 </div>
 
-<!-- STATISTICS CARDS -->
+<!-- STATISTICS CARDS - Full width row -->
 <div class="row g-3 mb-4">
     <div class="col-xl-3 col-md-6">
         <div class="stat-card bg-primary-gradient animate-card" style="animation-delay: 0.1s;">
             <div class="card-body text-white">
                 <div class="stat-label">Stasiun Name</div>
-                <div class="stat-number" id="total-stations">{{ total_stations|default(0) }}</div>
+                <div class="stat-number">{{ total_stations|default(0) }}</div>
                 <div class="stat-footer">
-                    <i class="bi bi-building me-1"></i> {{ current_user.operator_type|title if current_user.operator_type else 'Anda' }}
+                    <i class="bi bi-building me-1"></i> {{ current_user.operator_type|title }}
                 </div>
                 <i class="bi bi-tower stat-icon"></i>
             </div>
@@ -340,7 +297,7 @@
         <div class="stat-card bg-success-gradient animate-card" style="animation-delay: 0.2s;">
             <div class="card-body text-white">
                 <div class="stat-label">Stasiun Lawan</div>
-                <div class="stat-number" id="total-opponents">{{ total_opponents|default(0) }}</div>
+                <div class="stat-number">{{ total_opponents|default(0) }}</div>
                 <div class="stat-footer">
                     <i class="bi bi-wifi me-1"></i>Semua operator
                 </div>
@@ -353,7 +310,7 @@
         <div class="stat-card bg-warning-gradient animate-card" style="animation-delay: 0.3s;">
             <div class="card-body">
                 <div class="stat-label text-dark">Total Upload</div>
-                <div class="stat-number text-dark" id="total-uploads">{{ total_uploads|default(0) }}</div>
+                <div class="stat-number text-dark">{{ total_uploads|default(0) }}</div>
                 <div class="stat-footer text-dark-50">
                     <i class="bi bi-cloud-arrow-up me-1"></i>Gambar terupload
                 </div>
@@ -367,7 +324,7 @@
             <div class="card-body text-white">
                 <div class="stat-label">Operator</div>
                 <div class="stat-number" style="font-size: 1.75rem;">
-                    {{ current_user.operator_type|title|truncate(10) if current_user.operator_type else 'Operator' }}
+                    {{ current_user.operator_type|title }}
                 </div>
                 <div class="stat-footer">
                     <i class="bi bi-tag me-1"></i>Operator
@@ -378,25 +335,25 @@
     </div>
 </div>
 
-<!-- QUICK ACTIONS -->
+<!-- QUICK ACTIONS - Full width -->
 <div class="quick-actions-card animate-card" style="animation-delay: 0.5s;">
-    <div class="card-header d-flex align-items-center">
+    <div class="card-header">
         <i class="bi bi-lightning-charge-fill text-primary me-2"></i>
-        <h5 class="mb-0">Aksi Cepat</h5>
+        <h5 class="mb-0 d-inline">Aksi Cepat</h5>
     </div>
     <div class="card-body p-3">
         <div class="row g-2 quick-actions">
-            <div class="col-lg-3 col-md-6">
+            <div class="col-lg-4 col-md-6">
                 <a href="{{ url_for('user_operator_stasiun') }}" class="btn btn-primary w-100">
                     <i class="bi bi-wifi me-2"></i>Semua Stasiun
                 </a>
             </div>
-            <div class="col-lg-3 col-md-6">
+            <div class="col-lg-4 col-md-6">
                 <a href="#" class="btn btn-outline-warning w-100" data-bs-toggle="modal" data-bs-target="#helpModal">
                     <i class="bi bi-question-circle me-2"></i>Panduan
                 </a>
             </div>
-            <div class="col-lg-3 col-md-6">
+            <div class="col-lg-4 col-md-6">
                 <a href="{{ url_for('logout') }}" class="btn btn-outline-danger w-100">
                     <i class="bi bi-box-arrow-right me-2"></i>Logout
                 </a>
@@ -405,14 +362,14 @@
     </div>
 </div>
 
-<!-- MAIN CONTENT ROW - FULL WIDTH FOR WARNING & CITIES -->
+<!-- WARNING AND CITIES - Side by side -->
 <div class="row g-4">
-    <!-- LEFT COLUMN - Warning Card (Full width on mobile, half on desktop) -->
+    <!-- Warning Card -->
     <div class="col-lg-6">
         <div class="warning-card animate-card h-100" style="animation-delay: 0.6s;">
-            <div class="card-header d-flex align-items-center">
+            <div class="card-header">
                 <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                <h5 class="mb-0">Perlu Perhatian</h5>
+                <h5 class="mb-0 d-inline">Perlu Perhatian</h5>
             </div>
             <div class="card-body p-3">
                 {% if stations_without_upload and stations_without_upload|length > 0 %}
@@ -424,7 +381,7 @@
                 <div class="list-group list-group-flush bg-transparent">
                     {% for station in stations_without_upload[:5] %}
                     <a href="{{ url_for('user_operator_detail_stasiun', station_id=station.id) }}" 
-                       class="list-group-item list-group-item-action d-flex align-items-center">
+                       class="list-group-item list-group-item-action d-flex align-items-center text-white">
                         <div class="flex-grow-1">
                             <div class="fw-semibold fs-7">{{ station.stasiun_name|truncate(25) }}</div>
                             <small class="opacity-75 fs-8">
@@ -432,7 +389,7 @@
                             </small>
                         </div>
                         <span class="badge bg-white text-danger rounded-circle p-2">
-                            <i class="bi bi-arrow-up-short fs-6"></i>
+                            <i class="bi bi-arrow-up-short"></i>
                         </span>
                     </a>
                     {% endfor %}
@@ -440,7 +397,7 @@
                 
                 {% if stations_without_upload|length > 5 %}
                 <div class="text-center mt-3">
-                    <small class="opacity-75 fs-8">
+                    <small class="opacity-75">
                         +{{ stations_without_upload|length - 5 }} stasiun lainnya
                     </small>
                 </div>
@@ -457,42 +414,36 @@
                         <i class="bi bi-check-lg fs-2 text-white"></i>
                     </div>
                     <h6 class="text-white mt-2 fs-7 fw-semibold">Semua Stasiun Terupload</h6>
-                    <p class="small text-white-50 mb-0 fs-8">Kerja bagus! Data lengkap.</p>
+                    <p class="small text-white-50 mb-0">Kerja bagus! Data lengkap.</p>
                 </div>
                 {% endif %}
             </div>
         </div>
     </div>
 
-    <!-- RIGHT COLUMN - Cities Card -->
+    <!-- Cities Card -->
     <div class="col-lg-6">
         <div class="cities-card animate-card h-100" style="animation-delay: 0.7s;">
-            <div class="card-header d-flex align-items-center">
+            <div class="card-header">
                 <i class="bi bi-building text-primary me-2"></i>
-                <h5 class="mb-0">Kota/Kabupaten</h5>
+                <h5 class="mb-0 d-inline">Kota/Kabupaten</h5>
             </div>
             <div class="card-body">
                 {% if kota_list and kota_list|length > 0 %}
                 <div class="d-flex flex-wrap gap-1">
                     {% for kota in kota_list[:12] %}
                     <a href="{{ url_for('user_operator_stasiun', kota=kota) }}" class="city-badge">
-                        <i class="bi bi-pin-map-fill me-1"></i>{{ kota|title if kota else 'Unknown' }}
+                        <i class="bi bi-pin-map-fill me-1"></i>{{ kota|title }}
                     </a>
                     {% endfor %}
                 </div>
                 {% if kota_list|length > 12 %}
                 <div class="text-center mt-3">
-                    <small class="text-muted fs-8">
+                    <small class="text-muted">
                         dan {{ kota_list|length - 12 }} kota lainnya
                     </small>
                 </div>
                 {% endif %}
-                
-                <!-- Summary Stats -->
-                <div class="mt-4 pt-2 border-top">
-                    <div class="row g-2">
-                    </div>
-                </div>
                 {% else %}
                 <div class="empty-state">
                     <i class="bi bi-map"></i>
@@ -512,7 +463,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const statNumbers = document.querySelectorAll('.stat-number');
     statNumbers.forEach(element => {
         const text = element.textContent.trim();
-        if (!isNaN(text) && text !== '' && text.toLowerCase() !== 'nan') {
+        if (!isNaN(text) && text !== '') {
             const finalValue = parseInt(text);
             if (finalValue > 0) {
                 let currentValue = 0;
@@ -528,16 +479,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }, 30);
             }
         }
-    });
-
-    // Smooth hover effects
-    document.querySelectorAll('.list-group-item').forEach(item => {
-        item.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateX(5px)';
-        });
-        item.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateX(0)';
-        });
     });
 });
 </script>

@@ -698,7 +698,7 @@
             <div class="filter-menu">
                 <a class="dropdown-item d-flex justify-content-between align-items-center {% if not request.args.get('kota') %}active{% endif %}" 
                    href="{{ url_for('admin_operator_daftar_stasiun') }}">
-                    <span><i class="bi bi-filter-circle me-2"></i>Semua Kota</span>
+                    <span><i class="bi bi-filter-circle me-2"></i>Semua Kota/kab</span>
                     <span class="badge-count">{{ kota_list|length }}</span>
                 </a>
                 <hr class="dropdown-divider">

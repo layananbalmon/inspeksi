@@ -26,11 +26,11 @@
                     {% if selected_kota != 'all' %}
                         {{ selected_kota|title }}
                     {% else %}
-                        Semua Kota
+                        Semua Kota/kab
                     {% endif %}
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item" href="{{ url_for('user_operator_card_view') }}">Semua Kota</a></li>
+                    <li><a class="dropdown-item" href="{{ url_for('user_operator_card_view') }}">Semua Kota/kab</a></li>
                     <li><hr class="dropdown-divider"></li>
                     {% for kota in kota_list %}
                     <li>
@@ -341,7 +341,7 @@
             <p class="text-muted">
                 {% if selected_kota != 'all' %}
                     Tidak ada stasiun di kota {{ selected_kota|title }}.
-                    <a href="{{ url_for('user_operator_card_view') }}" class="text-decoration-none">Lihat semua kota/Kab</a>
+                    <a href="{{ url_for('user_operator_card_view') }}" class="text-decoration-none">Lihat Semua Kota/kab/Kab</a>
                 {% else %}
                     Admin belum menambahkan stasiun untuk operator {{ operator_name }}.
                 {% endif %}

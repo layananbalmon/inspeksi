@@ -1,0 +1,180 @@
+{% extends "admin_master/base.html" %}
+
+{% block title %}Rekap Tahunan - Stasiun Microwave Link{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header dengan judul -->
+    <div class="text-center mb-4">
+        <h1 class="display-4 fw-bold text-primary mb-3">
+            <i class="bi bi-calendar-year-fill me-3"></i>Rekap Tahunan
+        </h1>
+        <p class="lead text-muted">Download laporan rekap tahunan dengan gambar dokumentasi per bulan</p>
+    </div>
+
+    <!-- FILTER CARD - PENTING UNTUK MEMILIH TAHUN -->
+    <div class="row justify-content-center mb-4">
+        <div class="col-md-10">
+            <div class="card border-0 shadow">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="mb-0"><i class="bi bi-funnel-fill me-2"></i> Pilih Periode Laporan</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="GET" action="{{ url_for('admin_master_rekap_tahunan') }}" class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">Tahun</label>
+                            <select class="form-select form-select-lg" name="tahun" id="tahun">
+                                {% for y in range(2020, 2031) %}
+                                <option value="{{ y }}" {% if tahun == y %}selected{% endif %}>{{ y }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">Operator</label>
+                            <select class="form-select form-select-lg" name="operator" id="operator">
+                                <option value="all" {% if operator == 'all' %}selected{% endif %}>Semua Operator</option>
+                                {% for op in operators %}
+                                <option value="{{ op }}" {% if operator == op %}selected{% endif %}>{{ op|upper }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Kota/Kabupaten</label>
+                            <select class="form-select form-select-lg" name="kota" id="kota">
+                                <option value="all" {% if kota == 'all' %}selected{% endif %}>Semua Kota/kab</option>
+                                {% for k in kota_list %}
+                                <option value="{{ k }}" {% if kota == k %}selected{% endif %}>{{ k }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary btn-lg w-100">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card Info Periode -->
+    <div class="row justify-content-center mb-4">
+        <div class="col-md-10">
+            <div class="card border-0 shadow-sm bg-info bg-opacity-10">
+                <div class="card-body py-3">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-info-circle-fill text-info fs-3 me-3"></i>
+                        <div class="flex-grow-1">
+                            <strong>Tahun Terpilih:</strong>
+                            <span class="badge bg-primary ms-2 py-2 px-3 fs-6">{{ tahun }}</span>
+                            {% if operator != 'all' %}
+                            <span class="badge bg-secondary ms-2 py-2 px-3">Operator: {{ operator|upper }}</span>
+                            {% endif %}
+                            {% if kota != 'all' %}
+                            <span class="badge bg-secondary ms-2 py-2 px-3">Kota/Kab: {{ kota }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card Download -->
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-lg text-center">
+                <div class="card-body p-5">
+                    <!-- Icon -->
+                    <div class="mb-4">
+                        <div class="display-1 text-success">
+                            <i class="bi bi-file-earmark-word-fill"></i>
+                        </div>
+                    </div>
+
+                    <h3 class="fw-bold mb-3">Download Laporan Tahunan</h3>
+                    <p class="text-muted mb-4">
+                        Klik tombol di bawah untuk mendownload laporan tahun 
+                        <strong class="text-primary">{{ tahun }}</strong>
+                    </p>
+
+                    <a href="{{ url_for('admin_master_rekap_tahunan_word_gambar', tahun=tahun, operator=operator, kota=kota) }}" 
+                       class="btn btn-success btn-lg px-5 py-3 shadow" target="_blank">
+                        <i class="bi bi-file-word-fill me-2 fs-4"></i>
+                        <span class="fs-5">Export Word dengan Gambar</span>
+                    </a>
+
+                    <div class="mt-4">
+                        <a href="{{ url_for('admin_master_dashboard') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-2"></i> Kembali ke Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Tambahan -->
+    <div class="row justify-content-center mt-4">
+        <div class="col-md-8">
+            <div class="card border-0 bg-light">
+                <div class="card-body py-3 text-center text-muted">
+                    <small>
+                        <i class="bi bi-info-circle me-1"></i>
+                        Laporan akan menampilkan data untuk tahun {{ tahun }}. 
+                        Bulan yang tidak memiliki data tidak akan muncul di dokumen.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto submit ketika tahun berubah
+    const tahun = document.getElementById('tahun');
+    const operator = document.getElementById('operator');
+    const kota = document.getElementById('kota');
+    
+    function submitForm() {
+        const params = new URLSearchParams({
+            tahun: tahun.value,
+            operator: operator.value,
+            kota: kota.value
+        });
+        window.location.href = "{{ url_for('admin_master_rekap_tahunan') }}?" + params.toString();
+    }
+    
+    // Auto submit ketika tahun berubah
+    tahun.addEventListener('change', submitForm);
+    
+    // Untuk operator dan kota, submit saat berubah (opsional)
+    operator.addEventListener('change', submitForm);
+    kota.addEventListener('change', submitForm);
+});
+</script>
+
+<style>
+    .btn-success {
+        background: linear-gradient(135deg, #198754 0%, #146c43 100%);
+        border: none;
+        transition: transform 0.2s;
+    }
+    .btn-success:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(25, 135, 84, 0.3) !important;
+    }
+    .card {
+        border-radius: 15px;
+    }
+    .form-select-lg {
+        font-size: 1rem;
+        padding: 0.75rem 1rem;
+    }
+</style>
+{% endblock %}
