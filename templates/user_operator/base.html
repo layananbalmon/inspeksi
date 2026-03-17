@@ -2,31 +2,18 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}SiPaMeL {% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>{% block title %}SiPaMeL - {{ current_user.operator_type|upper }}{% endblock %}</title>
     
     <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        :root {
-            --primary-color: #0d6efd;
-            --secondary-color: #6c757d;
-            --success-color: #198754;
-            --danger-color: #dc3545;
-            --warning-color: #ffc107;
-            --info-color: #0dcaf0;
-            --light-color: #f8f9fa;
-            --dark-color: #212529;
-            --sidebar-width: 260px;
-            --sidebar-bg: #ffffff;
-            --sidebar-color: #5a6c7d;
-            --sidebar-active-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --sidebar-hover-bg: #f5f7fa;
-        }
-        
+        /* ===== RESET & VARIABLES ===== */
         * {
             margin: 0;
             padding: 0;
@@ -34,189 +21,306 @@
         }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f7fa;
-            color: #333;
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
             overflow-x: hidden;
             min-height: 100vh;
         }
         
+        :root {
+            --operator-color: {% if current_user.operator_type == 'telkom' %}#E1251B
+                             {% elif current_user.operator_type == 'telkomsel' %}#E1251B
+                             {% elif current_user.operator_type == 'indosat' %}#FF6600
+                             {% elif current_user.operator_type == 'xl' %}#7F3F98
+                             {% else %}#4361ee{% endif %};
+            --operator-light: {% if current_user.operator_type == 'telkom' %}rgba(225, 37, 27, 0.08)
+                              {% elif current_user.operator_type == 'telkomsel' %}rgba(225, 37, 27, 0.08)
+                              {% elif current_user.operator_type == 'indosat' %}rgba(255, 102, 0, 0.08)
+                              {% elif current_user.operator_type == 'xl' %}rgba(127, 63, 152, 0.08)
+                              {% else %}rgba(67, 97, 238, 0.08){% endif %};
+            
+            --sidebar-width: 280px;
+            --navbar-height: 70px;
+        }
+
+        /* ===== TYPOGRAPHY ===== */
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 600;
+        }
+
+        /* ===== UTILITY CLASSES ===== */
+        .cursor-pointer { cursor: pointer; }
+        .no-decoration { text-decoration: none; }
+
         /* ===== NAVBAR ===== */
         .navbar {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            height: 60px;
+            background: linear-gradient(135deg, var(--operator-color), #1e293b);
+            height: var(--navbar-height);
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             z-index: 1030;
-            padding: 0 1rem;
+            padding: 0 1.5rem;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .navbar .container-fluid {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 0;
         }
         
         .navbar-brand {
             font-weight: 700;
             font-size: 1.5rem;
             color: white !important;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+        }
+        
+        .navbar-brand i {
+            font-size: 2rem;
         }
         
         .navbar-toggle {
             background: none;
             border: none;
             color: white;
-            font-size: 1.5rem;
-            padding: 5px 10px;
-            margin-right: 10px;
+            font-size: 1.8rem;
+            padding: 0.5rem;
+            margin-right: 0.5rem;
+            cursor: pointer;
+            display: none;
+            line-height: 1;
         }
         
-        @media (min-width: 768px) {
+        @media (max-width: 991.98px) {
             .navbar-toggle {
-                display: none;
+                display: block;
             }
         }
         
-        /* ===== SIDEBAR ===== */
-        .sidebar {
-            background: var(--sidebar-bg);
-            width: var(--sidebar-width);
-            box-shadow: 3px 0 15px rgba(0,0,0,0.05);
-            transition: transform 0.3s ease;
-            z-index: 1020;
-            overflow-y: auto;
-            position: fixed;
-            left: 0;
-            top: 60px;
-            bottom: 0;
-            transform: translateX(-100%);
+        .operator-badge {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 0.4rem 1rem;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: 1px solid rgba(255,255,255,0.3);
         }
         
-        /* Sidebar visible on desktop */
-        @media (min-width: 768px) {
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+            border: 2px solid rgba(255,255,255,0.3);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .user-avatar:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.05);
+        }
+        
+        .dropdown-menu {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            padding: 0.75rem;
+            min-width: 220px;
+            margin-top: 0.75rem !important;
+        }
+        
+        .dropdown-item {
+            border-radius: 10px;
+            padding: 0.7rem 1rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .dropdown-item i {
+            width: 20px;
+            color: var(--operator-color);
+        }
+        
+        .dropdown-item:hover {
+            background: var(--operator-light);
+            color: var(--operator-color);
+            transform: translateX(5px);
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            position: fixed;
+            top: var(--navbar-height);
+            left: 0;
+            bottom: 0;
+            width: var(--sidebar-width);
+            background: white;
+            box-shadow: 2px 0 20px rgba(0,0,0,0.03);
+            border-right: 1px solid #e9ecef;
+            overflow-y: auto;
+            z-index: 1020;
+            transition: transform 0.3s ease;
+            scrollbar-width: thin;
+        }
+        
+        @media (min-width: 992px) {
             .sidebar {
                 transform: translateX(0);
             }
         }
         
-        /* Sidebar when shown on mobile */
-        .sidebar.show {
-            transform: translateX(0);
-            box-shadow: 3px 0 15px rgba(0,0,0,0.1);
+        @media (max-width: 991.98px) {
+            .sidebar {
+                transform: translateX(-100%);
+                box-shadow: 5px 0 25px rgba(0,0,0,0.1);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
         }
         
         .sidebar::-webkit-scrollbar {
-            width: 5px;
+            width: 4px;
         }
         
         .sidebar::-webkit-scrollbar-track {
-            background: #f1f1f1;
+            background: #f1f5f9;
         }
         
         .sidebar::-webkit-scrollbar-thumb {
-            background: #c1c1c1;
+            background: #cbd5e1;
             border-radius: 10px;
         }
         
         .sidebar-header {
-            padding: 20px 15px 15px;
-            border-bottom: 1px solid #eaeaea;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, var(--operator-color), #1e293b);
+            color: white;
         }
         
         .sidebar-header .user-info {
             display: flex;
             align-items: center;
+            gap: 1rem;
         }
         
-        .sidebar-header .user-avatar {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .sidebar-header .user-avatar-large {
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
+            background: rgba(255,255,255,0.2);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            font-weight: bold;
-            margin-right: 12px;
-            font-size: 18px;
+            font-weight: 700;
+            font-size: 1.3rem;
+            border: 2px solid rgba(255,255,255,0.3);
         }
         
-        .sidebar-header .user-details h6 {
-            margin: 0;
-            font-weight: 600;
-            color: #2c3e50;
-            font-size: 0.95rem;
+        .sidebar-header .user-details h5 {
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            font-size: 1rem;
         }
         
         .sidebar-header .user-details small {
-            color: #7b8a8b;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
+            opacity: 0.9;
         }
         
-        .nav.flex-column {
-            padding: 0 10px;
+        .section-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: #94a3b8;
+            letter-spacing: 0.5px;
+            margin: 1.5rem 0 0.5rem 1.5rem;
         }
         
-        .sidebar .nav-item {
-            margin-bottom: 3px;
+        .nav {
+            padding: 0 0.75rem;
+            list-style: none;
         }
         
-        .sidebar .nav-link {
-            color: var(--sidebar-color);
-            padding: 10px 12px;
-            border-radius: 8px;
-            transition: all 0.3s ease;
+        .nav-item {
+            margin-bottom: 0.25rem;
+        }
+        
+        .nav-link {
+            padding: 0.6rem 1rem;
+            border-radius: 10px;
+            color: #475569;
+            font-weight: 500;
+            font-size: 0.9rem;
             display: flex;
             align-items: center;
-            font-weight: 500;
-            font-size: 0.95rem;
+            text-decoration: none;
+            transition: all 0.2s;
         }
         
-        .sidebar .nav-link:hover {
-            background-color: var(--sidebar-hover-bg);
-            color: var(--primary-color);
+        .nav-link i {
+            margin-right: 12px;
+            width: 20px;
+            font-size: 1.1rem;
+            color: #94a3b8;
+        }
+        
+        .nav-link:hover {
+            background: var(--operator-light);
+            color: var(--operator-color);
             transform: translateX(3px);
         }
         
-        .sidebar .nav-link.active {
-            background: var(--sidebar-active-bg);
-            color: white !important;
-            box-shadow: 0 3px 8px rgba(102, 126, 234, 0.3);
+        .nav-link:hover i {
+            color: var(--operator-color);
         }
         
-        .sidebar .nav-link i {
-            width: 22px;
-            font-size: 1rem;
-            margin-right: 10px;
-            text-align: center;
+        .nav-link.active {
+            background: var(--operator-color);
+            color: white !important;
+        }
+        
+        .nav-link.active i {
+            color: white;
         }
         
         .sidebar-divider {
             height: 1px;
-            background: linear-gradient(to right, transparent, #eaeaea, transparent);
-            margin: 15px 10px;
+            background: linear-gradient(to right, transparent, #e9ecef, transparent);
+            margin: 1rem;
         }
-        
-        .sidebar-section-title {
-            padding: 12px 15px 8px;
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #95a5a6;
-            font-weight: 600;
-        }
-        
+
         /* ===== MAIN CONTENT ===== */
         .main-content-wrapper {
-            min-height: 100vh;
-            background-color: #f5f7fa;
+            margin-top: var(--navbar-height);
+            min-height: calc(100vh - var(--navbar-height));
             transition: margin-left 0.3s ease;
-            margin-left: 0;
-            margin-top: 60px; /* Height of navbar */
+            background: #f8fafc;
             width: 100%;
         }
         
-        /* On desktop, add margin for sidebar */
-        @media (min-width: 768px) {
+        @media (min-width: 992px) {
             .main-content-wrapper {
                 margin-left: var(--sidebar-width);
                 width: calc(100% - var(--sidebar-width));
@@ -224,221 +328,275 @@
         }
         
         .main-content {
-            padding: 20px;
-            min-height: calc(100vh - 60px);
+            padding: 2rem;
+            min-height: calc(100vh - var(--navbar-height));
         }
         
-        /* ===== SIDEBAR OVERLAY ===== */
+        @media (max-width: 768px) {
+            .main-content { padding: 1.5rem; }
+        }
+        
+        @media (max-width: 576px) {
+            .main-content { padding: 1rem; }
+        }
+        
         .sidebar-overlay {
+            display: none;
             position: fixed;
-            top: 60px;
+            top: var(--navbar-height);
             left: 0;
             right: 0;
             bottom: 0;
             background: rgba(0,0,0,0.5);
             z-index: 1015;
-            display: none;
         }
         
         .sidebar-overlay.show {
             display: block;
         }
         
-        /* ===== SIDEBAR TOGGLE FLOATING BUTTON ===== */
-        .sidebar-toggle {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1050;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .footer {
+            background: white;
+            border-top: 1px solid #e9ecef;
+            padding: 1rem 2rem;
+            font-size: 0.85rem;
+            color: #64748b;
         }
         
-        @media (min-width: 768px) {
-            .sidebar-toggle {
-                display: none;
+        @media (min-width: 992px) {
+            .footer {
+                margin-left: var(--sidebar-width);
             }
         }
-        
-        .sidebar-toggle:hover {
-            transform: scale(1.1);
-        }
-        
-        /* ===== CARD STYLES ===== */
-        .card {
-            border: none;
-            border-radius: 10px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-            margin-bottom: 20px;
-            transition: transform 0.2s;
-        }
-        
-        .card:hover {
-            transform: translateY(-2px);
-        }
-        
-        .card-header {
-            background-color: white;
-            border-bottom: 1px solid #eaeaea;
-            font-weight: 600;
-            padding: 15px 20px;
-            border-radius: 10px 10px 0 0 !important;
-            font-size: 1rem;
-        }
-        
+
         /* ===== FLASH MESSAGES ===== */
-        .flash-messages-container {
-            position: relative;
-            z-index: 1040;
-            margin-bottom: 20px;
-        }
-        
-        .flash-messages-container .alert {
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        .alert {
+            border-radius: 12px;
             border: none;
-            transition: all 0.3s ease;
-            margin-bottom: 12px;
-            border-radius: 10px;
-            animation: slideInDown 0.3s ease-out;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+            margin-bottom: 1rem;
+            animation: slideDown 0.3s ease;
         }
         
-        @keyframes slideInDown {
-            from {
-                transform: translateY(-20px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-        
-        /* Alert colors */
-        .alert-error, .alert-danger {
-            background: linear-gradient(135deg, #fff5f5 0%, #ffe9e9 100%);
-            color: #721c24;
-            border-left: 5px solid #dc3545 !important;
-        }
-        
-        .alert-success {
-            background: linear-gradient(135deg, #f0fff4 0%, #dcfce7 100%);
-            color: #0a5c36;
-            border-left: 5px solid #198754 !important;
-        }
-        
-        .alert-warning {
-            background: linear-gradient(135deg, #fff9e6 0%, #fef3c7 100%);
-            color: #856404;
-            border-left: 5px solid #ffc107 !important;
-        }
-        
-        .alert-info {
-            background: linear-gradient(135deg, #e6f3ff 0%, #cff4fc 100%);
-            color: #055160;
-            border-left: 5px solid #0dcaf0 !important;
-        }
-        
-        /* ===== RESPONSIVE ===== */
-        @media (max-width: 768px) {
-            .main-content {
-                padding: 15px;
-            }
-            
-            .navbar-brand {
-                font-size: 1.2rem;
-            }
-            
-            .card-header {
-                padding: 12px 15px;
-            }
-        }
-        
-        @media (max-width: 576px) {
-            .main-content {
-                padding: 10px;
-            }
-            
-            .card {
-                margin-bottom: 15px;
-            }
-        }
-        
-        /* ===== ANIMATIONS ===== */
-        @keyframes fadeIn {
+        @keyframes slideDown {
             from {
                 opacity: 0;
-                transform: translateY(10px);
+                transform: translateY(-10px);
             }
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
-        
-        .main-content > * {
-            animation: fadeIn 0.3s ease-out;
-        }
-        
-        /* ===== UTILITY ===== */
-        .operator-badge {
-            font-weight: 600;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-        }
+
+        /* ===== BADGES ===== */
+        .badge-aktif { background-color: #10b981; color: white; padding: 0.4rem 0.8rem; border-radius: 30px; font-weight: 500; }
+        .badge-tidak_aktif { background-color: #ef4444; color: white; padding: 0.4rem 0.8rem; border-radius: 30px; font-weight: 500; }
+        .badge-tidak_berizin { background-color: #f59e0b; color: white; padding: 0.4rem 0.8rem; border-radius: 30px; font-weight: 500; }
+        .badge-tidak_sesuai { background-color: #3b82f6; color: white; padding: 0.4rem 0.8rem; border-radius: 30px; font-weight: 500; }
+        .badge-belum_ada { background-color: #94a3b8; color: white; padding: 0.4rem 0.8rem; border-radius: 30px; font-weight: 500; }
         
         .telkom, .telkomsel { background-color: #E1251B; color: white; }
         .indosat { background-color: #FF6600; color: white; }
         .xl { background-color: #7F3F98; color: white; }
-        .default { background-color: #6c757d; color: white; }
+
+        /* ===== CARD STYLES ===== */
+        .card {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+            margin-bottom: 1.5rem;
+            transition: all 0.2s;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .card-header {
+            background: white;
+            border-bottom: 1px solid #e9ecef;
+            padding: 1.25rem 1.5rem;
+            border-radius: 16px 16px 0 0 !important;
+            font-weight: 600;
+        }
+
+        /* ===== MODAL STYLES ===== */
+        .modal-content {
+            border: none;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, var(--operator-color), #1e293b);
+            padding: 1.5rem;
+        }
+        
+        .modal-header .modal-title {
+            color: white;
+            font-weight: 700;
+        }
+        
+        .modal-header .btn-close-white {
+            filter: brightness(0) invert(1);
+        }
+        
+        .modal-body {
+            padding: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .modal-dialog {
+                margin: 0;
+                max-width: 100%;
+                height: 100%;
+            }
+            .modal-content {
+                border-radius: 0;
+                min-height: 100vh;
+            }
+            .modal-body { padding: 1.5rem; }
+        }
+
+        /* ===== STEP CARD ===== */
+        .step-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            height: 100%;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+            transition: all 0.2s;
+            border: 1px solid #e9ecef;
+        }
+        
+        .step-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        
+        .step-number {
+            width: 48px;
+            height: 48px;
+            background: var(--operator-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .step-card h4 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .step-card p {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        
+        .step-details {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 1rem;
+        }
+        
+        .step-details .d-flex {
+            margin-bottom: 0.5rem;
+        }
+        
+        .step-details i {
+            color: var(--operator-color);
+            font-size: 0.9rem;
+        }
+
+        /* ===== WORKFLOW ITEM ===== */
+        .workflow-item {
+            background: white;
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        /* ===== REGULATION ITEM ===== */
+        .regulation-item {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .regulation-number {
+            width: 32px;
+            height: 32px;
+            background: var(--operator-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
     </style>
     
     {% block extra_css %}{% endblock %}
 </head>
 <body>
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container-fluid px-3">
-            <!-- Hamburger menu for mobile -->
-            <button class="navbar-toggle" id="navbarToggle">
-                <i class="bi bi-list"></i>
-            </button>
+    <nav class="navbar">
+        <div class="container-fluid">
+            <div class="d-flex align-items-center">
+                <button class="navbar-toggle" id="sidebarToggle" type="button">
+                    <i class="bi bi-list"></i>
+                </button>
+                <a class="navbar-brand" href="{{ url_for('user_operator_dashboard') }}">
+                    <i class="bi bi-wifi"></i>
+                    <span>SiPaMeL</span>
+                </a>
+            </div>
             
-            <a class="navbar-brand" href="{{ url_for('user_operator_dashboard') }}">
-                <i class="bi bi-wifi me-2"></i>SiPaMeL
-            </a>
-            
-            <div class="ms-auto d-flex align-items-center">
-                <div class="dropdown">
-                    <a class="nav-link dropdown-toggle d-flex align-items-center text-white" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                        <i class="bi bi-person-circle me-2 fs-5"></i>
-                        <span class="badge operator-badge {{ current_user.operator_type|lower if current_user.operator_type else 'default' }}">
-                            {{ current_user.operator_type|upper if current_user.operator_type else 'OPERATOR' }}
+            <div class="dropdown">
+                <a href="#" class="text-decoration-none dropdown-toggle" id="userDropdown" 
+                   data-bs-toggle="dropdown">
+                    <div class="user-avatar">
+                        {{ current_user.username[0].upper() }}
+                    </div>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <span class="dropdown-item-text text-muted small px-3">
+                            <i class="bi bi-person-circle me-2"></i>{{ current_user.username }}
                         </span>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                        <li>
-                            <a class="dropdown-item d-flex align-items-center py-2" href="{{ url_for('user_operator_dashboard') }}">
-                                <i class="bi bi-speedometer2 me-3"></i> Dashboard
-                            </a>
-                        </li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <a class="dropdown-item d-flex align-items-center py-2 text-danger" href="{{ url_for('logout') }}">
-                                <i class="bi bi-box-arrow-right me-3"></i> Logout
-                            </a>
-                        </li>
-                    </ul>
-                </div>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item" href="{{ url_for('user_operator_dashboard') }}">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="{{ url_for('user_operator_stasiun') }}">
+                            <i class="bi bi-broadcast"></i> Daftar Stasiun
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item text-danger" href="{{ url_for('logout') }}">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </a>
+                    </li>
+                </ul>
             </div>
         </div>
     </nav>
@@ -450,177 +608,304 @@
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div class="user-info">
-                <div class="user-avatar">
-                    {{ current_user.username[0]|upper if current_user.username else 'U' }}
+                <div class="user-avatar-large">
+                    {{ current_user.username[0].upper() }}
                 </div>
                 <div class="user-details">
-                    <h6>{{ current_user.username }}</h6>
-                    <small>
-                        <span class="badge {{ current_user.operator_type|lower if current_user.operator_type else 'bg-secondary' }} py-1 px-2">
-                            {{ current_user.operator_type|upper if current_user.operator_type else 'OPERATOR' }}
-                        </span>
-                    </small>
+                    <h5>{{ current_user.operator_type|upper }}</h5>
                 </div>
             </div>
         </div>
         
-        <nav class="nav flex-column py-2">
-            <div class="sidebar-section-title">Menu Utama</div>
-            
-            <div class="nav-item">
+        <div class="section-title">Menu Utama</div>
+        <ul class="nav flex-column">
+            <li class="nav-item">
                 <a class="nav-link {% if request.endpoint == 'user_operator_dashboard' %}active{% endif %}" 
                    href="{{ url_for('user_operator_dashboard') }}">
                     <i class="bi bi-speedometer2"></i> Dashboard
                 </a>
-            </div>
-            
-            <div class="nav-item">
+            </li>
+            <li class="nav-item">
                 <a class="nav-link {% if request.endpoint == 'user_operator_stasiun' %}active{% endif %}" 
                    href="{{ url_for('user_operator_stasiun') }}">
                     <i class="bi bi-broadcast"></i> Daftar Stasiun
                 </a>
-            </div>
-            
-            <div class="sidebar-divider"></div>
-            
-            <div class="sidebar-section-title">Bantuan</div>
-            
-            <div class="nav-item">
+            </li>
+        </ul>
+        
+        <div class="sidebar-divider"></div>
+        
+        <div class="section-title">Bantuan</div>
+        <ul class="nav flex-column">
+            <li class="nav-item">
                 <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#helpModal">
-                    <i class="bi bi-question-circle"></i> Panduan
+                    <i class="bi bi-question-circle"></i> Panduan 3 Langkah
                 </a>
-            </div>
-        </nav>
+            </li>
+        </ul>
     </div>
 
     <!-- Main Content -->
-    <div class="main-content-wrapper" id="mainContentWrapper">
-        <main class="main-content">
+    <div class="main-content-wrapper" id="mainContent">
+        <div class="main-content">
             <!-- Flash Messages -->
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
-                    <div class="flash-messages-container">
-                        {% for category, message in messages %}
-                            {% set alert_class = 'alert-danger' if category == 'error' else 'alert-' + category %}
-                            {% set icon_class = 'bi-exclamation-triangle-fill' if category == 'error' else 
-                                                ('bi-check-circle-fill' if category == 'success' else 
-                                                ('bi-exclamation-triangle-fill' if category == 'warning' else 
-                                                'bi-info-circle-fill')) %}
-                            
-                            <div class="alert {{ alert_class }} alert-dismissible fade show" 
-                                 role="alert" 
-                                 data-bs-autohide="false">
-                                <div class="d-flex align-items-center">
-                                    <div class="me-3">
-                                        <i class="bi {{ icon_class }} fs-4"></i>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <strong>
-                                            {% if category == 'error' %}ERROR:
-                                            {% elif category == 'success' %}BERHASIL:
-                                            {% elif category == 'warning' %}PERHATIAN:
-                                            {% elif category == 'info' %}INFORMASI:
-                                            {% elif category == 'debug' %}DETAIL:
-                                            {% endif %}
-                                        </strong>
-                                        {{ message }}
-                                    </div>
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                                </div>
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-{{ 'exclamation-triangle' if category == 'error' else 'check-circle' if category == 'success' else 'info-circle' }} me-2 fs-4"></i>
+                                <div>{{ message }}</div>
                             </div>
-                        {% endfor %}
-                    </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
                 {% endif %}
             {% endwith %}
-
+            
             {% block content %}{% endblock %}
-        </main>
+        </div>
+        
+        <footer class="footer text-center">
+            <span class="text-muted">
+                <i class="bi bi-c-circle me-1"></i> 2026 SiPaMeL - {{ current_user.operator_type|upper }} Operator
+            </span>
+        </footer>
     </div>
 
-    <!-- Mobile Sidebar Toggle Button -->
-    <button class="sidebar-toggle" id="sidebarToggle">
-        <i class="bi bi-list"></i>
-    </button>
-
-    <!-- Help Modal (keep as is) -->
+    <!-- Help Modal - Panduan 3 Langkah -->
     <div class="modal fade" id="helpModal" tabindex="-1">
-        <!-- Modal content - tetap sama seperti sebelumnya -->
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-compass-fill me-2"></i>
+                        Panduan Lengkap Aplikasi
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                
+                <div class="modal-body">
+                    <!-- Welcome Text -->
+                    <div class="text-center mb-5">
+                        <h2 class="fw-bold mb-3" style="color: var(--operator-color);">
+                            Panduan Penggunaan Website
+                        </h2>
+                        <p class="text-muted fs-5">Ikuti 3 langkah mudah untuk membantu Anda mengupload capture</p>
+                    </div>
+
+                    <!-- 3 Main Steps -->
+                    <div class="row g-4 mb-5">
+                        <div class="col-lg-4">
+                            <div class="step-card">
+                                <div class="step-number">1</div>
+                                <h4>Atur Grup</h4>
+                                <p class="text-muted">Kelompokkan stasiun lawan dalam satu grup untuk hasil capture yang sama</p>
+                                <div class="step-details">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                        <span class="small">1 grup = Hasil Capture yang sama</span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                        <span class="small">Bisa 1 grup berisi banyak lawan</span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                        <span class="small">Capture berbeda = grup berbeda</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4">
+                            <div class="step-card">
+                                <div class="step-number">2</div>
+                                <h4>Upload Gambar</h4>
+                                <p class="text-muted">Upload hasil capture dan tentukan status setiap stasiun lawan</p>
+                                <div class="step-details">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                        <span class="small">1 grup bisa upload lebih dari 1 capture</span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                        <span class="small">Status tiap lawan bisa berbeda</span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                        <span class="small">Format: JPG, PNG (maks 5MB)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4">
+                            <div class="step-card">
+                                <div class="step-number">3</div>
+                                <h4>Lihat Detail</h4>
+                                <p class="text-muted">Pantau status dan riwayat setiap grup stasiun lawan</p>
+                                <div class="step-details">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                        <span class="small">Tampilan per grup & per lawan</span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                        <span class="small">Edit status, hapus dan tambah capture</span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                        <span class="small">Riwayat upload lengkap</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Workflow Illustration -->
+                    <div class="card mb-5">
+                        <div class="card-body p-4">
+                            <h6 class="fw-bold text-center mb-4">
+                                <i class="bi bi-diagram-3-fill me-2" style="color: var(--operator-color);"></i>
+                                Alur Kerja Sederhana
+                            </h6>
+                            <div class="d-flex flex-column flex-md-row align-items-center justify-content-center gap-3">
+                                <div class="workflow-item">
+                                    <span class="badge rounded-circle" style="background: var(--operator-color); width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;">1</span>
+                                    <span class="fw-semibold">Buat Grup</span>
+                                </div>
+                                <i class="bi bi-arrow-right fs-4 d-none d-md-block" style="color: var(--operator-color);"></i>
+                                <i class="bi bi-arrow-down fs-4 d-md-none" style="color: var(--operator-color);"></i>
+                                
+                                <div class="workflow-item">
+                                    <span class="badge rounded-circle" style="background: var(--operator-color); width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;">2</span>
+                                    <span class="fw-semibold">Upload + Status</span>
+                                </div>
+                                <i class="bi bi-arrow-right fs-4 d-none d-md-block" style="color: var(--operator-color);"></i>
+                                <i class="bi bi-arrow-down fs-4 d-md-none" style="color: var(--operator-color);"></i>
+                                
+                                <div class="workflow-item">
+                                    <span class="badge rounded-circle" style="background: var(--operator-color); width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;">3</span>
+                                    <span class="fw-semibold">Lihat Detail</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Regulations Section -->
+                    <div class="card">
+                        <div class="card-header bg-transparent">
+                            <h6 class="fw-bold mb-0" style="color: var(--operator-color);">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                Ketentuan Penting
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="regulation-item">
+                                <div class="d-flex">
+                                    <div class="regulation-number">1</div>
+                                    <div class="ms-3">
+                                        <strong class="d-block mb-1">Satu grup untuk satu hasil capture</strong>
+                                        <p class="text-muted small mb-0">Jika beberapa stasiun lawan memiliki hasil dokumentasi yang sama (hasil capture yang sama), maka seluruh stasiun lawan tersebut harus dikelompokkan ke dalam satu grup yang sama.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="regulation-item">
+                                <div class="d-flex">
+                                    <div class="regulation-number">2</div>
+                                    <div class="ms-3">
+                                        <strong class="d-block mb-1">Satu stasiun lawan bisa jadi satu grup tersendiri</strong>
+                                        <p class="text-muted small mb-0">Jika setiap stasiun lawan memiliki hasil capture yang berbeda, maka masing-masing stasiun lawan tersebut harus dibuatkan grup sendiri-sendiri.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="regulation-item">
+                                <div class="d-flex">
+                                    <div class="regulation-number">3</div>
+                                    <div class="ms-3">
+                                        <strong class="d-block mb-1">Upload gambar per grup</strong>
+                                        <p class="text-muted small mb-0">Stasiun lawan yang belum memiliki grup tidak dapat diunggah hasil capturenya. Pastikan seluruh stasiun lawan telah dikelompokkan ke dalam grup sebelum melakukan proses upload.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-footer border-0 bg-light">
+                    <button type="button" class="btn px-4" style="background: var(--operator-color); color: white;" data-bs-dismiss="modal">
+                        <i class="bi bi-check-lg me-1"></i>Tutup
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Custom JS -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Sidebar elements
             const sidebar = document.getElementById('sidebar');
-            const sidebarOverlay = document.getElementById('sidebarOverlay');
-            const navbarToggle = document.getElementById('navbarToggle');
-            const sidebarToggle = document.getElementById('sidebarToggle');
+            const overlay = document.getElementById('sidebarOverlay');
+            const toggleBtn = document.getElementById('sidebarToggle');
             
-            // Function to toggle sidebar
-            function toggleSidebar() {
-                sidebar.classList.toggle('show');
-                sidebarOverlay.classList.toggle('show');
-                
-                // Disable body scroll when sidebar is open on mobile
-                if (window.innerWidth < 768) {
-                    document.body.style.overflow = sidebar.classList.contains('show') ? 'hidden' : '';
-                }
-            }
+            // Sidebar functions
+            const openSidebar = () => {
+                sidebar.classList.add('open');
+                overlay.classList.add('show');
+                document.body.style.overflow = 'hidden';
+            };
             
-            // Function to close sidebar
-            function closeSidebar() {
-                sidebar.classList.remove('show');
-                sidebarOverlay.classList.remove('show');
+            const closeSidebar = () => {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('show');
                 document.body.style.overflow = '';
+            };
+            
+            // Toggle sidebar
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+                });
             }
             
-            // Toggle sidebar from navbar hamburger
-            if (navbarToggle) {
-                navbarToggle.addEventListener('click', toggleSidebar);
+            // Close sidebar on overlay click
+            if (overlay) {
+                overlay.addEventListener('click', closeSidebar);
             }
             
-            // Toggle sidebar from floating button
-            if (sidebarToggle) {
-                sidebarToggle.addEventListener('click', toggleSidebar);
-            }
-            
-            // Close sidebar when clicking overlay
-            if (sidebarOverlay) {
-                sidebarOverlay.addEventListener('click', closeSidebar);
-            }
-            
-            // Close sidebar when clicking ESC key
-            document.addEventListener('keydown', function(event) {
-                if (event.key === 'Escape') {
-                    closeSidebar();
-                }
+            // Close sidebar on ESC key
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') closeSidebar();
             });
             
-            // Close sidebar when clicking on a link (mobile only)
-            if (window.innerWidth < 768) {
+            // Close sidebar on link click (mobile only)
+            if (window.innerWidth < 992) {
                 document.querySelectorAll('.sidebar .nav-link').forEach(link => {
                     link.addEventListener('click', closeSidebar);
                 });
             }
             
             // Handle window resize
-            window.addEventListener('resize', function() {
-                if (window.innerWidth >= 768) {
-                    // On desktop, ensure sidebar is visible and no overlay
-                    sidebar.classList.add('show');
-                    sidebarOverlay.classList.remove('show');
+            window.addEventListener('resize', () => {
+                if (window.innerWidth >= 992) {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('show');
                     document.body.style.overflow = '';
-                } else {
-                    // On mobile, hide sidebar by default
-                    sidebar.classList.remove('show');
-                    sidebarOverlay.classList.remove('show');
                 }
             });
             
-            // Trigger resize on load to set initial state
-            window.dispatchEvent(new Event('resize'));
+            // Auto-hide flash messages after 5 seconds
+            setTimeout(() => {
+                document.querySelectorAll('.alert').forEach(alert => {
+                    const bsAlert = bootstrap.Alert.getInstance(alert) || new bootstrap.Alert(alert);
+                    bsAlert.close();
+                });
+            }, 5000);
         });
     </script>
     
